@@ -1,11 +1,12 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { DashboardPage } from '../pages/DashboardPage.jsx'
-import { AppLayout } from '../layouts/AppLayout.jsx'
-import { LoginPage } from '../../features/auth/pages/LoginPage.jsx'
-import { RegisterPage } from '../../features/auth/pages/RegisterPage.jsx'
-import { useAuth } from '../../features/auth/hooks/useAuth.js'
-import { BitacoraPage } from '../../features/bitacora/pages/BitacoraPage.jsx'
-import { FullPageStatus } from '../../shared/components/FullPageStatus.jsx'
+import type { ReactNode } from 'react'
+import { DashboardPage } from '../pages/DashboardPage.tsx'
+import { AppLayout } from '../layouts/AppLayout.tsx'
+import { LoginPage } from '../../features/auth/pages/LoginPage.tsx'
+import { RegisterPage } from '../../features/auth/pages/RegisterPage.tsx'
+import { useAuth } from '../../features/auth/hooks/useAuth.tsx'
+import { BitacoraPage } from '../../features/bitacora/pages/BitacoraPage.tsx'
+import { FullPageStatus } from '../../shared/components/FullPageStatus.tsx'
 
 function ProtectedArea() {
   const { status } = useAuth()
@@ -13,7 +14,7 @@ function ProtectedArea() {
   return status === 'authenticated' ? <AppLayout /> : <Navigate to="/login" replace />
 }
 
-function GuestOnly({ children }) {
+function GuestOnly({ children }: { children: ReactNode }) {
   const { status } = useAuth()
   if (status === 'loading') return <FullPageStatus message="Comprobando tu sesión…" />
   return status === 'authenticated' ? <Navigate to="/" replace /> : children

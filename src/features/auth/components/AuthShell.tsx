@@ -1,4 +1,8 @@
-export function AuthShell({ children, description, title }) {
+import type { ReactNode } from 'react'
+
+type AuthShellProps = { children: ReactNode; description: string; title: string }
+
+export function AuthShell({ children, description, title }: AuthShellProps) {
   return (
     <main className="auth-page">
       <section className="auth-brand" aria-label="SSAH Recursos Humanos">

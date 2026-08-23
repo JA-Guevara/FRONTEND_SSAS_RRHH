@@ -1,18 +1,21 @@
 import { useState } from 'react'
+import type { FormEvent } from 'react'
 
-export function LoginForm({ onSubmit }) {
+type LoginFormProps = { onSubmit: (credentials: { email: string; password: string }) => Promise<void> }
+
+export function LoginForm({ onSubmit }: LoginFormProps) {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
     setSubmitting(true)
     const form = new FormData(event.currentTarget)
     try {
-      await onSubmit({ email: form.get('email'), password: form.get('password') })
+      await onSubmit({ email: String(form.get('email') ?? ''), password: String(form.get('password') ?? '') })
     } catch (requestError) {
-      setError(requestError.message)
+      setError(requestError instanceof Error ? requestError.message : 'No se pudo iniciar sesión')
     } finally {
       setSubmitting(false)
     }
@@ -21,7 +24,7 @@ export function LoginForm({ onSubmit }) {
   return (
     <form className="form-stack" onSubmit={handleSubmit}>
       <label>Correo electrónico<input name="email" type="email" autoComplete="email" required /></label>
-      <label>Contraseña<input name="password" type="password" autoComplete="current-password" minLength="8" required /></label>
+      <label>Contraseña<input name="password" type="password" autoComplete="current-password" minLength={8} required /></label>
       {error && <p className="form-error" role="alert">{error}</p>}
       <button className="button button-primary" disabled={submitting} type="submit">
         {submitting ? 'Ingresando…' : 'Ingresar'}

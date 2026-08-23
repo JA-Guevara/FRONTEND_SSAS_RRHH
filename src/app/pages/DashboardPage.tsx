@@ -1,4 +1,4 @@
-import { useAuth } from '../../features/auth/hooks/useAuth.js'
+import { useAuth } from '../../features/auth/hooks/useAuth.tsx'
 
 export function DashboardPage() {
   const { user } = useAuth()

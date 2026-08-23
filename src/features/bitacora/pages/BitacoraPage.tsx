@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { bitacoraApi } from '../api/bitacoraApi.js'
 
 export function BitacoraPage() {
-  const [serviceStatus, setServiceStatus] = useState('checking')
+  const [serviceStatus, setServiceStatus] = useState<'checking' | 'available' | 'unavailable'>('checking')
 
   useEffect(() => {
     let active = true

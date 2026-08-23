@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import { AuthShell } from '../components/AuthShell.jsx'
-import { LoginForm } from '../components/LoginForm.jsx'
-import { useAuth } from '../hooks/useAuth.js'
+import { AuthShell } from '../components/AuthShell.tsx'
+import { LoginForm } from '../components/LoginForm.tsx'
+import { useAuth } from '../hooks/useAuth.tsx'
 
 export function LoginPage() {
   const { login } = useAuth()

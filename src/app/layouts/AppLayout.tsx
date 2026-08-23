@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { useAuth } from '../../features/auth/hooks/useAuth.js'
+import { useAuth } from '../../features/auth/hooks/useAuth.tsx'
 
 export function AppLayout() {
   const { logout, user } = useAuth()
