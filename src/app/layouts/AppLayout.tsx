@@ -11,7 +11,7 @@ export function AppLayout() {
           <div><strong>SSAH</strong><span>Recursos Humanos</span></div>
         </div>
         <nav className="main-nav" aria-label="Navegación principal">
-          <NavLink to="/" end>Inicio</NavLink><NavLink to="/bitacora">Bitácora</NavLink>
+          <NavLink to="/" end>Inicio</NavLink><NavLink to="/empresa">Empresa</NavLink><NavLink to="/parametros-ley">Parámetros de ley</NavLink><NavLink to="/bitacora">Bitácora</NavLink>
         </nav>
         <div className="sidebar-user">
           <span>{user?.name}</span><small>{user?.email}</small>

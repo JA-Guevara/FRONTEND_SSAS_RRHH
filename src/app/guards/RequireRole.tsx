@@ -1,24 +1,32 @@
-import { Navigate } from 'react-router-dom'
 import type { ReactNode } from 'react'
-import { useAuth } from '../../features/auth/hooks/useAuth.tsx'
-import { FullPageStatus } from '../../shared/components/FullPageStatus.tsx'
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../../features/auth/hooks/useAuth'
+import { FullPageStatus } from '../../shared/components/FullPageStatus'
 
 type RequireRoleProps = {
-  allowedRoles: string | string[]
+  roles: string[]
   children: ReactNode
 }
 
-export function RequireRole({ allowedRoles, children }: RequireRoleProps) {
+export function RequireRole({ roles, children }: RequireRoleProps) {
   const { status, user } = useAuth()
 
   if (status === 'loading') {
-    return <FullPageStatus message="Comprobando tu sesión…" />
+    return <FullPageStatus message="Comprobando permisos…" />
   }
 
   if (status !== 'authenticated') {
     return <Navigate to="/login" replace />
   }
 
-  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles]
-  return roles.includes(user?.rol ?? '') ? children : <Navigate to="/" replace />
+  // Si el backend aún no envía rol, dejamos pasar
+  if (!user?.rol) {
+    return <>{children}</>
+  }
+
+  if (!roles.includes(user.rol)) {
+    return <Navigate to="/" replace />
+  }
+
+  return <>{children}</>
 }
