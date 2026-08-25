@@ -59,6 +59,7 @@ import { FullPageStatus } from '../../shared/components/FullPageStatus.tsx'
 import { RequireRole } from '../guards/RequireRole.tsx'
 import { AltaEmpresaPage } from '../../features/empresas/pages/AltaEmpresaPage'
 import { ParametrosLeyPage } from '../../features/empresas/pages/ParametrosLeyPage'
+import { ListadoUsuariosPage } from '../../features/usuarios/pages/ListadoUsuariosPage'
 
 function ProtectedArea() {
   const { status } = useAuth()
@@ -78,9 +79,10 @@ export function AppRouter() {
       <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
       <Route path="/registro" element={<GuestOnly><RegisterPage /></GuestOnly>} />
 
-      {/* Temporal: sin login para probar T0-23 */}
+      {/* Temporal: sin login para probar pantallas */}
       <Route path="/empresa" element={<AltaEmpresaPage />} />
       <Route path="/parametros-ley" element={<ParametrosLeyPage />} />
+      <Route path="/usuarios" element={<ListadoUsuariosPage />} />
 
       <Route element={<ProtectedArea />}>
         <Route index element={<DashboardPage />} />
