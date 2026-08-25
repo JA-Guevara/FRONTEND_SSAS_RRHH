@@ -14,7 +14,7 @@ src/
 ├── features/
 │   ├── auth/            Autenticación completa y autocontenida
 │   ├── bitacora/        Consulta de auditoría
-│   ├── empresas/        Empresas, planes y parámetros laborales
+│   ├── empresas/        Administración global de empresas
 │   ├── roles/           Roles y permisos
 │   └── usuarios/        Administración de usuarios
 ├── shared/              Código reutilizable y sin conocimiento del negocio
@@ -80,9 +80,10 @@ Existen dos ámbitos separados:
 - `tenant`: usuarios de una empresa; el login requiere empresa, usuario/correo y contraseña.
 - `platform`: administradores globales; el login requiere identificador y contraseña.
 
-La sesión se conserva en `sessionStorage`, se renueva con el endpoint correspondiente y se elimina
-al cerrar la pestaña o cerrar sesión. Las rutas impiden que un usuario de empresa abra pantallas de
-plataforma y viceversa.
+Ambos ámbitos usan `/api/v1/auth/login`. La presencia de `empresa_slug` selecciona una empresa; su
+ausencia selecciona la administración global. Después, `/api/v1/auth/me` confirma el ámbito real
+mediante `empresa_id`. La sesión se conserva en `sessionStorage` y se elimina al cerrar la pestaña o
+cerrar sesión. Las rutas impiden que un usuario de empresa abra pantallas de plataforma y viceversa.
 
 ## CORS y despliegue
 

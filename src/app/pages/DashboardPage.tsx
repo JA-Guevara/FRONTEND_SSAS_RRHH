@@ -10,14 +10,14 @@ export function DashboardPage() {
         <h1 id="dashboard-title">Hola, {user?.name}</h1>
         <p className="page-description">
           {isPlatform
-            ? 'Administra empresas y sus planes desde los servicios de plataforma.'
-            : 'Administra usuarios, roles, parámetros laborales y eventos de auditoría.'}
+            ? 'Administra empresas desde los servicios globales de la plataforma.'
+            : 'Administra usuarios, roles y eventos de auditoría de tu empresa.'}
         </p>
       </div>
       <div className="card-grid">
         <article className="card"><span className="card-number">01</span><h2>Sesión segura</h2><p>Inicio, renovación, cambio de contraseña y cierre de sesión conectados a la API.</p></article>
         {isPlatform ? (
-          <article className="card"><span className="card-number">02</span><h2>Empresas</h2><p>Consulta empresas, planes y aprovisiona nuevos clientes.</p></article>
+          <article className="card"><span className="card-number">02</span><h2>Empresas</h2><p>Consulta y aprovisiona empresas con su administrador inicial.</p></article>
         ) : (
           <>
             <article className="card"><span className="card-number">02</span><h2>Seguridad</h2><p>Gestiona usuarios y roles de la empresa actual.</p></article>

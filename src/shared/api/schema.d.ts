@@ -208,195 +208,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/empresa/parametros": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Listar Parametros Empresa */
-        get: operations["listar_parametros_empresa_api_v1_empresa_parametros_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/empresa/parametros/{codigo}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Actualizar Parametro Empresa */
-        put: operations["actualizar_parametro_empresa_api_v1_empresa_parametros__codigo__put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/mi-empresa": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get My Empresa */
-        get: operations["get_my_empresa_api_v1_mi_empresa_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update My Empresa */
-        patch: operations["update_my_empresa_api_v1_mi_empresa_patch"];
-        trace?: never;
-    };
-    "/api/v1/mi-empresa/suscripcion": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get My Subscription */
-        get: operations["get_my_subscription_api_v1_mi_empresa_suscripcion_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/mi-empresa/parametros": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List My Parameters */
-        get: operations["list_my_parameters_api_v1_mi_empresa_parametros_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/mi-empresa/parametros/{codigo}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Update My Parameter */
-        put: operations["update_my_parameter_api_v1_mi_empresa_parametros__codigo__put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/platform/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Platform Login */
-        post: operations["platform_login_api_v1_platform_auth_login_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/platform/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Platform Refresh */
-        post: operations["platform_refresh_api_v1_platform_auth_refresh_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/platform/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Platform Logout */
-        post: operations["platform_logout_api_v1_platform_auth_logout_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/platform/auth/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Platform Me */
-        get: operations["platform_me_api_v1_platform_auth_me_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/platform/auth/password/change": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Platform Change Password */
-        post: operations["platform_change_password_api_v1_platform_auth_password_change_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/platform/empresas": {
+    "/api/v1/empresas": {
         parameters: {
             query?: never;
             header?: never;
@@ -404,17 +216,17 @@ export interface paths {
             cookie?: never;
         };
         /** List Empresas */
-        get: operations["list_empresas_api_v1_platform_empresas_get"];
+        get: operations["list_empresas_api_v1_empresas_get"];
         put?: never;
         /** Provision Empresa */
-        post: operations["provision_empresa_api_v1_platform_empresas_post"];
+        post: operations["provision_empresa_api_v1_empresas_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/platform/empresas/{empresa_id}": {
+    "/api/v1/empresas/{empresa_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -422,17 +234,17 @@ export interface paths {
             cookie?: never;
         };
         /** Get Empresa */
-        get: operations["get_empresa_api_v1_platform_empresas__empresa_id__get"];
+        get: operations["get_empresa_api_v1_empresas__empresa_id__get"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         /** Update Empresa */
-        patch: operations["update_empresa_api_v1_platform_empresas__empresa_id__patch"];
+        patch: operations["update_empresa_api_v1_empresas__empresa_id__patch"];
         trace?: never;
     };
-    "/api/v1/platform/empresas/{empresa_id}/activar": {
+    "/api/v1/empresas/{empresa_id}/activar": {
         parameters: {
             query?: never;
             header?: never;
@@ -446,10 +258,10 @@ export interface paths {
         options?: never;
         head?: never;
         /** Activate Empresa */
-        patch: operations["activate_empresa_api_v1_platform_empresas__empresa_id__activar_patch"];
+        patch: operations["activate_empresa_api_v1_empresas__empresa_id__activar_patch"];
         trace?: never;
     };
-    "/api/v1/platform/empresas/{empresa_id}/suspender": {
+    "/api/v1/empresas/{empresa_id}/suspender": {
         parameters: {
             query?: never;
             header?: never;
@@ -463,112 +275,7 @@ export interface paths {
         options?: never;
         head?: never;
         /** Suspend Empresa */
-        patch: operations["suspend_empresa_api_v1_platform_empresas__empresa_id__suspender_patch"];
-        trace?: never;
-    };
-    "/api/v1/platform/planes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Planes */
-        get: operations["list_planes_api_v1_platform_planes_get"];
-        put?: never;
-        /** Create Plan */
-        post: operations["create_plan_api_v1_platform_planes_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/platform/planes/{plan_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Plan */
-        get: operations["get_plan_api_v1_platform_planes__plan_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update Plan */
-        patch: operations["update_plan_api_v1_platform_planes__plan_id__patch"];
-        trace?: never;
-    };
-    "/api/v1/platform/suscripciones": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Subscriptions */
-        get: operations["list_subscriptions_api_v1_platform_suscripciones_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/platform/empresas/{empresa_id}/suscripcion": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Subscription */
-        get: operations["get_subscription_api_v1_platform_empresas__empresa_id__suscripcion_get"];
-        /** Replace Subscription */
-        put: operations["replace_subscription_api_v1_platform_empresas__empresa_id__suscripcion_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/platform/bitacora": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Platform Audit */
-        get: operations["list_platform_audit_api_v1_platform_bitacora_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/platform/bitacora/{audit_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Platform Audit */
-        get: operations["get_platform_audit_api_v1_platform_bitacora__audit_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
+        patch: operations["suspend_empresa_api_v1_empresas__empresa_id__suspender_patch"];
         trace?: never;
     };
     "/api/v1/roles": {
@@ -767,20 +474,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** ActualizarParametroEmpresaRequest */
-        ActualizarParametroEmpresaRequest: {
-            /** Valor */
-            valor: number | string;
-            /**
-             * Vigente Desde
-             * Format: date
-             */
-            vigente_desde: string;
-            /** Vigente Hasta */
-            vigente_hasta?: string | null;
-            /** Norma Legal */
-            norma_legal?: string | null;
-        };
         /** ActualizarUsuarioRequest */
         ActualizarUsuarioRequest: {
             /** Nombre */
@@ -819,7 +512,7 @@ export interface components {
             /** Id */
             id: string;
             /** Empresa Id */
-            empresa_id: string;
+            empresa_id?: string | null;
             /** Module */
             module: string;
             /** Action */
@@ -873,6 +566,8 @@ export interface components {
         };
         /** CrearUsuarioRequest */
         CrearUsuarioRequest: {
+            /** Empresa Id */
+            empresa_id?: string | null;
             /** Nombre */
             nombre: string;
             /** Apellido */
@@ -963,7 +658,6 @@ export interface components {
              * Format: date-time
              */
             fecha_registro: string;
-            suscripcion?: components["schemas"]["SubscriptionResponse"] | null;
             /**
              * Created At
              * Format: date-time
@@ -1036,64 +730,54 @@ export interface components {
             /** Telefono */
             telefono?: string | null;
         };
-        /** LoginSchema */
+        /**
+         * LoginSchema
+         * @description Credenciales de acceso.
+         *
+         *     ``empresa_slug`` decide DÓNDE se busca la cuenta:
+         *
+         *         ausente  -> entre los administradores de la plataforma (empresa_id IS NULL)
+         *         presente -> dentro de esa empresa
+         *
+         *     Enviarlo con un valor inventado hace que no se encuentre la cuenta y la respuesta
+         *     sea 401, aunque el correo y la contraseña sean correctos. En Swagger hay que
+         *     BORRAR la línea, no dejar el valor de ejemplo.
+         * @example {
+         *       "summary": "Administrador de plataforma (sin empresa)",
+         *       "value": {
+         *         "email": "admin@ssas.bo",
+         *         "password": "TuClaveSegura.2026"
+         *       }
+         *     }
+         * @example {
+         *       "summary": "Usuario de una empresa",
+         *       "value": {
+         *         "email": "ana@conecta.bo",
+         *         "empresa_slug": "conecta",
+         *         "password": "TuClaveSegura.2026"
+         *       }
+         *     }
+         */
         LoginSchema: {
-            /** Empresa Slug */
-            empresa_slug: string;
-            /** Email */
+            /**
+             * Empresa Slug
+             * @description Slug de la empresa. Omitir para administradores de plataforma.
+             */
+            empresa_slug?: string | null;
+            /**
+             * Email
+             * @description Correo. Alternativa: username.
+             */
             email?: string | null;
             /** Username */
             username?: string | null;
             /** Password */
             password: string;
         };
-        /** MessageResponse */
-        MessageResponse: {
-            /** Message */
-            message: string;
-        };
         /** MessageSchema */
         MessageSchema: {
             /** Message */
             message: string;
-        };
-        /** MiEmpresaUpdateRequest */
-        MiEmpresaUpdateRequest: {
-            /** Nombre Comercial */
-            nombre_comercial?: string | null;
-            /** Email */
-            email?: string | null;
-            /** Telefono */
-            telefono?: string | null;
-            /** Direccion */
-            direccion?: string | null;
-            /** Ciudad */
-            ciudad?: string | null;
-            /** Logo Url */
-            logo_url?: string | null;
-        };
-        /** ParametroEmpresaResponse */
-        ParametroEmpresaResponse: {
-            /** Codigo */
-            codigo: string;
-            /** Nombre */
-            nombre: string;
-            /** Tipo Valor */
-            tipo_valor: string;
-            /** Descripcion */
-            descripcion?: string | null;
-            /** Valor Id */
-            valor_id?: string | null;
-            /** Valor */
-            valor?: string | null;
-            /** Norma Legal */
-            norma_legal?: string | null;
-            /** Vigente Desde */
-            vigente_desde?: string | null;
-            /** Vigente Hasta */
-            vigente_hasta?: string | null;
-            /** Updated At */
-            updated_at?: string | null;
         };
         /** PermissionSchema */
         PermissionSchema: {
@@ -1108,183 +792,9 @@ export interface components {
             /** Description */
             description?: string | null;
         };
-        /** PlanCreateRequest */
-        PlanCreateRequest: {
-            /** Nombre */
-            nombre: string;
-            /** Precio Mensual */
-            precio_mensual: number | string;
-            /** Max Empleados */
-            max_empleados: number;
-            /** Modulos */
-            modulos?: string[];
-            /**
-             * Activo
-             * @default true
-             */
-            activo: boolean;
-        };
-        /** PlanResponse */
-        PlanResponse: {
-            /** Id */
-            id: string;
-            /** Nombre */
-            nombre: string;
-            /** Precio Mensual */
-            precio_mensual: string;
-            /** Max Empleados */
-            max_empleados: number;
-            /** Modulos */
-            modulos: unknown[];
-            /** Activo */
-            activo: boolean;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-        };
-        /** PlanUpdateRequest */
-        PlanUpdateRequest: {
-            /** Nombre */
-            nombre?: string | null;
-            /** Precio Mensual */
-            precio_mensual?: number | string | null;
-            /** Max Empleados */
-            max_empleados?: number | null;
-            /** Modulos */
-            modulos?: string[] | null;
-            /** Activo */
-            activo?: boolean | null;
-        };
-        /** PlatformAdminResponse */
-        PlatformAdminResponse: {
-            /** Id */
-            id: string;
-            /** Nombre */
-            nombre: string;
-            /** Apellido */
-            apellido: string;
-            /**
-             * Email
-             * Format: email
-             */
-            email: string;
-            /** Username */
-            username: string;
-            /** Activo */
-            activo: boolean;
-            /** Email Verified */
-            email_verified: boolean;
-            /** Ultimo Acceso */
-            ultimo_acceso?: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-        };
-        /** PlatformAuditPageResponse */
-        PlatformAuditPageResponse: {
-            /** Items */
-            items: components["schemas"]["PlatformAuditResponse"][];
-            /** Total */
-            total: number;
-            /** Page */
-            page: number;
-            /** Per Page */
-            per_page: number;
-            /** Total Pages */
-            total_pages: number;
-        };
-        /** PlatformAuditResponse */
-        PlatformAuditResponse: {
-            /** Id */
-            id: string;
-            /** Admin Id */
-            admin_id?: string | null;
-            /** Actor Etiqueta */
-            actor_etiqueta?: string | null;
-            /** Modulo */
-            modulo: string;
-            /** Accion */
-            accion: string;
-            /** Nivel */
-            nivel: string;
-            /** Descripcion */
-            descripcion: string;
-            /** Tabla Afectada */
-            tabla_afectada?: string | null;
-            /** Registro Id */
-            registro_id?: string | null;
-            /** Datos Previos */
-            datos_previos?: {
-                [key: string]: unknown;
-            } | null;
-            /** Datos Nuevos */
-            datos_nuevos?: {
-                [key: string]: unknown;
-            } | null;
-            /** Ip Origen */
-            ip_origen?: string | null;
-            /** User Agent */
-            user_agent?: string | null;
-            /**
-             * Fecha
-             * Format: date-time
-             */
-            fecha: string;
-        };
-        /** PlatformChangePasswordRequest */
-        PlatformChangePasswordRequest: {
-            /** Current Password */
-            current_password: string;
-            /** New Password */
-            new_password: string;
-        };
-        /** PlatformLoginRequest */
-        PlatformLoginRequest: {
-            /** Login */
-            login: string;
-            /** Password */
-            password: string;
-        };
-        /** PlatformRefreshRequest */
-        PlatformRefreshRequest: {
-            /** Refresh Token */
-            refresh_token: string;
-        };
-        /** PlatformTokenResponse */
-        PlatformTokenResponse: {
-            /** Access Token */
-            access_token: string;
-            /** Refresh Token */
-            refresh_token: string;
-            /**
-             * Token Type
-             * @default bearer
-             */
-            token_type: string;
-            /** Expires In */
-            expires_in: number;
-        };
         /** ProvisionEmpresaRequest */
         ProvisionEmpresaRequest: {
             empresa: components["schemas"]["EmpresaCreateData"];
-            /** Plan Id */
-            plan_id: string;
-            /**
-             * Fecha Inicio
-             * Format: date
-             */
-            fecha_inicio: string;
-            /** Fecha Fin */
-            fecha_fin?: string | null;
             administrador: components["schemas"]["InitialAdminData"];
         };
         /** ProvisionEmpresaResponse */
@@ -1327,7 +837,7 @@ export interface components {
             /** Id */
             id: string;
             /** Empresa Id */
-            empresa_id: string;
+            empresa_id: string | null;
             /** Name */
             name: string;
             /** Codigo */
@@ -1338,55 +848,6 @@ export interface components {
             is_active: boolean;
             /** Permissions */
             permissions?: components["schemas"]["PermissionSchema"][];
-        };
-        /** SubscriptionPageResponse */
-        SubscriptionPageResponse: {
-            /** Items */
-            items: components["schemas"]["SubscriptionResponse"][];
-            /** Total */
-            total: number;
-            /** Page */
-            page: number;
-            /** Per Page */
-            per_page: number;
-            /** Total Pages */
-            total_pages: number;
-        };
-        /** SubscriptionResponse */
-        SubscriptionResponse: {
-            /** Id */
-            id: string;
-            /** Empresa Id */
-            empresa_id: string;
-            /** Empresa Nombre */
-            empresa_nombre?: string | null;
-            plan: components["schemas"]["PlanResponse"];
-            /**
-             * Fecha Inicio
-             * Format: date
-             */
-            fecha_inicio: string;
-            /** Fecha Fin */
-            fecha_fin?: string | null;
-            /** Activo */
-            activo: boolean;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-        };
-        /** SubscriptionUpdateRequest */
-        SubscriptionUpdateRequest: {
-            /** Plan Id */
-            plan_id: string;
-            /**
-             * Fecha Inicio
-             * Format: date
-             */
-            fecha_inicio: string;
-            /** Fecha Fin */
-            fecha_fin?: string | null;
         };
         /** TokenPairSchema */
         TokenPairSchema: {
@@ -1465,7 +926,7 @@ export interface components {
             /** Id */
             id: string;
             /** Empresa Id */
-            empresa_id: string;
+            empresa_id: string | null;
             /** Nombre */
             nombre: string;
             /** Apellido */
@@ -1832,6 +1293,7 @@ export interface operations {
     list_audit_logs_api_v1_bitacora_get: {
         parameters: {
             query?: {
+                empresa_id?: string | null;
                 user_id?: string | null;
                 module?: string | null;
                 action?: string | null;
@@ -1868,7 +1330,9 @@ export interface operations {
     };
     get_audit_log_api_v1_bitacora__audit_log_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 audit_log_id: string;
@@ -1897,342 +1361,7 @@ export interface operations {
             };
         };
     };
-    listar_parametros_empresa_api_v1_empresa_parametros_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ParametroEmpresaResponse"][];
-                };
-            };
-        };
-    };
-    actualizar_parametro_empresa_api_v1_empresa_parametros__codigo__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                codigo: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ActualizarParametroEmpresaRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ParametroEmpresaResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_my_empresa_api_v1_mi_empresa_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EmpresaResponse"];
-                };
-            };
-        };
-    };
-    update_my_empresa_api_v1_mi_empresa_patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MiEmpresaUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EmpresaResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_my_subscription_api_v1_mi_empresa_suscripcion_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubscriptionResponse"];
-                };
-            };
-        };
-    };
-    list_my_parameters_api_v1_mi_empresa_parametros_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ParametroEmpresaResponse"][];
-                };
-            };
-        };
-    };
-    update_my_parameter_api_v1_mi_empresa_parametros__codigo__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                codigo: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ActualizarParametroEmpresaRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ParametroEmpresaResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    platform_login_api_v1_platform_auth_login_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlatformLoginRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlatformTokenResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    platform_refresh_api_v1_platform_auth_refresh_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlatformRefreshRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlatformTokenResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    platform_logout_api_v1_platform_auth_logout_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlatformRefreshRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    platform_me_api_v1_platform_auth_me_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlatformAdminResponse"];
-                };
-            };
-        };
-    };
-    platform_change_password_api_v1_platform_auth_password_change_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlatformChangePasswordRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MessageResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_empresas_api_v1_platform_empresas_get: {
+    list_empresas_api_v1_empresas_get: {
         parameters: {
             query?: {
                 search?: string | null;
@@ -2266,7 +1395,7 @@ export interface operations {
             };
         };
     };
-    provision_empresa_api_v1_platform_empresas_post: {
+    provision_empresa_api_v1_empresas_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2299,7 +1428,7 @@ export interface operations {
             };
         };
     };
-    get_empresa_api_v1_platform_empresas__empresa_id__get: {
+    get_empresa_api_v1_empresas__empresa_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2330,7 +1459,7 @@ export interface operations {
             };
         };
     };
-    update_empresa_api_v1_platform_empresas__empresa_id__patch: {
+    update_empresa_api_v1_empresas__empresa_id__patch: {
         parameters: {
             query?: never;
             header?: never;
@@ -2365,7 +1494,7 @@ export interface operations {
             };
         };
     };
-    activate_empresa_api_v1_platform_empresas__empresa_id__activar_patch: {
+    activate_empresa_api_v1_empresas__empresa_id__activar_patch: {
         parameters: {
             query?: never;
             header?: never;
@@ -2396,7 +1525,7 @@ export interface operations {
             };
         };
     };
-    suspend_empresa_api_v1_platform_empresas__empresa_id__suspender_patch: {
+    suspend_empresa_api_v1_empresas__empresa_id__suspender_patch: {
         parameters: {
             query?: never;
             header?: never;
@@ -2414,300 +1543,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EmpresaResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_planes_api_v1_platform_planes_get: {
-        parameters: {
-            query?: {
-                activo?: boolean | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanResponse"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_plan_api_v1_platform_planes_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlanCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_plan_api_v1_platform_planes__plan_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                plan_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_plan_api_v1_platform_planes__plan_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                plan_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlanUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_subscriptions_api_v1_platform_suscripciones_get: {
-        parameters: {
-            query?: {
-                activo?: boolean | null;
-                page?: number;
-                per_page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubscriptionPageResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_subscription_api_v1_platform_empresas__empresa_id__suscripcion_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                empresa_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubscriptionResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    replace_subscription_api_v1_platform_empresas__empresa_id__suscripcion_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                empresa_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SubscriptionUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubscriptionResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_platform_audit_api_v1_platform_bitacora_get: {
-        parameters: {
-            query?: {
-                module?: string | null;
-                action?: string | null;
-                page?: number;
-                per_page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlatformAuditPageResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_platform_audit_api_v1_platform_bitacora__audit_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                audit_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlatformAuditResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2723,7 +1558,9 @@ export interface operations {
     };
     list_roles_api_v1_roles_get: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2739,11 +1576,22 @@ export interface operations {
                     "application/json": components["schemas"]["RoleSchema"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     create_role_api_v1_roles_post: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2776,7 +1624,9 @@ export interface operations {
     };
     get_role_api_v1_roles__role_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 role_id: string;
@@ -2807,7 +1657,9 @@ export interface operations {
     };
     delete_role_api_v1_roles__role_id__delete: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 role_id: string;
@@ -2836,7 +1688,9 @@ export interface operations {
     };
     update_role_api_v1_roles__role_id__patch: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 role_id: string;
@@ -2871,7 +1725,9 @@ export interface operations {
     };
     assign_permissions_api_v1_roles__role_id__permissions_put: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 role_id: string;
@@ -2907,6 +1763,7 @@ export interface operations {
     listar_usuarios_api_v1_usuarios_get: {
         parameters: {
             query?: {
+                empresa_id?: string | null;
                 search?: string | null;
                 is_active?: boolean | null;
                 page?: number;
@@ -2973,7 +1830,9 @@ export interface operations {
     };
     obtener_usuario_api_v1_usuarios__usuario_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 usuario_id: string;
@@ -3004,7 +1863,9 @@ export interface operations {
     };
     actualizar_usuario_api_v1_usuarios__usuario_id__patch: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 usuario_id: string;
@@ -3039,7 +1900,9 @@ export interface operations {
     };
     activar_usuario_api_v1_usuarios__usuario_id__activar_patch: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 usuario_id: string;
@@ -3070,7 +1933,9 @@ export interface operations {
     };
     desactivar_usuario_api_v1_usuarios__usuario_id__desactivar_patch: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 usuario_id: string;
@@ -3101,7 +1966,9 @@ export interface operations {
     };
     cambiar_password_usuario_api_v1_usuarios__usuario_id__password_put: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 usuario_id: string;
@@ -3136,7 +2003,9 @@ export interface operations {
     };
     desbloquear_usuario_api_v1_usuarios__usuario_id__desbloquear_patch: {
         parameters: {
-            query?: never;
+            query?: {
+                empresa_id?: string | null;
+            };
             header?: never;
             path: {
                 usuario_id: string;

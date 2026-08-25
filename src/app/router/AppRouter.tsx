@@ -10,7 +10,6 @@ import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { BitacoraPage } from '../../features/bitacora/pages/BitacoraPage'
 import { AltaEmpresaPage } from '../../features/empresas/pages/AltaEmpresaPage'
-import { ParametrosLeyPage } from '../../features/empresas/pages/ParametrosLeyPage'
 import { RolesPage } from '../../features/roles/pages/RolesPage'
 import { ListadoUsuariosPage } from '../../features/usuarios/pages/ListadoUsuariosPage'
 import { FullPageStatus } from '../../shared/components/FullPageStatus'
@@ -31,5 +30,5 @@ const tenant = (page: ReactNode) => <RequireRealm realm="tenant">{page}</Require
 const platform = (page: ReactNode) => <RequireRealm realm="platform">{page}</RequireRealm>
 
 export function AppRouter() {
-  return <Routes><Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} /><Route path="/recuperar-clave" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} /><Route path="/restablecer-clave" element={<GuestOnly><ResetPasswordPage /></GuestOnly>} /><Route element={<ProtectedArea />}><Route index element={<DashboardPage />} /><Route path="cambiar-clave" element={<ChangePasswordPage />} /><Route path="usuarios" element={tenant(<ListadoUsuariosPage />)} /><Route path="roles" element={tenant(<RolesPage />)} /><Route path="parametros-ley" element={tenant(<ParametrosLeyPage />)} /><Route path="bitacora" element={tenant(<BitacoraPage />)} /><Route path="empresas" element={platform(<AltaEmpresaPage />)} /></Route><Route path="*" element={<Navigate to="/" replace />} /></Routes>
+  return <Routes><Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} /><Route path="/recuperar-clave" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} /><Route path="/restablecer-clave" element={<GuestOnly><ResetPasswordPage /></GuestOnly>} /><Route element={<ProtectedArea />}><Route index element={<DashboardPage />} /><Route path="cambiar-clave" element={<ChangePasswordPage />} /><Route path="usuarios" element={tenant(<ListadoUsuariosPage />)} /><Route path="roles" element={tenant(<RolesPage />)} /><Route path="bitacora" element={tenant(<BitacoraPage />)} /><Route path="empresas" element={platform(<AltaEmpresaPage />)} /></Route><Route path="*" element={<Navigate to="/" replace />} /></Routes>
 }

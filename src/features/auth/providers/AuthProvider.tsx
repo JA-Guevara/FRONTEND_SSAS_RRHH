@@ -6,44 +6,29 @@ import { AuthContext } from '../context/AuthContext'
 import type { LoginCredentials, Session, User } from '../context/AuthContext'
 import { tokenStorage } from '../storage/tokenStorage'
 
-type TenantUser = components['schemas']['UserSchema']
-type PlatformUser = components['schemas']['PlatformAdminResponse']
+type AuthUser = components['schemas']['UserSchema']
 let pendingRestore: Promise<{ session: Session; user: User }> | null = null
 
-function normalizeUser(raw: TenantUser | PlatformUser, session: Session): User {
-  if (session.realm === 'platform') {
-    const admin = raw as PlatformUser
-    return {
-      id: admin.id,
-      name: `${admin.nombre} ${admin.apellido}`.trim(),
-      email: admin.email,
-      username: admin.username,
-      roles: ['PLATFORM_ADMIN'],
-      realm: 'platform',
-      is_active: admin.activo,
-      email_verified: admin.email_verified,
-    }
-  }
-  const tenantUser = raw as TenantUser
+function normalizeUser(raw: AuthUser): User {
   return {
-    id: tenantUser.id,
-    name: tenantUser.name,
-    email: tenantUser.email,
-    username: tenantUser.username,
-    roles: tenantUser.roles ?? [],
-    realm: 'tenant',
-    is_active: tenantUser.is_active,
-    email_verified: tenantUser.email_verified,
-    must_change_password: tenantUser.must_change_password,
+    id: raw.id,
+    name: raw.name,
+    email: raw.email,
+    username: raw.username,
+    roles: raw.roles ?? [],
+    realm: raw.empresa_id ? 'tenant' : 'platform',
+    is_active: raw.is_active,
+    email_verified: raw.email_verified,
+    must_change_password: raw.must_change_password,
   }
 }
 
 function restoreStoredSession(session: Session) {
   if (!pendingRestore) {
-    pendingRestore = authApi.refresh(session).then(async (renewed) => ({
-      session: renewed,
-      user: normalizeUser(await authApi.getCurrentUser(renewed.realm, renewed.access_token), renewed),
-    })).finally(() => { pendingRestore = null })
+    pendingRestore = authApi.refresh(session).then(async (renewed) => {
+      const user = normalizeUser(await authApi.getCurrentUser(renewed.access_token))
+      return { session: { ...renewed, realm: user.realm }, user }
+    }).finally(() => { pendingRestore = null })
   }
   return pendingRestore
 }
@@ -84,12 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(credentials: LoginCredentials) {
     const newSession = await authApi.login(credentials)
-    const currentUser = normalizeUser(
-      await authApi.getCurrentUser(newSession.realm, newSession.access_token),
-      newSession,
-    )
-    tokenStorage.set(newSession)
-    setSession(newSession)
+    const currentUser = normalizeUser(await authApi.getCurrentUser(newSession.access_token))
+    const resolvedSession = { ...newSession, realm: currentUser.realm }
+    tokenStorage.set(resolvedSession)
+    setSession(resolvedSession)
     setUser(currentUser)
     setStatus('authenticated')
   }

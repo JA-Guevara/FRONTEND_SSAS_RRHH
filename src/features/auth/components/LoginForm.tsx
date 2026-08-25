@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import type { LoginCredentials } from '../context/AuthContext'
+import type { AuthRealm, LoginCredentials } from '../context/AuthContext'
 
-type Props = { onSubmit: (credentials: LoginCredentials) => Promise<void> }
+type Props = {
+  onRealmChange: (realm: AuthRealm) => void
+  onSubmit: (credentials: LoginCredentials) => Promise<void>
+  realm: AuthRealm
+}
 
-export function LoginForm({ onSubmit }: Props) {
-  const [realm, setRealm] = useState<LoginCredentials['realm']>('tenant')
+export function LoginForm({ onRealmChange, onSubmit, realm }: Props) {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -31,11 +34,11 @@ export function LoginForm({ onSubmit }: Props) {
   return (
     <form className="form-stack" onSubmit={handleSubmit}>
       <div className="realm-selector" role="group" aria-label="Tipo de acceso">
-        <button className={realm === 'tenant' ? 'selected' : ''} onClick={() => setRealm('tenant')} type="button">Empresa</button>
-        <button className={realm === 'platform' ? 'selected' : ''} onClick={() => setRealm('platform')} type="button">Plataforma</button>
+        <button className={realm === 'tenant' ? 'selected' : ''} onClick={() => onRealmChange('tenant')} type="button">Empresa</button>
+        <button className={realm === 'platform' ? 'selected' : ''} onClick={() => onRealmChange('platform')} type="button">Plataforma</button>
       </div>
       {realm === 'tenant' && (
-        <label>Identificador de empresa<input name="empresaSlug" placeholder="mi-empresa" pattern="[a-zA-Z0-9-]+" minLength={2} required /></label>
+        <label>Código de empresa<input name="empresaSlug" placeholder="mi-empresa" pattern="[a-zA-Z0-9-]+" minLength={2} required /></label>
       )}
       <label>{realm === 'platform' ? 'Usuario o correo' : 'Correo o usuario'}<input name="login" autoComplete="username" required /></label>
       <label>Contraseña<input name="password" type="password" autoComplete="current-password" minLength={8} required /></label>
