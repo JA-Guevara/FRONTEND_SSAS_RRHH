@@ -6,6 +6,7 @@ import { RegisterPage } from '../../features/auth/pages/RegisterPage.jsx'
 import { useAuth } from '../../features/auth/hooks/useAuth.js'
 import { BitacoraPage } from '../../features/bitacora/pages/BitacoraPage.jsx'
 import { FullPageStatus } from '../../shared/components/FullPageStatus.jsx'
+import { UsuariosPage } from '../../features/usuarios/pages/UsuariosPage.jsx'
 
 function ProtectedArea() {
   const { status } = useAuth()
@@ -27,6 +28,7 @@ export function AppRouter() {
       <Route element={<ProtectedArea />}>
         <Route index element={<DashboardPage />} />
         <Route path="bitacora" element={<BitacoraPage />} />
+        <Route path="usuarios" element={<UsuariosPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
