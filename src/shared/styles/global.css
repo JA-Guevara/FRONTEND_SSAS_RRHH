@@ -49,6 +49,16 @@ h2 { letter-spacing: -0.025em; }
 .form-stack input { width: 100%; border: 1px solid var(--line); border-radius: 0.65rem; padding: 0.8rem 0.9rem; color: var(--ink); background: var(--surface); outline: none; }
 .form-stack input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(23, 107, 75, 0.12); }
 .form-error { margin: 0; border-radius: 0.55rem; padding: 0.7rem 0.85rem; color: var(--danger); background: #fef3f2; font-size: 0.88rem; }
+.company-form { display: grid; gap: 1.25rem; max-width: 900px; }
+.form-section { min-width: 0; border: 1px solid var(--line); border-radius: 1rem; padding: 1.5rem; background: var(--paper); box-shadow: var(--shadow); }
+.form-section legend { padding-inline: 0.4rem; color: var(--brand-dark); font-size: 1.15rem; font-weight: 800; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem; }
+.form-grid label { display: grid; gap: 0.45rem; font-size: 0.88rem; font-weight: 700; }
+.field-error { color: var(--danger); font-size: 0.8rem; font-weight: 500; }
+.form-grid input { width: 100%; border: 1px solid var(--line); border-radius: 0.65rem; padding: 0.8rem 0.9rem; color: var(--ink); background: var(--surface); outline: none; }
+.form-grid input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(23, 107, 75, 0.12); }
+.form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 1rem; }
+.form-actions .success-message { margin: 0; padding: 0.7rem 0.85rem; }
 .auth-link { margin-top: 1.5rem; color: var(--muted); font-size: 0.9rem; text-align: center; }
 .success-message { border: 1px solid #b7d9c8; border-radius: 0.85rem; padding: 1.25rem; background: #effaf4; }
 .success-message .button { margin-top: 0.5rem; }
@@ -121,7 +131,13 @@ td strong, td small { display: block; } td small { margin-top: .25rem; color: va
   .auth-brand { min-height: 300px; padding: 1.5rem; }
   .auth-brand h1 { font-size: 2.5rem; }
   .auth-panel, .main-content { padding: 1.5rem; }
+<<<<<<< HEAD
   .audit-filters, .audit-detail { grid-template-columns: 1fr; }.audit-detail small { grid-column: auto; }
+=======
+  .form-grid { grid-template-columns: 1fr; }
+  .form-actions { align-items: stretch; flex-direction: column; }
+  .form-actions .button { width: 100%; }
+>>>>>>> 52f4ca0be4c097fab5c33b16e11918bb28f3b650
 }
 
 @media (prefers-reduced-motion: reduce) {

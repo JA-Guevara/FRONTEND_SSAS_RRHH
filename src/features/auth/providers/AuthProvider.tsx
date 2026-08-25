@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { authApi } from '../api/authApi.js'
-import { AuthContext } from '../context/AuthContext.js'
-import { tokenStorage } from '../storage/tokenStorage.js'
+import type { ReactNode } from 'react'
+import { authApi } from '../api/authApi'
+import { AuthContext } from '../context/AuthContext.ts'
+import type { Session, User } from '../context/AuthContext.ts'
+import { tokenStorage } from '../storage/tokenStorage'
 
-let pendingRestore = null
+let pendingRestore: Promise<{ session: Session; user: User }> | null = null
 
-function restoreStoredSession(session) {
+function restoreStoredSession(session: Session) {
   if (!pendingRestore) {
     pendingRestore = authApi.refresh(session.refresh_token)
       .then(async (renewed) => ({
@@ -17,10 +19,10 @@ function restoreStoredSession(session) {
   return pendingRestore
 }
 
-export function AuthProvider({ children }) {
-  const [session, setSession] = useState(() => tokenStorage.get())
-  const [user, setUser] = useState(null)
-  const [status, setStatus] = useState('loading')
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState<Session | null>(() => tokenStorage.get())
+  const [user, setUser] = useState<User | null>(null)
+  const [status, setStatus] = useState<'loading' | 'anonymous' | 'authenticated'>('loading')
 
   useEffect(() => {
     let active = true
@@ -52,7 +54,7 @@ export function AuthProvider({ children }) {
     return () => { active = false }
   }, [session, status])
 
-  async function login(credentials) {
+  async function login(credentials: { email: string; password: string }) {
     const newSession = await authApi.login(credentials)
     const currentUser = await authApi.getCurrentUser(newSession.access_token)
     tokenStorage.set(newSession)
@@ -61,7 +63,7 @@ export function AuthProvider({ children }) {
     setStatus('authenticated')
   }
 
-  async function register(data) {
+  async function register(data: unknown) {
     await authApi.register(data)
   }
 

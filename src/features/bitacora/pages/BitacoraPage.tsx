@@ -18,11 +18,15 @@ function formatValue(value) {
 }
 
 export function BitacoraPage() {
+<<<<<<< HEAD:src/features/bitacora/pages/BitacoraPage.jsx
   const { accessToken } = useAuth()
   const [entries, setEntries] = useState(sampleEntries)
   const [filters, setFilters] = useState({ user: '', entity: '', action: '', from: '', to: '' })
   const [expandedId, setExpandedId] = useState(null)
   const [serviceStatus, setServiceStatus] = useState('checking')
+=======
+  const [serviceStatus, setServiceStatus] = useState<'checking' | 'available' | 'unavailable'>('checking')
+>>>>>>> 52f4ca0be4c097fab5c33b16e11918bb28f3b650:src/features/bitacora/pages/BitacoraPage.tsx
 
   useEffect(() => {
     let active = true

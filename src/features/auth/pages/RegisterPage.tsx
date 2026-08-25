@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AuthShell } from '../components/AuthShell.jsx'
-import { RegisterForm } from '../components/RegisterForm.jsx'
-import { useAuth } from '../hooks/useAuth.js'
+import { AuthShell } from '../components/AuthShell.tsx'
+import { RegisterForm } from '../components/RegisterForm.tsx'
+import { useAuth } from '../hooks/useAuth.tsx'
 
 export function RegisterPage() {
   const { register } = useAuth()
   const [registered, setRegistered] = useState(false)
 
-  async function handleRegister(data) {
+  async function handleRegister(data: unknown) {
     await register(data)
     setRegistered(true)
   }
