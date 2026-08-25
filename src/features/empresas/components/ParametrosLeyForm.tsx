@@ -1,101 +1,42 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
+import type { components } from '../../../shared/api/schema'
+import { empresasApi } from '../api/empresasApi'
 
-type Parametro = {
-  codigo: string
-  nombre: string
-  valor: string
-}
-
-const PARAMETROS_INICIALES: Parametro[] = [
-  { codigo: 'SMN', nombre: 'Salario mínimo nacional', valor: '2500.00' },
-  { codigo: 'APORTE_AFP_JUB', nombre: 'Aporte laboral jubilación (%)', valor: '10.00' },
-  { codigo: 'APORTE_RIESGO', nombre: 'Aporte riesgo común (%)', valor: '1.71' },
-  { codigo: 'PATRONAL_CNS', nombre: 'Aporte patronal salud (%)', valor: '10.00' },
-  { codigo: 'DIAS_MES', nombre: 'Días base del mes', valor: '30' },
-]
+type Parameter = components['schemas']['ParametroEmpresaResponse']
 
 export function ParametrosLeyForm() {
-  const [params, setParams] = useState<Parametro[]>(PARAMETROS_INICIALES)
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [parameters, setParameters] = useState<Parameter[]>([])
+  const [values, setValues] = useState<Record<string, string>>({})
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const [message, setMessage] = useState('')
 
-  function handleChange(codigo: string, valor: string) {
-    setParams((prev) => prev.map((p) => (p.codigo === codigo ? { ...p, valor } : p)))
-    setErrors((prev) => ({ ...prev, [codigo]: '' }))
-    setSuccess(null)
+  async function load() {
+    setStatus('loading')
+    try {
+      const data = await empresasApi.listParameters()
+      setParameters(data)
+      setValues(Object.fromEntries(data.map((item) => [item.codigo, item.valor ?? ''])))
+      setStatus('success')
+    } catch { setStatus('error') }
+  }
+  useEffect(() => { void load() }, [])
+
+  async function save(parameter: Parameter) {
+    const value = values[parameter.codigo]?.trim() ?? ''
+    if (!value || Number.isNaN(Number(value))) { setMessage('El valor debe ser numérico.'); return }
+    try {
+      await empresasApi.updateParameter(parameter.codigo, {
+        valor: value,
+        vigente_desde: parameter.vigente_desde ?? new Date().toISOString().slice(0, 10),
+        vigente_hasta: parameter.vigente_hasta,
+        norma_legal: parameter.norma_legal,
+      })
+      setMessage(`${parameter.nombre} actualizado correctamente.`)
+      await load()
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo guardar') }
   }
 
-  function validate(): boolean {
-    const next: Record<string, string> = {}
-    for (const p of params) {
-      if (!p.valor.trim()) {
-        next[p.codigo] = 'Obligatorio'
-      } else if (Number.isNaN(Number(p.valor))) {
-        next[p.codigo] = 'Debe ser numérico'
-      } else if (Number(p.valor) < 0) {
-        next[p.codigo] = 'No puede ser negativo'
-      }
-    }
-    setErrors(next)
-    return Object.keys(next).length === 0
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setSuccess(null)
-    if (!validate()) return
-
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 700)) // mock
-    setLoading(false)
-    setSuccess('Parámetros de ley guardados correctamente')
-  }
-
-  return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 640, display: 'grid', gap: 14 }}>
-      {params.map((p) => (
-        <div key={p.codigo}>
-          <label style={{ display: 'block', fontWeight: 500, marginBottom: 4 }}>
-            {p.nombre} <span style={{ color: '#6b7280' }}>({p.codigo})</span>
-          </label>
-          <input
-            value={p.valor}
-            onChange={(e) => handleChange(p.codigo, e.target.value)}
-            style={{
-              width: '100%',
-              padding: '8px 10px',
-              border: errors[p.codigo] ? '1px solid #dc2626' : '1px solid #d1d5db',
-              borderRadius: 6,
-            }}
-          />
-          {errors[p.codigo] && (
-            <p style={{ color: '#dc2626', fontSize: 13, margin: '4px 0 0' }}>{errors[p.codigo]}</p>
-          )}
-        </div>
-      ))}
-
-      {success && (
-        <p style={{ color: '#166534', background: '#dcfce7', padding: 10, borderRadius: 6 }}>
-          {success}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={loading}
-        style={{
-          padding: '10px 16px',
-          background: loading ? '#93c5fd' : '#2563eb',
-          color: 'white',
-          border: 'none',
-          borderRadius: 6,
-          cursor: loading ? 'not-allowed' : 'pointer',
-          fontWeight: 600,
-        }}
-      >
-        {loading ? 'Guardando...' : 'Guardar parámetros'}
-      </button>
-    </form>
-  )
+  if (status === 'loading') return <p>Cargando parámetros…</p>
+  if (status === 'error') return <p className="form-error">No se pudieron consultar los parámetros.</p>
+  return <div className="panel">{message && <p className="notice">{message}</p>}<div className="permission-list">{parameters.map((parameter) => <div className="permission-row" key={parameter.codigo}><div><strong>{parameter.nombre}</strong><small>{parameter.codigo} · {parameter.norma_legal ?? 'Sin norma registrada'}</small></div><div className="row-actions"><input aria-label={`Valor de ${parameter.nombre}`} value={values[parameter.codigo] ?? ''} onChange={(e) => setValues({ ...values, [parameter.codigo]: e.target.value })} /><button onClick={() => void save(parameter)} type="button">Guardar</button></div></div>)}</div>{parameters.length === 0 && <div className="empty-table">No hay parámetros configurados.</div>}</div>
 }

@@ -1,6 +1,6 @@
 import { tokenStorage } from '../../features/auth/storage/tokenStorage'
 
-const API_URL = import.meta.env.VITE_API_URL ?? ''
+const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 
 export class ApiError extends Error {
   status: number
@@ -17,16 +17,17 @@ type ApiRequestOptions = {
   body?: unknown
   headers?: Record<string, string>
   method?: string
+  skipAuth?: boolean
 }
 
 export async function apiRequest<T = unknown>(
   path: string,
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const { accessToken, body, headers, ...requestOptions } = options
+  const { accessToken, body, headers, skipAuth = false, ...requestOptions } = options
 
   const session = tokenStorage.get()
-  const token = accessToken ?? session?.access_token ?? null
+  const token = skipAuth ? null : (accessToken ?? session?.access_token ?? null)
 
   const response = await fetch(`${API_URL}${path}`, {
     ...requestOptions,
@@ -44,16 +45,20 @@ export async function apiRequest<T = unknown>(
       ? null
       : await response.json().catch(() => null)
 
-  const detail =
-    data &&
-    typeof data === 'object' &&
-    'detail' in data &&
-    typeof (data as { detail: unknown }).detail === 'string'
-      ? (data as { detail: string }).detail
-      : null
+  let detail: string | null = null
+  if (data && typeof data === 'object' && 'detail' in data) {
+    const rawDetail = (data as { detail: unknown }).detail
+    if (typeof rawDetail === 'string') detail = rawDetail
+    if (Array.isArray(rawDetail)) {
+      detail = rawDetail
+        .map((item) => item && typeof item === 'object' && 'msg' in item ? String(item.msg) : '')
+        .filter(Boolean)
+        .join('. ')
+    }
+  }
 
   // Manejo del 401: limpia sesión y redirige al login
-  if (response.status === 401) {
+  if (response.status === 401 && !skipAuth) {
     tokenStorage.clear()
     if (window.location.pathname !== '/login') {
       window.location.href = '/login'

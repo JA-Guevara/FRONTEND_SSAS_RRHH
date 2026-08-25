@@ -1,126 +1,44 @@
-import { useState, type FormEvent } from 'react'
-import { crearEmpresa, type EmpresaFormData } from '../api/empresasApi'
+import { useEffect, useState, type FormEvent } from 'react'
+import type { components } from '../../../shared/api/schema'
+import { empresasApi } from '../api/empresasApi'
 
-const initialForm: EmpresaFormData = {
-  razon_social: '',
-  nombre_comercial: '',
-  nit: '',
-  direccion: '',
-  ciudad: '',
-  telefono: '',
-  email: '',
-}
+type Plan = components['schemas']['PlanResponse']
 
-type FieldErrors = Partial<Record<keyof EmpresaFormData, string>>
+export function AltaEmpresaForm({ onCreated }: { onCreated: () => void }) {
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [message, setMessage] = useState('')
+  useEffect(() => { empresasApi.listPlans().then(setPlans).catch(() => setMessage('No se pudieron cargar los planes.')) }, [])
 
-function validate(data: EmpresaFormData): FieldErrors {
-  const errors: FieldErrors = {}
-
-  if (!data.razon_social.trim()) errors.razon_social = 'La razón social es obligatoria'
-  if (!data.nombre_comercial.trim()) errors.nombre_comercial = 'El nombre comercial es obligatorio'
-  if (!data.nit.trim()) errors.nit = 'El NIT es obligatorio'
-  else if (!/^\d{5,20}$/.test(data.nit.trim())) errors.nit = 'El NIT debe tener entre 5 y 20 dígitos'
-
-  if (!data.direccion.trim()) errors.direccion = 'La dirección es obligatoria'
-  if (!data.ciudad.trim()) errors.ciudad = 'La ciudad es obligatoria'
-
-  if (!data.telefono.trim()) errors.telefono = 'El teléfono es obligatorio'
-  else if (!/^\d{7,15}$/.test(data.telefono.trim())) errors.telefono = 'Teléfono inválido'
-
-  if (!data.email.trim()) errors.email = 'El email es obligatorio'
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) errors.email = 'Email inválido'
-
-  return errors
-}
-
-export function AltaEmpresaForm() {
-  const [form, setForm] = useState<EmpresaFormData>(initialForm)
-  const [errors, setErrors] = useState<FieldErrors>({})
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState<string | null>(null)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
-
-  function handleChange(field: keyof EmpresaFormData, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }))
-    setErrors((prev) => ({ ...prev, [field]: undefined }))
-    setSuccess(null)
-    setErrorMsg(null)
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setSuccess(null)
-    setErrorMsg(null)
-
-    const validationErrors = validate(form)
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
-    }
-
-    setLoading(true)
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = new FormData(event.currentTarget)
     try {
-      const result = await crearEmpresa(form)
-      setSuccess(result.message)
-      setForm(initialForm)
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'No se pudo guardar la empresa')
-    } finally {
-      setLoading(false)
-    }
+      await empresasApi.provision({
+        empresa: {
+          razon_social: String(form.get('razon_social')),
+          nombre_comercial: String(form.get('nombre_comercial')),
+          slug: String(form.get('slug')),
+          nit: String(form.get('nit') || '') || null,
+          email: String(form.get('empresa_email') || '') || null,
+          telefono: String(form.get('telefono') || '') || null,
+          ciudad: String(form.get('ciudad') || '') || null,
+          direccion: String(form.get('direccion') || '') || null,
+        },
+        plan_id: String(form.get('plan_id')),
+        fecha_inicio: String(form.get('fecha_inicio')),
+        administrador: {
+          nombre: String(form.get('admin_nombre')),
+          apellido: String(form.get('admin_apellido')),
+          email: String(form.get('admin_email')),
+          username: String(form.get('admin_username')),
+          password: String(form.get('admin_password')),
+        },
+      })
+      event.currentTarget.reset()
+      setMessage('Empresa y administrador creados correctamente.')
+      onCreated()
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo crear la empresa') }
   }
 
-  return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 560, display: 'grid', gap: 12 }}>
-      {(Object.keys(initialForm) as (keyof EmpresaFormData)[]).map((field) => (
-        <div key={field}>
-          <label style={{ display: 'block', marginBottom: 4, fontWeight: 500 }}>
-            {field.replaceAll('_', ' ')}
-          </label>
-          <input
-            value={form[field]}
-            onChange={(e) => handleChange(field, e.target.value)}
-            style={{
-              width: '100%',
-              padding: '8px 10px',
-              border: errors[field] ? '1px solid #dc2626' : '1px solid #d1d5db',
-              borderRadius: 6,
-            }}
-          />
-          {errors[field] && (
-            <p style={{ color: '#dc2626', fontSize: 13, margin: '4px 0 0' }}>{errors[field]}</p>
-          )}
-        </div>
-      ))}
-
-      {errorMsg && (
-        <p style={{ color: '#dc2626', background: '#fef2f2', padding: 10, borderRadius: 6 }}>
-          {errorMsg}
-        </p>
-      )}
-
-      {success && (
-        <p style={{ color: '#166534', background: '#dcfce7', padding: 10, borderRadius: 6 }}>
-          {success}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={loading}
-        style={{
-          marginTop: 8,
-          padding: '10px 16px',
-          background: loading ? '#93c5fd' : '#2563eb',
-          color: 'white',
-          border: 'none',
-          borderRadius: 6,
-          cursor: loading ? 'not-allowed' : 'pointer',
-          fontWeight: 600,
-        }}
-      >
-        {loading ? 'Guardando...' : 'Registrar empresa'}
-      </button>
-    </form>
-  )
+  return <form className="company-form" onSubmit={submit}>{message && <p className="notice">{message}</p>}<fieldset className="form-section"><legend>Empresa</legend><div className="form-grid"><label>Razón social<input name="razon_social" required /></label><label>Nombre comercial<input name="nombre_comercial" required /></label><label>Slug<input name="slug" pattern="[a-zA-Z0-9-]+" required /></label><label>NIT<input name="nit" /></label><label>Correo<input name="empresa_email" type="email" /></label><label>Teléfono<input name="telefono" /></label><label>Ciudad<input name="ciudad" /></label><label>Dirección<input name="direccion" /></label><label>Plan<select name="plan_id" required><option value="">Seleccionar</option>{plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.nombre}</option>)}</select></label><label>Fecha de inicio<input name="fecha_inicio" type="date" defaultValue={new Date().toISOString().slice(0, 10)} required /></label></div></fieldset><fieldset className="form-section"><legend>Administrador inicial</legend><div className="form-grid"><label>Nombre<input name="admin_nombre" required /></label><label>Apellido<input name="admin_apellido" required /></label><label>Correo<input name="admin_email" type="email" required /></label><label>Usuario<input name="admin_username" minLength={3} required /></label><label>Contraseña temporal<input name="admin_password" type="password" minLength={12} maxLength={72} required /></label></div></fieldset><button className="button button-primary" type="submit">Crear empresa</button></form>
 }

@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import type { LoginCredentials } from '../context/AuthContext'
 
-type LoginFormProps = { onSubmit: (credentials: { email: string; password: string }) => Promise<void> }
+type Props = { onSubmit: (credentials: LoginCredentials) => Promise<void> }
 
-export function LoginForm({ onSubmit }: LoginFormProps) {
+export function LoginForm({ onSubmit }: Props) {
+  const [realm, setRealm] = useState<LoginCredentials['realm']>('tenant')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -13,7 +15,12 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
     setSubmitting(true)
     const form = new FormData(event.currentTarget)
     try {
-      await onSubmit({ email: String(form.get('email') ?? ''), password: String(form.get('password') ?? '') })
+      await onSubmit({
+        realm,
+        empresaSlug: realm === 'tenant' ? String(form.get('empresaSlug') ?? '') : undefined,
+        login: String(form.get('login') ?? ''),
+        password: String(form.get('password') ?? ''),
+      })
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'No se pudo iniciar sesión')
     } finally {
@@ -23,7 +30,14 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 
   return (
     <form className="form-stack" onSubmit={handleSubmit}>
-      <label>Correo electrónico<input name="email" type="email" autoComplete="email" required /></label>
+      <div className="realm-selector" role="group" aria-label="Tipo de acceso">
+        <button className={realm === 'tenant' ? 'selected' : ''} onClick={() => setRealm('tenant')} type="button">Empresa</button>
+        <button className={realm === 'platform' ? 'selected' : ''} onClick={() => setRealm('platform')} type="button">Plataforma</button>
+      </div>
+      {realm === 'tenant' && (
+        <label>Identificador de empresa<input name="empresaSlug" placeholder="mi-empresa" pattern="[a-zA-Z0-9-]+" minLength={2} required /></label>
+      )}
+      <label>{realm === 'platform' ? 'Usuario o correo' : 'Correo o usuario'}<input name="login" autoComplete="username" required /></label>
       <label>Contraseña<input name="password" type="password" autoComplete="current-password" minLength={8} required /></label>
       {error && <p className="form-error" role="alert">{error}</p>}
       <button className="button button-primary" disabled={submitting} type="submit">

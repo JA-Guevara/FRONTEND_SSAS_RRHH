@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom'
-import { AuthShell } from '../components/AuthShell.tsx'
-import { LoginForm } from '../components/LoginForm.tsx'
-import { useAuth } from '../hooks/useAuth.tsx'
+import { AuthShell } from '../components/AuthShell'
+import { LoginForm } from '../components/LoginForm'
+import { useAuth } from '../hooks/useAuth'
 
 export function LoginPage() {
   const { login } = useAuth()
   return (
-    <AuthShell title="Bienvenido de nuevo" description="Ingresá con las credenciales de tu organización.">
+    <AuthShell title="Bienvenido" description="Seleccioná tu tipo de acceso e ingresá tus credenciales.">
       <LoginForm onSubmit={login} />
-      <p className="auth-link">¿Todavía no tenés una cuenta? <Link to="/registro">Crear cuenta</Link></p>
+      <p className="auth-link"><Link to="/recuperar-clave">¿Olvidaste tu contraseña?</Link></p>
     </AuthShell>
   )
 }

@@ -5,10 +5,10 @@ type AuthShellProps = { children: ReactNode; description: string; title: string 
 export function AuthShell({ children, description, title }: AuthShellProps) {
   return (
     <main className="auth-page">
-      <section className="auth-brand" aria-label="SSAH Recursos Humanos">
+      <section className="auth-brand" aria-label="SSAS Recursos Humanos">
         <div className="brand-mark" aria-hidden="true">S</div>
         <div>
-          <p className="eyebrow">SSAH</p>
+          <p className="eyebrow">SSAS</p>
           <h1>Personas que hacen avanzar organizaciones.</h1>
           <p>Gestión de recursos humanos clara, segura y preparada para crecer.</p>
         </div>
