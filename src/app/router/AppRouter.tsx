@@ -12,6 +12,7 @@ import { BitacoraPage } from '../../features/bitacora/pages/BitacoraPage'
 import { AltaEmpresaPage } from '../../features/empresas/pages/AltaEmpresaPage'
 import { RolesPage } from '../../features/roles/pages/RolesPage'
 import { ListadoUsuariosPage } from '../../features/usuarios/pages/ListadoUsuariosPage'
+import { OrganizacionPage } from '../../features/organizacion/pages/OrganizacionPage'
 import { FullPageStatus } from '../../shared/components/FullPageStatus'
 
 function ProtectedArea() {
@@ -30,5 +31,24 @@ const tenant = (page: ReactNode) => <RequireRealm realm="tenant">{page}</Require
 const platform = (page: ReactNode) => <RequireRealm realm="platform">{page}</RequireRealm>
 
 export function AppRouter() {
-  return <Routes><Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} /><Route path="/recuperar-clave" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} /><Route path="/restablecer-clave" element={<GuestOnly><ResetPasswordPage /></GuestOnly>} /><Route element={<ProtectedArea />}><Route index element={<DashboardPage />} /><Route path="cambiar-clave" element={<ChangePasswordPage />} /><Route path="usuarios" element={tenant(<ListadoUsuariosPage />)} /><Route path="roles" element={tenant(<RolesPage />)} /><Route path="bitacora" element={tenant(<BitacoraPage />)} /><Route path="empresas" element={platform(<AltaEmpresaPage />)} /></Route><Route path="*" element={<Navigate to="/" replace />} /></Routes>
+  return (
+    <Routes>
+      <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
+      <Route path="/recuperar-clave" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} />
+      <Route path="/restablecer-clave" element={<GuestOnly><ResetPasswordPage /></GuestOnly>} />
+
+      <Route element={<ProtectedArea />}>
+        <Route index element={<DashboardPage />} />
+        <Route path="cambiar-clave" element={<ChangePasswordPage />} />
+        <Route path="usuarios" element={tenant(<ListadoUsuariosPage />)} />
+        <Route path="roles" element={tenant(<RolesPage />)} />
+        <Route path="bitacora" element={tenant(<BitacoraPage />)} />
+        <Route path="empresas" element={platform(<AltaEmpresaPage />)} />
+        <Route path="organizacion" element={tenant(<OrganizacionPage />)} />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
 }
+/* 3d2f841 (feat: T1-11 CRUD departamentos y cargos)*/
