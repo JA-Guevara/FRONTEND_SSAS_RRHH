@@ -13,6 +13,7 @@ import { AltaEmpresaPage } from '../../features/empresas/pages/AltaEmpresaPage'
 import { RolesPage } from '../../features/roles/pages/RolesPage'
 import { ListadoUsuariosPage } from '../../features/usuarios/pages/ListadoUsuariosPage'
 import { OrganizacionPage } from '../../features/organizacion/pages/OrganizacionPage'
+import { VacanteFormPage } from '../../features/vacantes/pages/VacanteFormPage'
 import { FullPageStatus } from '../../shared/components/FullPageStatus'
 
 function ProtectedArea() {
@@ -37,6 +38,10 @@ export function AppRouter() {
       <Route path="/recuperar-clave" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} />
       <Route path="/restablecer-clave" element={<GuestOnly><ResetPasswordPage /></GuestOnly>} />
 
+      {/* Temporal: probar T1-13 sin login */}
+      <Route path="/vacantes/nueva" element={<VacanteFormPage />} />
+      <Route path="/vacantes/:id/editar" element={<VacanteFormPage />} />
+
       <Route element={<ProtectedArea />}>
         <Route index element={<DashboardPage />} />
         <Route path="cambiar-clave" element={<ChangePasswordPage />} />
@@ -45,6 +50,8 @@ export function AppRouter() {
         <Route path="bitacora" element={tenant(<BitacoraPage />)} />
         <Route path="empresas" element={platform(<AltaEmpresaPage />)} />
         <Route path="organizacion" element={tenant(<OrganizacionPage />)} />
+        <Route path="vacantes/nueva" element={tenant(<VacanteFormPage />)} />
+        <Route path="vacantes/:id/editar" element={tenant(<VacanteFormPage />)} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

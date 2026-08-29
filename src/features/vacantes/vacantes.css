@@ -1,0 +1,94 @@
+.vac-page {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #22332B;
+  background: #EEF4EC;
+  min-height: 100%;
+  padding: 24px;
+}
+
+.vac-page h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: 34px;
+  margin: 0 0 6px;
+}
+
+.vac-eyebrow {
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #6E8E7B;
+}
+
+.vac-sub { color: #66766D; margin: 0 0 16px; }
+
+.vac-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(22,56,43,.08), 0 8px 24px rgba(22,56,43,.06);
+  padding: 18px;
+  max-width: 860px;
+}
+
+.vac-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+.vac-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #41544A;
+  margin: 10px 0 4px;
+}
+
+.vac-label i { color: #B0483C; font-style: normal; }
+
+.vac-input, .vac-select, .vac-textarea {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #E1E9E0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: 13px 'Segoe UI', sans-serif;
+}
+
+.vac-input.error, .vac-select.error, .vac-textarea.error {
+  border-color: #B0483C;
+}
+
+.vac-error { color: #B0483C; font-size: 12px; margin-top: 4px; }
+.vac-ok { background: #DEF2E4; color: #17845A; padding: 8px 12px; border-radius: 8px; margin-top: 12px; }
+.vac-bad { background: #FBE4E1; color: #B0483C; padding: 8px 12px; border-radius: 8px; margin-top: 12px; }
+
+.vac-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.vac-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+
+.vac-btn {
+  background: #17845A;
+  color: #fff;
+  border: none;
+  border-radius: 11px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vac-btn.sec {
+  background: #fff;
+  color: #17845A;
+  border: 1.5px solid #17845A;
+}
+
+@media (max-width: 800px) {
+  .vac-grid { grid-template-columns: 1fr; }
+  .vac-page h1 { font-size: 26px; }
+}
