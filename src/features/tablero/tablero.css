@@ -1,0 +1,89 @@
+.tb-page {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #22332B;
+  background: #EEF4EC;
+  min-height: 100%;
+  padding: 24px;
+}
+
+.tb-page h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: 32px;
+  margin: 0 0 6px;
+}
+
+.tb-eyebrow {
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #6E8E7B;
+}
+
+.tb-sub { color: #66766D; margin: 0 0 16px; }
+
+.tb-board {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.tb-col {
+  min-width: 220px;
+  background: #E7EFE6;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.tb-col h4 {
+  font: 600 12px 'Segoe UI', sans-serif;
+  color: #41544A;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 8px;
+}
+
+.tb-count {
+  background: #fff;
+  border-radius: 8px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.tb-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(22,56,43,.1);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  cursor: grab;
+}
+
+.tb-card b { display: block; }
+.tb-card small { color: #66766D; }
+
+.tb-moves {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.tb-moves button {
+  background: #fff;
+  border: 1px solid #E1E9E0;
+  color: #17845A;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 7px;
+  cursor: pointer;
+}
+
+.tb-col.over { outline: 2px dashed #17845A; }
+
+@media (max-width: 800px) {
+  .tb-page h1 { font-size: 24px; }
+}
