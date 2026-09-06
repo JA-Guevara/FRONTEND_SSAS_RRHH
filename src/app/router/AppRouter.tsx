@@ -15,6 +15,7 @@ import { ListadoUsuariosPage } from '../../features/usuarios/pages/ListadoUsuari
 import { OrganizacionPage } from '../../features/organizacion/pages/OrganizacionPage'
 import { VacanteFormPage } from '../../features/vacantes/pages/VacanteFormPage'
 import { TableroPage } from '../../features/tablero/pages/TableroPage'
+import { PortalPublicoPage } from '../../features/portal/pages/PortalPublicoPage'
 import { FullPageStatus } from '../../shared/components/FullPageStatus'
 
 function ProtectedArea() {
@@ -39,7 +40,10 @@ export function AppRouter() {
       <Route path="/recuperar-clave" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} />
       <Route path="/restablecer-clave" element={<GuestOnly><ResetPasswordPage /></GuestOnly>} />
 
-      {/* Temporal: probar sin login */}
+      {/* Portal público: sin sesión */}
+      <Route path="/publico/:slug" element={<PortalPublicoPage />} />
+
+      {/* Temporal: probar pantallas internas sin login */}
       <Route path="/vacantes/nueva" element={<VacanteFormPage />} />
       <Route path="/vacantes/:id/editar" element={<VacanteFormPage />} />
       <Route path="/vacantes/:id/tablero" element={<TableroPage />} />
