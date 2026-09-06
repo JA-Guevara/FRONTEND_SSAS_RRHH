@@ -13,6 +13,7 @@ import { AltaEmpresaPage } from '../../features/empresas/pages/AltaEmpresaPage'
 import { RolesPage } from '../../features/roles/pages/RolesPage'
 import { ListadoUsuariosPage } from '../../features/usuarios/pages/ListadoUsuariosPage'
 import { OrganizacionPage } from '../../features/organizacion/pages/OrganizacionPage'
+import { VacantesListPage } from '../../features/vacantes/pages/VacantesListPage'
 import { VacanteFormPage } from '../../features/vacantes/pages/VacanteFormPage'
 import { TableroPage } from '../../features/tablero/pages/TableroPage'
 import { FullPageStatus } from '../../shared/components/FullPageStatus'
@@ -39,11 +40,6 @@ export function AppRouter() {
       <Route path="/recuperar-clave" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} />
       <Route path="/restablecer-clave" element={<GuestOnly><ResetPasswordPage /></GuestOnly>} />
 
-      {/* Temporal: probar sin login */}
-      <Route path="/vacantes/nueva" element={<VacanteFormPage />} />
-      <Route path="/vacantes/:id/editar" element={<VacanteFormPage />} />
-      <Route path="/vacantes/:id/tablero" element={<TableroPage />} />
-
       <Route element={<ProtectedArea />}>
         <Route index element={<DashboardPage />} />
         <Route path="cambiar-clave" element={<ChangePasswordPage />} />
@@ -52,13 +48,14 @@ export function AppRouter() {
         <Route path="bitacora" element={tenant(<BitacoraPage />)} />
         <Route path="empresas" element={platform(<AltaEmpresaPage />)} />
         <Route path="organizacion" element={tenant(<OrganizacionPage />)} />
+        <Route path="vacantes" element={tenant(<VacantesListPage />)} />
         <Route path="vacantes/nueva" element={tenant(<VacanteFormPage />)} />
         <Route path="vacantes/:id/editar" element={tenant(<VacanteFormPage />)} />
         <Route path="vacantes/:id/tablero" element={tenant(<TableroPage />)} />
+        <Route path="vacantes/tablero" element={tenant(<TableroPage />)} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
-/* 3d2f841 (feat: T1-11 CRUD departamentos y cargos)*/
