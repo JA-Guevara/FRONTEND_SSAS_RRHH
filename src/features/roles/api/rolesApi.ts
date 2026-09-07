@@ -4,7 +4,7 @@ import type { components } from '../../../shared/api/schema'
 type Role = components['schemas']['RoleSchema']
 
 export const rolesApi = {
-  list: () => apiRequest<Role[]>('/api/v1/roles'),
+  list: (empresaId?: string) => apiRequest<Role[]>(`/api/v1/roles${empresaId ? `?empresa_id=${encodeURIComponent(empresaId)}` : ''}`),
   create: (data: components['schemas']['CreateRoleRequest']) =>
     apiRequest<Role>('/api/v1/roles', { method: 'POST', body: data }),
   update: (id: string, data: components['schemas']['UpdateRoleRequest']) =>

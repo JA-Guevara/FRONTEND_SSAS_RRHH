@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import type { components } from '../../../shared/api/schema'
 import { bitacoraApi, type AuditFilters } from '../api/bitacoraApi'
+import { useCompanyScope } from '../../../app/context/CompanyScopeContext.tsx'
 
 type AuditLog = components['schemas']['AuditLogSchema']
 const formatter = new Intl.DateTimeFormat('es-BO', { dateStyle: 'medium', timeStyle: 'short' })
 
 export function BitacoraPage() {
+  const { company } = useCompanyScope()
   const [entries, setEntries] = useState<AuditLog[]>([])
   const [filters, setFilters] = useState<AuditFilters>({ page: 1, per_page: 50 })
   const [draft, setDraft] = useState({ module: '', action: '', start_date: '', end_date: '' })
@@ -16,7 +18,7 @@ export function BitacoraPage() {
   useEffect(() => {
     let active = true
     setStatus('loading')
-    bitacoraApi.list(filters).then((data) => {
+    bitacoraApi.list({ ...filters, empresa_id: company?.id }).then((data) => {
       if (active) {
         setEntries(data.items ?? [])
         setTotal(data.total)
@@ -24,7 +26,7 @@ export function BitacoraPage() {
       }
     }).catch(() => active && setStatus('error'))
     return () => { active = false }
-  }, [filters])
+  }, [company?.id, filters])
 
   function search() {
     setFilters({

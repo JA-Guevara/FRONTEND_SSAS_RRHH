@@ -23,6 +23,7 @@ npm run dev
 ```bash
 npm run lint
 npm run build
+npm run check:api
 ```
 
 `npm run build` verifica TypeScript antes de generar la aplicación.

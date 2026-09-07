@@ -74,6 +74,9 @@ h2 { letter-spacing: -0.025em; }
 .main-nav { display: grid; gap: 0.35rem; margin-top: 3rem; }
 .main-nav a { border-radius: 0.6rem; padding: 0.75rem 0.9rem; color: #c7d5ce; text-decoration: none; }
 .main-nav a:hover, .main-nav a.active { color: white; background: rgba(255, 255, 255, 0.1); }
+.company-scope { display: grid; gap: .4rem; margin-top: 1.5rem; }
+.company-scope label { color: #aabcb2; font-size: .72rem; font-weight: 750; }
+.company-scope select { width: 100%; border: 1px solid rgba(255,255,255,.2); border-radius: .55rem; padding: .65rem; color: white; background: rgba(255,255,255,.08); }
 .sidebar-user { display: grid; margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.15); }
 .sidebar-user small { overflow: hidden; margin-top: 0.2rem; color: #aabcb2; text-overflow: ellipsis; }
 .main-content { min-width: 0; padding: clamp(2rem, 5vw, 5rem); }

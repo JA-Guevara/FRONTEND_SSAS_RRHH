@@ -6,7 +6,7 @@ type UpdateUser = components['schemas']['ActualizarUsuarioRequest']
 type User = components['schemas']['UsuarioResponse']
 
 export const usuariosApi = {
-  list(filters: { search?: string; is_active?: boolean; page?: number; per_page?: number } = {}) {
+  list(filters: { empresa_id?: string; search?: string; is_active?: boolean; page?: number; per_page?: number } = {}) {
     const query = new URLSearchParams()
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '') query.set(key, String(value))

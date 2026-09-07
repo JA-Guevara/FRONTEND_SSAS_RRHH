@@ -31,7 +31,7 @@ function GuestOnly({ children }: { children: ReactNode }) {
   return status === 'authenticated' ? <Navigate to="/" replace /> : children
 }
 
-const tenant = (page: ReactNode) => <RequireRealm realm="tenant">{page}</RequireRealm>
+const tenant = (page: ReactNode) => <RequireRealm realm="tenant" allowPlatformScope>{page}</RequireRealm>
 const platform = (page: ReactNode) => <RequireRealm realm="platform">{page}</RequireRealm>
 
 export function AppRouter() {

@@ -1,19 +1,21 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import type { components } from '../../../shared/api/schema'
 import { rolesApi } from '../api/rolesApi'
+import { useCompanyScope } from '../../../app/context/CompanyScopeContext.tsx'
 
 type Role = components['schemas']['RoleSchema']
 
 export function RolesPage() {
+  const { company } = useCompanyScope()
   const [roles, setRoles] = useState<Role[]>([])
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = useState('')
 
   async function load() {
     setStatus('loading')
-    try { setRoles(await rolesApi.list()); setStatus('success') } catch { setStatus('error') }
+    try { setRoles(await rolesApi.list(company?.id)); setStatus('success') } catch { setStatus('error') }
   }
-  useEffect(() => { void load() }, [])
+  useEffect(() => { void load() }, [company?.id])
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

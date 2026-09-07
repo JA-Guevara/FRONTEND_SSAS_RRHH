@@ -2,11 +2,13 @@ import { useEffect, useState, type FormEvent } from 'react'
 import type { components } from '../../../shared/api/schema'
 import { rolesApi } from '../../roles/api/rolesApi'
 import { usuariosApi } from '../api/usuariosApi'
+import { useCompanyScope } from '../../../app/context/CompanyScopeContext.tsx'
 
 type User = components['schemas']['UsuarioResponse']
 type Role = components['schemas']['RoleSchema']
 
 export function ListadoUsuariosPage() {
+  const { company } = useCompanyScope()
   const [users, setUsers] = useState<User[]>([])
   const [roles, setRoles] = useState<Role[]>([])
   const [search, setSearch] = useState('')
@@ -19,8 +21,8 @@ export function ListadoUsuariosPage() {
     setStatus('loading')
     try {
       const [userPage, availableRoles] = await Promise.all([
-        usuariosApi.list({ search: search || undefined, is_active: activeFilter === '' ? undefined : activeFilter === 'true', page: 1, per_page: 100 }),
-        rolesApi.list(),
+        usuariosApi.list({ empresa_id: company?.id, search: search || undefined, is_active: activeFilter === '' ? undefined : activeFilter === 'true', page: 1, per_page: 100 }),
+        rolesApi.list(company?.id),
       ])
       setUsers(userPage.items)
       setRoles(availableRoles)
@@ -30,7 +32,7 @@ export function ListadoUsuariosPage() {
     }
   }
 
-  useEffect(() => { void load() }, [])
+  useEffect(() => { void load() }, [company?.id])
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -44,6 +46,7 @@ export function ListadoUsuariosPage() {
         password: String(form.get('password')),
         telefono: String(form.get('telefono') || '') || null,
         role_ids: form.getAll('role_ids').map(String),
+        ...(company ? { empresa_id: company.id } : {}),
       })
       setShowForm(false)
       setMessage('Usuario creado correctamente.')

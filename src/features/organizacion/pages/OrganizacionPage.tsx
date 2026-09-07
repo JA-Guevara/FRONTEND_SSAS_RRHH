@@ -2,17 +2,19 @@ import { useCallback, useEffect, useState } from 'react'
 import { CargosPanel } from '../components/CargosPanel'
 import { DepartamentosPanel } from '../components/DepartamentosPanel'
 import { getCargos, getDepartamentos, type Cargo, type Departamento } from '../api/organizacionApi'
+import { useCompanyScope } from '../../../app/context/CompanyScopeContext.tsx'
 import '../organizacion.css'
 
 export function OrganizacionPage() {
+  const { company } = useCompanyScope()
   const [departamentos, setDepartamentos] = useState<Departamento[]>([])
   const [cargos, setCargos] = useState<Cargo[]>([])
 
   const load = useCallback(async () => {
-    const [deps, cars] = await Promise.all([getDepartamentos(), getCargos()])
+    const [deps, cars] = await Promise.all([getDepartamentos(company?.id), getCargos(company?.id)])
     setDepartamentos(deps)
     setCargos(cars)
-  }, [])
+  }, [company?.id])
 
   useEffect(() => {
     void load()

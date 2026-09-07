@@ -2,6 +2,7 @@ import { apiRequest } from '../../../shared/api/httpClient'
 import type { components } from '../../../shared/api/schema'
 
 export type AuditFilters = {
+  empresa_id?: string
   user_id?: string
   module?: string
   action?: string
