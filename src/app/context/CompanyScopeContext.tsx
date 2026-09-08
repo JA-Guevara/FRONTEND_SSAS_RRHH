@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import type { ReactNode } from 'react'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { empresasApi } from '../../features/empresas/api/empresasApi'
+import { ApiError } from '../../shared/api/httpClient'
 import type { components } from '../../shared/api/schema'
 
 type Company = components['schemas']['EmpresaResponse']
@@ -95,6 +96,12 @@ export function CompanyScopeProvider({ children }: { children: ReactNode }) {
       .catch((cause: unknown) => {
         if (!active) return
         setCompany(null)
+        setSelectedCompanyId(user.empresaId ?? null)
+        // Consultar la propia empresa exige `empresa:ver`, y roles como RRHH o
+        // RECLUTADOR no lo tienen. No es un fallo: solo significa que no se puede
+        // mostrar la ficha. El alcance sigue siendo su empresa, que viene en el token,
+        // así que un 403 no debe pintar un aviso de error en toda la aplicación.
+        if (cause instanceof ApiError && cause.isForbidden) return
         setError(cause instanceof Error ? cause.message : 'No fue posible consultar tu empresa.')
       })
       .finally(() => {

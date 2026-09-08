@@ -1756,6 +1756,12 @@ export interface components {
             telefono?: string | null;
             /** Role Ids */
             role_ids: string[];
+            /**
+             * Email Verificado
+             * @description Marca el correo como verificado. Por omisión es verdadero porque la cuenta la crea un administrador con contraseña provisional; ponlo en falso para obligar al titular a verificar su correo antes de poder iniciar sesión.
+             * @default true
+             */
+            email_verificado: boolean;
         };
         /** CrearVacanteRequest */
         CrearVacanteRequest: {

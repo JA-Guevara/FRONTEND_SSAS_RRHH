@@ -8,10 +8,14 @@ const REFRESH_PATH = '/api/v1/auth/refresh'
 export class ApiError extends Error {
   status: number
 
-  constructor(message: string, status: number) {
+  /** Errores por campo cuando el backend responde 422 de validación. */
+  fieldErrors: Record<string, string>
+
+  constructor(message: string, status: number, fieldErrors: Record<string, string> = {}) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.fieldErrors = fieldErrors
   }
 
   /** Permite a la UI distinguir «no tienes permiso» de un fallo genérico. */
@@ -51,17 +55,67 @@ export function buildQuery(params: Record<string, string | number | boolean | nu
   return query.length > 0 ? `?${query}` : ''
 }
 
-function extractDetail(data: unknown): string | null {
-  if (data === null || typeof data !== 'object' || !('detail' in data)) return null
+/** Nombres de campo en español para los errores de validación de FastAPI. */
+const NOMBRE_CAMPO: Record<string, string> = {
+  nombre: 'Nombre',
+  apellido: 'Apellido',
+  email: 'Correo electrónico',
+  username: 'Nombre de usuario',
+  password: 'Contraseña',
+  new_password: 'Nueva contraseña',
+  current_password: 'Contraseña actual',
+  telefono: 'Teléfono',
+  role_ids: 'Roles',
+  permission_ids: 'Permisos',
+  empresa_id: 'Empresa',
+  empresa_slug: 'Código de empresa',
+  razon_social: 'Razón social',
+  nombre_comercial: 'Nombre comercial',
+  nit: 'NIT',
+  slug: 'Slug',
+  modulos: 'Módulos',
+  ci: 'Carné de identidad',
+  cv: 'Hoja de vida',
+  nivel_educativo: 'Nivel educativo',
+  anios_experiencia: 'Años de experiencia',
+  titulo: 'Título',
+  descripcion: 'Descripción',
+  fecha_cierre: 'Fecha de cierre',
+  cantidad_vacantes: 'Cantidad de vacantes',
+  puntaje: 'Puntaje',
+  contenido: 'Contenido',
+}
+
+function etiquetaCampo(campo: string): string {
+  return NOMBRE_CAMPO[campo] ?? campo.replaceAll('_', ' ')
+}
+
+/** Extrae el mensaje y, en los 422, el error de cada campo a partir de `loc`. */
+function extractDetail(data: unknown): { message: string | null; fieldErrors: Record<string, string> } {
+  const vacio = { message: null, fieldErrors: {} }
+  if (data === null || typeof data !== 'object' || !('detail' in data)) return vacio
   const rawDetail = (data as { detail: unknown }).detail
-  if (typeof rawDetail === 'string') return rawDetail
-  if (Array.isArray(rawDetail)) {
-    const messages = rawDetail
-      .map((item) => (item !== null && typeof item === 'object' && 'msg' in item ? String(item.msg) : ''))
-      .filter(Boolean)
-    return messages.length > 0 ? messages.join('. ') : null
+  if (typeof rawDetail === 'string') return { message: rawDetail, fieldErrors: {} }
+  if (!Array.isArray(rawDetail)) return vacio
+
+  const fieldErrors: Record<string, string> = {}
+  const messages: string[] = []
+  for (const item of rawDetail) {
+    if (item === null || typeof item !== 'object' || !('msg' in item)) continue
+    const msg = String((item as { msg: unknown }).msg)
+    const loc = (item as { loc?: unknown }).loc
+    // `loc` llega como ["body", "password"]: el último tramo de texto es el campo.
+    const campo = Array.isArray(loc)
+      ? [...loc].reverse().find((tramo) => typeof tramo === 'string' && tramo !== 'body')
+      : undefined
+    if (typeof campo === 'string') {
+      fieldErrors[campo] = msg
+      messages.push(`${etiquetaCampo(campo)}: ${msg}`)
+    } else {
+      messages.push(msg)
+    }
   }
-  return null
+  return { message: messages.length > 0 ? messages.join(' · ') : null, fieldErrors }
 }
 
 function messageForStatus(status: number, detail: string | null): string {
@@ -168,7 +222,8 @@ export async function apiRequest<T = unknown>(
 
   if (!response.ok) {
     const data: unknown = await response.json().catch(() => null)
-    throw new ApiError(messageForStatus(response.status, extractDetail(data)), response.status)
+    const { message, fieldErrors } = extractDetail(data)
+    throw new ApiError(messageForStatus(response.status, message), response.status, fieldErrors)
   }
 
   if (response.status === 204) return null as T
@@ -184,7 +239,8 @@ export async function downloadFile(path: string, fallbackName: string): Promise<
   })
   if (!response.ok) {
     const data: unknown = await response.json().catch(() => null)
-    throw new ApiError(messageForStatus(response.status, extractDetail(data)), response.status)
+    const { message, fieldErrors } = extractDetail(data)
+    throw new ApiError(messageForStatus(response.status, message), response.status, fieldErrors)
   }
   const disposition = response.headers.get('content-disposition') ?? ''
   const match = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition)

@@ -51,7 +51,17 @@ import { Alert, Badge, Button, ConfirmDialog, DataTable, EmptyState, EstadoBadge
 
 ## Clases utilitarias
 
-`page-stack` (contenedor de página) · `panel` · `card` / `card-grid` · `metric-card` + `metric-value` + `metric-label` · `filters` + `filters-actions` · `table-wrap` · `row-actions` · `badge-*` · `chip` · `tabs` + `tab` · `skeleton` · `form-grid` / `form-stack` / `form-section` / `form-actions` · `check-label` · `text-muted` · `sr-only`.
+`page-stack` (contenedor de página) · `panel` · `card` / `card-grid` · `metric-card` + `metric-value` + `metric-label` · `filters` + `filters-actions` · `table-wrap` · `row-actions` · `badge-*` · `chip` · `tabs` + `tab` · `skeleton` · `form-grid` / `form-stack` / `form-section` / `form-actions` / `form-actions-start` · `check-label` · `check-grid` (rejilla de casillas: roles, permisos, módulos) · `checklist` + `li.cumple` / `li.pendiente` (requisitos cumplidos y pendientes) · `badge-list` · `text-muted` · `sr-only`.
+
+### Tablero de selección (Kanban)
+
+`board` · `board-column` (+ `data-recibiendo="true"` al arrastrar sobre ella) · `board-column-header` + `board-column-count` · `board-cards` · `board-card` (debe ser un `<button>`; `data-arrastrando="true"` mientras se arrastra) · `board-card-top` · `board-card-meta` · `board-card-actions` · `board-empty`.
+
+Ficha de detalle: `detail-grid` · `info-list` + `info-row` + `info-label` + `info-value` · `timeline` + `timeline-item` + `timeline-header` + `timeline-text` · `score-box` + `score-value` + `score-input`.
+
+### Sitio público de empleo
+
+`public-page` · `public-wrap` · `public-header` + `public-brand` + `public-nav` · `public-hero` · `public-job` + `public-job-meta` (tarjeta-enlace del listado) · `public-prose` · `public-footer` · `file-field` + `file-field-name` (carga de CV) · `tracking-code` (código de seguimiento).
 
 ## Escala
 

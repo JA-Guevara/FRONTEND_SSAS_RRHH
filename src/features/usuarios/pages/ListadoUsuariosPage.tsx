@@ -1,86 +1,209 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import type { components } from '../../../shared/api/schema'
-import { rolesApi } from '../../roles/api/rolesApi'
-import { usuariosApi } from '../api/usuariosApi'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
+import { Can, useAccess } from '../../../app/access/AccessProvider'
 import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
-import { Alert, Badge, Button, Field, Modal, PageHeader, Panel } from '../../../shared/components'
+import { useAuth } from '../../auth/hooks/useAuth'
+import { ApiError } from '../../../shared/api/httpClient'
+import type { components } from '../../../shared/api/schema'
+import {
+  Alert,
+  Badge,
+  Button,
+  ConfirmDialog,
+  DataTable,
+  Field,
+  Modal,
+  PageHeader,
+  Pagination,
+  Panel,
+} from '../../../shared/components'
+import type { Column } from '../../../shared/components'
+import { rolesAsignablesApi } from '../api/rolesAsignablesApi'
+import { usuariosApi } from '../api/usuariosApi'
+import { evaluarPassword, generarPassword, passwordEsValida } from '../utils/passwordPolicy'
 
 type User = components['schemas']['UsuarioResponse']
 type Role = components['schemas']['RoleSchema']
 
+/** Alcance del usuario que se está creando. Determina si se envía `empresa_id`
+ *  y, por tanto, si nace como usuario de empresa o como administrador global. */
+type Ambito = 'empresa' | 'plataforma'
+
+type AccionPendiente = {
+  usuario: User
+  tipo: 'desactivar' | 'activar' | 'eliminar' | 'restaurar' | 'desbloquear'
+}
+
+const TITULO_ACCION: Record<AccionPendiente['tipo'], string> = {
+  desactivar: 'Desactivar usuario',
+  activar: 'Activar usuario',
+  eliminar: 'Eliminar usuario',
+  restaurar: 'Restaurar usuario',
+  desbloquear: 'Desbloquear usuario',
+}
+
+const DETALLE_ACCION: Record<AccionPendiente['tipo'], string> = {
+  desactivar: 'No podrá iniciar sesión hasta que lo actives de nuevo.',
+  activar: 'Podrá volver a iniciar sesión con sus credenciales actuales.',
+  eliminar: 'Se revocan sus sesiones y deja de aparecer en el listado. Podrás restaurarlo después.',
+  restaurar: 'Vuelve al listado, pero queda inactivo: tendrás que activarlo.',
+  desbloquear: 'Se borran los intentos fallidos y el bloqueo temporal por seguridad.',
+}
+
+const FORM_VACIO = {
+  nombre: '',
+  apellido: '',
+  email: '',
+  username: '',
+  password: '',
+  telefono: '',
+  role_ids: [] as string[],
+  exigir_verificacion: false,
+}
+
+const PERM_VER = ['usuarios:ver', 'platform:usuarios:gestionar']
+const PERM_CREAR = ['usuarios:crear', 'platform:usuarios:gestionar']
+const PERM_EDITAR = ['usuarios:editar', 'platform:usuarios:gestionar']
+const PERM_ELIMINAR = ['usuarios:eliminar', 'platform:usuarios:gestionar']
+const PERM_RESTAURAR = ['usuarios:restaurar', 'platform:usuarios:gestionar']
+const PERM_PASSWORD = ['usuarios:cambiar_password', 'platform:usuarios:gestionar']
+const PERM_DESBLOQUEAR = ['usuarios:desbloquear', 'platform:usuarios:gestionar']
+
 export function ListadoUsuariosPage() {
+  const { user } = useAuth()
   const { company } = useCompanyScope()
-  const [users, setUsers] = useState<User[]>([])
-  const [roles, setRoles] = useState<Role[]>([])
+  const { can } = useAccess()
+  const esPlataforma = user?.realm === 'platform'
+
+  const [usuarios, setUsuarios] = useState<User[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(25)
   const [search, setSearch] = useState('')
-  const [activeFilter, setActiveFilter] = useState('')
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
-  const [message, setMessage] = useState<string | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [busqueda, setBusqueda] = useState('')
+  const [estadoFiltro, setEstadoFiltro] = useState('')
+  const [incluirEliminados, setIncluirEliminados] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [mensaje, setMensaje] = useState<string | null>(null)
 
-  // Modals
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [editingUser, setEditingUser] = useState<User | null>(null)
-  const [resettingUser, setResettingUser] = useState<User | null>(null)
-  const [actionLoading, setActionLoading] = useState(false)
+  // Alcance del alta. Un usuario de empresa solo puede crear en su empresa.
+  const [ambito, setAmbito] = useState<Ambito>(esPlataforma && company === null ? 'plataforma' : 'empresa')
+  const [roles, setRoles] = useState<Role[]>([])
+  const [rolesError, setRolesError] = useState<string | null>(null)
 
-  // Create form state
-  const [createForm, setCreateForm] = useState({
-    nombre: '',
-    apellido: '',
-    email: '',
-    username: '',
-    password: '',
-    telefono: '',
-    role_ids: [] as string[],
-  })
+  const [showCreate, setShowCreate] = useState(false)
+  const [editando, setEditando] = useState<User | null>(null)
+  const [cambiandoClave, setCambiandoClave] = useState<User | null>(null)
+  const [accion, setAccion] = useState<AccionPendiente | null>(null)
 
-  // Edit form state
-  const [editForm, setEditForm] = useState({
-    nombre: '',
-    apellido: '',
-    email: '',
-    username: '',
-    telefono: '',
-    role_ids: [] as string[],
-  })
+  const [guardando, setGuardando] = useState(false)
+  const [errorFormulario, setErrorFormulario] = useState<string | null>(null)
+  const [erroresCampo, setErroresCampo] = useState<Record<string, string>>({})
 
-  // Password reset state
-  const [newPassword, setNewPassword] = useState('')
-  const [mustChangePassword, setMustChangePassword] = useState(true)
+  const [createForm, setCreateForm] = useState(FORM_VACIO)
+  const [editForm, setEditForm] = useState({ ...FORM_VACIO, password: '' })
+  const [nuevaClave, setNuevaClave] = useState('')
+  const [exigirCambio, setExigirCambio] = useState(true)
 
-  async function load() {
-    setStatus('loading')
-    setErrorMessage(null)
+  // El alcance de LECTURA siempre es la empresa activa; para plataforma sin empresa
+  // seleccionada, el backend devuelve los usuarios globales.
+  const empresaLectura = company?.id
+  // El alcance de ESCRITURA depende del ámbito elegido en el formulario.
+  const empresaAlta = ambito === 'empresa' ? (company?.id ?? user?.empresaId ?? undefined) : undefined
+
+  const cargar = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      const [userPage, availableRoles] = await Promise.all([
-        usuariosApi.list({
-          empresa_id: company?.id,
-          search: search.trim() || undefined,
-          is_active: activeFilter === '' ? undefined : activeFilter === 'true',
-          page: 1,
-          per_page: 100,
-        }),
-        rolesApi.list(company?.id),
-      ])
-      setUsers(userPage.items)
-      setRoles(availableRoles)
-      setStatus('success')
-    } catch (err) {
-      setStatus('error')
-      setErrorMessage(err instanceof Error ? err.message : 'No se pudieron cargar los usuarios')
+      const pagina = await usuariosApi.list({
+        empresa_id: empresaLectura,
+        search: busqueda.trim() || undefined,
+        is_active: estadoFiltro === '' ? undefined : estadoFiltro === 'true',
+        incluir_eliminados: incluirEliminados || undefined,
+        page,
+        per_page: perPage,
+      })
+      setUsuarios(pagina.items)
+      setTotal(pagina.total)
+    } catch (cause) {
+      // Un fallo no se muestra como «no hay usuarios»: son cosas distintas.
+      setUsuarios([])
+      setTotal(0)
+      setError(cause instanceof Error ? cause.message : 'No se pudieron cargar los usuarios.')
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [empresaLectura, busqueda, estadoFiltro, incluirEliminados, page, perPage])
 
   useEffect(() => {
-    void load()
-  }, [company?.id])
+    void cargar()
+  }, [cargar])
 
-  async function handleCreate(e: FormEvent) {
-    e.preventDefault()
-    setActionLoading(true)
-    setMessage(null)
-    setErrorMessage(null)
+  // Los roles asignables dependen del ámbito: los de la empresa, o los globales.
+  // Enviar un rol de otro ámbito hace que el backend rechace el alta.
+  useEffect(() => {
+    let activo = true
+    setRolesError(null)
+    rolesAsignablesApi
+      .list(empresaAlta)
+      .then((lista) => {
+        if (activo) setRoles(lista)
+      })
+      .catch((cause: unknown) => {
+        if (!activo) return
+        setRoles([])
+        setRolesError(cause instanceof Error ? cause.message : 'No se pudieron cargar los roles.')
+      })
+    return () => {
+      activo = false
+    }
+  }, [empresaAlta])
+
+  useEffect(() => {
+    if (esPlataforma && company === null) setAmbito('plataforma')
+  }, [esPlataforma, company])
+
+  const requisitos = useMemo(
+    () => evaluarPassword(createForm.password, createForm.username, createForm.email),
+    [createForm.password, createForm.username, createForm.email],
+  )
+  const requisitosClave = useMemo(
+    () => evaluarPassword(nuevaClave, cambiandoClave?.username, cambiandoClave?.email),
+    [nuevaClave, cambiandoClave],
+  )
+
+  function limpiarErrores() {
+    setErrorFormulario(null)
+    setErroresCampo({})
+  }
+
+  function registrarError(cause: unknown, porDefecto: string) {
+    if (cause instanceof ApiError) {
+      setErroresCampo(cause.fieldErrors)
+      setErrorFormulario(cause.message)
+      return
+    }
+    setErrorFormulario(cause instanceof Error ? cause.message : porDefecto)
+  }
+
+  async function crear(evento: FormEvent) {
+    evento.preventDefault()
+    limpiarErrores()
+
+    // Validación previa: el backend exige al menos un rol y una contraseña fuerte.
+    if (createForm.role_ids.length === 0) {
+      setErroresCampo({ role_ids: 'Selecciona al menos un rol.' })
+      setErrorFormulario('El usuario necesita al menos un rol para poder iniciar sesión.')
+      return
+    }
+    if (!passwordEsValida(createForm.password, createForm.username, createForm.email)) {
+      setErroresCampo({ password: 'La contraseña no cumple todos los requisitos.' })
+      setErrorFormulario('Revisa los requisitos de la contraseña antes de continuar.')
+      return
+    }
+
+    setGuardando(true)
     try {
       await usuariosApi.create({
         nombre: createForm.nombre.trim(),
@@ -90,349 +213,536 @@ export function ListadoUsuariosPage() {
         password: createForm.password,
         telefono: createForm.telefono.trim() || null,
         role_ids: createForm.role_ids,
-        ...(company ? { empresa_id: company.id } : {}),
+        // Por omisión la cuenta queda utilizable de inmediato: la crea un
+        // administrador y la contraseña provisional obliga a cambiarla al entrar.
+        email_verificado: !createForm.exigir_verificacion,
+        // Ausente = administrador de plataforma. Presente = usuario de esa empresa.
+        ...(empresaAlta !== undefined ? { empresa_id: empresaAlta } : {}),
       })
-      setShowCreateModal(false)
-      setCreateForm({
-        nombre: '',
-        apellido: '',
-        email: '',
-        username: '',
-        password: '',
-        telefono: '',
-        role_ids: [],
-      })
-      setMessage('Usuario creado correctamente.')
-      await load()
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'No se pudo crear el usuario')
+      setShowCreate(false)
+      setCreateForm(FORM_VACIO)
+      setMensaje(
+        ambito === 'plataforma'
+          ? 'Administrador de plataforma creado correctamente.'
+          : 'Usuario creado correctamente.',
+      )
+      await cargar()
+    } catch (cause) {
+      registrarError(cause, 'No se pudo crear el usuario.')
     } finally {
-      setActionLoading(false)
+      setGuardando(false)
     }
   }
 
-  function startEdit(user: User) {
-    const userRoleIds = roles
-      .filter((r) => user.roles?.includes(r.name) || user.roles?.includes(r.codigo))
-      .map((r) => r.id)
-    setEditingUser(user)
+  function empezarEdicion(usuario: User) {
+    limpiarErrores()
+    // El backend devuelve los roles por nombre; hay que traducirlos a identificadores.
+    const idsRoles = roles
+      .filter((rol) => usuario.roles?.includes(rol.name) || usuario.roles?.includes(rol.codigo))
+      .map((rol) => rol.id)
+    setEditando(usuario)
     setEditForm({
-      nombre: user.nombre,
-      apellido: user.apellido,
-      email: user.email,
-      username: user.username,
-      telefono: user.telefono || '',
-      role_ids: userRoleIds,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      email: usuario.email,
+      username: usuario.username,
+      telefono: usuario.telefono ?? '',
+      password: '',
+      role_ids: idsRoles,
+      // No aplica al editar: la verificación solo se decide en el alta.
+      exigir_verificacion: false,
     })
   }
 
-  async function handleUpdate(e: FormEvent) {
-    e.preventDefault()
-    if (!editingUser) return
-    setActionLoading(true)
-    setMessage(null)
-    setErrorMessage(null)
+  async function actualizar(evento: FormEvent) {
+    evento.preventDefault()
+    if (editando === null) return
+    limpiarErrores()
+    if (editForm.role_ids.length === 0) {
+      setErroresCampo({ role_ids: 'Selecciona al menos un rol.' })
+      return
+    }
+    setGuardando(true)
     try {
-      await usuariosApi.update(editingUser.id, {
-        nombre: editForm.nombre.trim(),
-        apellido: editForm.apellido.trim(),
-        email: editForm.email.trim(),
-        username: editForm.username.trim(),
-        telefono: editForm.telefono.trim() || null,
-        role_ids: editForm.role_ids,
-      })
-      setEditingUser(null)
-      setMessage(`Usuario "${editForm.nombre} ${editForm.apellido}" actualizado correctamente.`)
-      await load()
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'No se pudo actualizar el usuario')
+      await usuariosApi.update(
+        editando.id,
+        {
+          nombre: editForm.nombre.trim(),
+          apellido: editForm.apellido.trim(),
+          email: editForm.email.trim(),
+          username: editForm.username.trim(),
+          telefono: editForm.telefono.trim() || null,
+          role_ids: editForm.role_ids,
+        },
+        editando.empresa_id ?? undefined,
+      )
+      setEditando(null)
+      setMensaje('Usuario actualizado correctamente.')
+      await cargar()
+    } catch (cause) {
+      registrarError(cause, 'No se pudo actualizar el usuario.')
     } finally {
-      setActionLoading(false)
+      setGuardando(false)
     }
   }
 
-  async function handlePasswordReset(e: FormEvent) {
-    e.preventDefault()
-    if (!resettingUser) return
-    setActionLoading(true)
-    setMessage(null)
-    setErrorMessage(null)
+  async function asignarClave(evento: FormEvent) {
+    evento.preventDefault()
+    if (cambiandoClave === null) return
+    limpiarErrores()
+    if (!passwordEsValida(nuevaClave, cambiandoClave.username, cambiandoClave.email)) {
+      setErroresCampo({ new_password: 'La contraseña no cumple todos los requisitos.' })
+      return
+    }
+    setGuardando(true)
     try {
       await usuariosApi.changePassword(
-        resettingUser.id,
-        { new_password: newPassword, must_change: mustChangePassword },
-        company?.id,
+        cambiandoClave.id,
+        { new_password: nuevaClave, must_change: exigirCambio },
+        cambiandoClave.empresa_id ?? undefined,
       )
-      setResettingUser(null)
-      setNewPassword('')
-      setMessage(`Contraseña asignada correctamente para "${resettingUser.nombre} ${resettingUser.apellido}".`)
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'No se pudo actualizar la contraseña')
+      setCambiandoClave(null)
+      setNuevaClave('')
+      setMensaje('Contraseña asignada. Se revocaron las sesiones activas del usuario.')
+    } catch (cause) {
+      registrarError(cause, 'No se pudo asignar la contraseña.')
     } finally {
-      setActionLoading(false)
+      setGuardando(false)
     }
   }
 
-  async function toggleStatus(user: User) {
-    setMessage(null)
-    setErrorMessage(null)
+  async function confirmarAccion() {
+    if (accion === null) return
+    setGuardando(true)
+    setErrorFormulario(null)
     try {
-      if (user.is_active) await usuariosApi.deactivate(user.id)
-      else await usuariosApi.activate(user.id)
-      setMessage(`Estado del usuario "${user.nombre}" modificado correctamente.`)
-      await load()
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'No se pudo cambiar el estado')
+      const { usuario, tipo } = accion
+      const alcance = usuario.empresa_id ?? undefined
+      if (tipo === 'activar') await usuariosApi.activate(usuario.id, alcance)
+      if (tipo === 'desactivar') await usuariosApi.deactivate(usuario.id, alcance)
+      if (tipo === 'eliminar') await usuariosApi.remove(usuario.id, alcance)
+      if (tipo === 'restaurar') await usuariosApi.restore(usuario.id, alcance)
+      if (tipo === 'desbloquear') await usuariosApi.unlock(usuario.id, alcance)
+      setAccion(null)
+      setMensaje(`${TITULO_ACCION[tipo]}: operación completada.`)
+      await cargar()
+    } catch (cause) {
+      setErrorFormulario(cause instanceof Error ? cause.message : 'No se pudo completar la acción.')
+    } finally {
+      setGuardando(false)
     }
   }
 
-  async function handleUnlock(user: User) {
-    setMessage(null)
-    setErrorMessage(null)
-    try {
-      await usuariosApi.unlock(user.id)
-      setMessage(`Usuario "${user.nombre}" desbloqueado exitosamente.`)
-      await load()
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'No se pudo desbloquear el usuario')
-    }
+  function alternarRol(lista: string[], id: string): string[] {
+    return lista.includes(id) ? lista.filter((valor) => valor !== id) : [...lista, id]
+  }
+
+  const columnas: Column<User>[] = [
+    {
+      key: 'colaborador',
+      header: 'Colaborador',
+      render: (usuario) => (
+        <>
+          <strong>
+            {usuario.nombre} {usuario.apellido}
+          </strong>
+          <small>
+            @{usuario.username}
+            {usuario.telefono != null && usuario.telefono !== '' ? ` · ${usuario.telefono}` : ''}
+          </small>
+        </>
+      ),
+    },
+    { key: 'email', header: 'Correo', render: (usuario) => usuario.email },
+    {
+      key: 'ambito',
+      header: 'Ámbito',
+      render: (usuario) =>
+        usuario.empresa_id == null ? <Badge tone="brand">Plataforma</Badge> : <Badge tone="neutral">Empresa</Badge>,
+    },
+    {
+      key: 'roles',
+      header: 'Roles',
+      render: (usuario) =>
+        usuario.roles !== undefined && usuario.roles.length > 0 ? (
+          <div className="badge-list">
+            {usuario.roles.map((rol) => (
+              <Badge key={rol} tone="neutral">
+                {rol}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <span className="text-muted">Sin roles</span>
+        ),
+    },
+    {
+      key: 'estado',
+      header: 'Estado',
+      render: (usuario) => {
+        if (usuario.is_deleted) return <Badge tone="danger">Eliminado</Badge>
+        if (usuario.locked_until != null) return <Badge tone="warning">Bloqueado</Badge>
+        if (!usuario.is_active) return <Badge tone="warning">Inactivo</Badge>
+        if (!usuario.email_verified) return <Badge tone="info">Sin verificar</Badge>
+        return <Badge tone="success">Activo</Badge>
+      },
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      align: 'right',
+      render: (usuario) => (
+        <div className="row-actions">
+          {usuario.is_deleted ? (
+            <Can permisos={PERM_RESTAURAR}>
+              <Button variant="secondary" size="sm" onClick={() => setAccion({ usuario, tipo: 'restaurar' })}>
+                Restaurar
+              </Button>
+            </Can>
+          ) : (
+            <>
+              <Can permisos={PERM_EDITAR}>
+                <Button variant="secondary" size="sm" onClick={() => empezarEdicion(usuario)}>
+                  Editar
+                </Button>
+              </Can>
+              <Can permisos={PERM_PASSWORD}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    limpiarErrores()
+                    setNuevaClave('')
+                    setCambiandoClave(usuario)
+                  }}
+                >
+                  Contraseña
+                </Button>
+              </Can>
+              <Can permisos={PERM_EDITAR}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setAccion({ usuario, tipo: usuario.is_active ? 'desactivar' : 'activar' })
+                  }
+                >
+                  {usuario.is_active ? 'Desactivar' : 'Activar'}
+                </Button>
+              </Can>
+              {usuario.locked_until != null && (
+                <Can permisos={PERM_DESBLOQUEAR}>
+                  <Button variant="ghost" size="sm" onClick={() => setAccion({ usuario, tipo: 'desbloquear' })}>
+                    Desbloquear
+                  </Button>
+                </Can>
+              )}
+              <Can permisos={PERM_ELIMINAR}>
+                <Button
+                  variant="danger-outline"
+                  size="sm"
+                  onClick={() => setAccion({ usuario, tipo: 'eliminar' })}
+                >
+                  Eliminar
+                </Button>
+              </Can>
+            </>
+          )}
+        </div>
+      ),
+    },
+  ]
+
+  const sinRolesEnAmbito = roles.length === 0 && rolesError === null
+
+  function camposComunes(
+    valores: typeof FORM_VACIO,
+    cambiar: (siguiente: typeof FORM_VACIO) => void,
+  ) {
+    return (
+      <>
+        <div className="form-grid">
+          <Field label="Nombres" error={erroresCampo.nombre}>
+            <input
+              value={valores.nombre}
+              onChange={(evento) => cambiar({ ...valores, nombre: evento.target.value })}
+              minLength={2}
+              maxLength={120}
+              required
+            />
+          </Field>
+          <Field label="Apellidos" error={erroresCampo.apellido}>
+            <input
+              value={valores.apellido}
+              onChange={(evento) => cambiar({ ...valores, apellido: evento.target.value })}
+              maxLength={120}
+              required
+            />
+          </Field>
+        </div>
+        <div className="form-grid">
+          <Field label="Correo electrónico" error={erroresCampo.email}>
+            <input
+              type="email"
+              value={valores.email}
+              onChange={(evento) => cambiar({ ...valores, email: evento.target.value })}
+              required
+            />
+          </Field>
+          <Field
+            label="Nombre de usuario"
+            hint="Mínimo 3 caracteres. Solo minúsculas, números, punto, guion y guion bajo."
+            error={erroresCampo.username}
+          >
+            <input
+              value={valores.username}
+              onChange={(evento) =>
+                cambiar({
+                  ...valores,
+                  username: evento.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ''),
+                })
+              }
+              minLength={3}
+              maxLength={80}
+              required
+            />
+          </Field>
+        </div>
+        <Field label="Teléfono" error={erroresCampo.telefono}>
+          <input
+            value={valores.telefono}
+            onChange={(evento) => cambiar({ ...valores, telefono: evento.target.value })}
+            maxLength={40}
+          />
+        </Field>
+        <Field
+          label="Roles"
+          hint={
+            ambito === 'plataforma'
+              ? 'Roles globales de la plataforma. Obligatorio: sin rol el usuario no puede iniciar sesión.'
+              : 'Roles de esta empresa. Obligatorio: sin rol el usuario no puede iniciar sesión.'
+          }
+          error={erroresCampo.role_ids}
+        >
+          {rolesError !== null ? (
+            <Alert tone="error">{rolesError}</Alert>
+          ) : sinRolesEnAmbito ? (
+            <Alert tone="info">
+              No hay roles disponibles en este ámbito. Crea primero un rol en «Roles y permisos»; sin
+              roles no es posible dar de alta usuarios.
+            </Alert>
+          ) : (
+            <div className="check-grid">
+              {roles.map((rol) => (
+                <label key={rol.id} className="check-label">
+                  <input
+                    type="checkbox"
+                    checked={valores.role_ids.includes(rol.id)}
+                    onChange={() =>
+                      cambiar({ ...valores, role_ids: alternarRol(valores.role_ids, rol.id) })
+                    }
+                  />
+                  {rol.name}
+                </label>
+              ))}
+            </div>
+          )}
+        </Field>
+      </>
+    )
   }
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '1.5rem 1rem 3rem' }}>
+    <section className="page-stack">
       <PageHeader
-        eyebrow="Administración de Equipo"
-        title="Gestión de Usuarios"
-        description="Administra los colaboradores, asignación de roles y control de credenciales de la empresa."
+        eyebrow="Administración"
+        title="Usuarios"
+        description={
+          esPlataforma
+            ? 'Cuentas de la empresa activa y administradores de la plataforma.'
+            : 'Colaboradores de tu empresa, sus roles y sus credenciales.'
+        }
         actions={
-          <Button variant="primary" onClick={() => setShowCreateModal(true)}>
-            + Nuevo usuario
-          </Button>
+          <Can permisos={PERM_CREAR}>
+            <Button
+              onClick={() => {
+                limpiarErrores()
+                setCreateForm(FORM_VACIO)
+                setShowCreate(true)
+              }}
+            >
+              Nuevo usuario
+            </Button>
+          </Can>
         }
       />
 
-      {message && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <Alert tone="success" title="Éxito">
-            {message}
-          </Alert>
-        </div>
+      {!can(...PERM_VER) && (
+        <Alert tone="info" title="Permisos insuficientes">
+          Tu rol no incluye el permiso para consultar usuarios. El listado puede aparecer vacío.
+        </Alert>
       )}
 
-      {errorMessage && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <Alert tone="error" title="Atención">
-            {errorMessage}
-          </Alert>
-        </div>
+      {esPlataforma && company === null && (
+        <Alert tone="info" title="Sin empresa activa">
+          Estás operando en el ámbito de la plataforma: el listado muestra administradores globales y
+          las altas crean administradores de plataforma. Para gestionar los usuarios de una empresa,
+          selecciónala en el encabezado.
+        </Alert>
       )}
 
-      <Panel title="Directorio de Usuarios" eyebrow="Búsqueda y filtros">
-        {/* Filtros */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1.25rem' }}>
-          <Field label="Buscar por nombre, usuario o email">
+      {mensaje !== null && <Alert tone="success">{mensaje}</Alert>}
+
+      <Panel title="Directorio" count={`${total} usuario${total === 1 ? '' : 's'}`}>
+        <form
+          className="filters"
+          onSubmit={(evento) => {
+            evento.preventDefault()
+            setPage(1)
+            setBusqueda(search)
+          }}
+        >
+          <Field label="Buscar">
             <input
-              className="input"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Ej. Juan, juanperez, admin..."
+              onChange={(evento) => setSearch(evento.target.value)}
+              placeholder="Nombre, usuario o correo"
             />
           </Field>
-
           <Field label="Estado">
             <select
-              className="input"
-              value={activeFilter}
-              onChange={(e) => setActiveFilter(e.target.value)}
+              value={estadoFiltro}
+              onChange={(evento) => {
+                setPage(1)
+                setEstadoFiltro(evento.target.value)
+              }}
             >
-              <option value="">Todos los estados</option>
+              <option value="">Todos</option>
               <option value="true">Solo activos</option>
               <option value="false">Solo inactivos</option>
             </select>
           </Field>
-
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <Button variant="secondary" onClick={() => void load()} style={{ width: '100%' }}>
-              Aplicar filtros
+          <label className="check-label">
+            <input
+              type="checkbox"
+              checked={incluirEliminados}
+              onChange={(evento) => {
+                setPage(1)
+                setIncluirEliminados(evento.target.checked)
+              }}
+            />
+            Incluir eliminados
+          </label>
+          <div className="filters-actions">
+            <Button type="submit" variant="secondary">
+              Consultar
             </Button>
           </div>
-        </div>
+        </form>
 
-        {status === 'loading' ? (
-          <p style={{ color: '#64748b' }}>Cargando usuarios...</p>
-        ) : users.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', fontStyle: 'italic' }}>
-            No se encontraron usuarios que coincidan con la búsqueda.
-          </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
-                  <th style={{ padding: '0.75rem 1rem' }}>Colaborador</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Correo Electrónico</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Roles Asignados</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Estado</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr key={u.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ fontWeight: 600, color: '#0f172a' }}>
-                        {u.nombre} {u.apellido}
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                        @{u.username} {u.telefono ? `· 📞 ${u.telefono}` : ''}
-                      </div>
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem', color: '#334155' }}>{u.email}</td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                        {u.roles && u.roles.length > 0 ? (
-                          u.roles.map((r) => (
-                            <Badge key={r} tone="neutral">
-                              {r}
-                            </Badge>
-                          ))
-                        ) : (
-                          <span style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '0.8rem' }}>
-                            Sin roles
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <Badge tone={u.is_active ? 'success' : 'warning'}>
-                        {u.is_active ? 'Activo' : 'Inactivo'}
-                      </Badge>
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                        <Button variant="secondary" size="sm" onClick={() => startEdit(u)}>
-                          ✏️ Editar
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setResettingUser(u)}>
-                          🔑 Clave
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => void toggleStatus(u)}
-                        >
-                          {u.is_active ? 'Desactivar' : 'Activar'}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => void handleUnlock(u)}
-                          title="Desbloquear intentos"
-                        >
-                          🔓
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <DataTable
+          columns={columnas}
+          rows={usuarios}
+          rowKey={(usuario) => usuario.id}
+          loading={loading}
+          error={error}
+          onRetry={() => void cargar()}
+          emptyMessage="No hay usuarios que coincidan con la búsqueda."
+          caption="Usuarios del alcance actual"
+        />
+
+        {!loading && error === null && total > 0 && (
+          <Pagination
+            page={page}
+            perPage={perPage}
+            total={total}
+            onPageChange={setPage}
+            onPerPageChange={(valor) => {
+              setPerPage(valor)
+              setPage(1)
+            }}
+          />
         )}
       </Panel>
 
-      {/* Modal: Crear Usuario */}
-      {showCreateModal && (
-        <Modal
-          onClose={() => setShowCreateModal(false)}
-          title="Crear Nuevo Usuario"
-        >
-          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <Field label="Nombres *">
-                <input
-                  className="input"
-                  value={createForm.nombre}
-                  onChange={(e) => setCreateForm({ ...createForm, nombre: e.target.value })}
-                  required
-                />
+      {showCreate && (
+        <Modal title="Nuevo usuario" size="lg" onClose={() => setShowCreate(false)}>
+          <form className="form-stack" onSubmit={(evento) => void crear(evento)}>
+            {esPlataforma && (
+              <Field
+                label="Ámbito de la cuenta"
+                hint="Un administrador de plataforma no pertenece a ninguna empresa y solo recibe permisos globales."
+              >
+                <select value={ambito} onChange={(evento) => setAmbito(evento.target.value as Ambito)}>
+                  <option value="empresa" disabled={company === null}>
+                    {company !== null
+                      ? `Usuario de ${company.nombre_comercial}`
+                      : 'Usuario de empresa (selecciona una empresa primero)'}
+                  </option>
+                  <option value="plataforma">Administrador de plataforma</option>
+                </select>
               </Field>
-              <Field label="Apellidos *">
-                <input
-                  className="input"
-                  value={createForm.apellido}
-                  onChange={(e) => setCreateForm({ ...createForm, apellido: e.target.value })}
-                  required
-                />
-              </Field>
-            </div>
+            )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <Field label="Correo electrónico *">
-                <input
-                  type="email"
-                  className="input"
-                  value={createForm.email}
-                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                  required
-                />
-              </Field>
-              <Field label="Nombre de usuario *">
-                <input
-                  className="input"
-                  value={createForm.username}
-                  onChange={(e) => setCreateForm({ ...createForm, username: e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, '') })}
-                  required
-                />
-              </Field>
-            </div>
+            {camposComunes(createForm, setCreateForm)}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <Field label="Contraseña temporal *">
-                <input
-                  type="password"
-                  className="input"
-                  minLength={8}
-                  value={createForm.password}
-                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                  required
-                />
-              </Field>
-              <Field label="Teléfono">
-                <input
-                  className="input"
-                  value={createForm.telefono}
-                  onChange={(e) => setCreateForm({ ...createForm, telefono: e.target.value })}
-                />
-              </Field>
-            </div>
-
-            <Field label="Roles asignados">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem', background: '#f8fafc', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
-                {roles.map((r) => (
-                  <label key={r.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={createForm.role_ids.includes(r.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setCreateForm({ ...createForm, role_ids: [...createForm.role_ids, r.id] })
-                        } else {
-                          setCreateForm({ ...createForm, role_ids: createForm.role_ids.filter((id) => id !== r.id) })
-                        }
-                      }}
-                    />
-                    {r.name}
-                  </label>
-                ))}
-              </div>
+            <Field
+              label="Contraseña provisional"
+              hint="El usuario deberá cambiarla en su primer inicio de sesión."
+              error={erroresCampo.password}
+            >
+              <input
+                type="text"
+                value={createForm.password}
+                onChange={(evento) => setCreateForm({ ...createForm, password: evento.target.value })}
+                minLength={12}
+                maxLength={72}
+                autoComplete="new-password"
+                required
+              />
             </Field>
+            <div className="form-actions-start">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setCreateForm({ ...createForm, password: generarPassword() })}
+              >
+                Generar contraseña segura
+              </Button>
+            </div>
+            <ul className="checklist">
+              {requisitos.map((requisito) => (
+                <li key={requisito.id} className={requisito.cumple ? 'cumple' : 'pendiente'}>
+                  {requisito.texto}
+                </li>
+              ))}
+            </ul>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-              <Button variant="ghost" onClick={() => setShowCreateModal(false)}>
+            <label className="check-label">
+              <input
+                type="checkbox"
+                checked={createForm.exigir_verificacion}
+                onChange={(evento) =>
+                  setCreateForm({ ...createForm, exigir_verificacion: evento.target.checked })
+                }
+              />
+              Exigir que verifique su correo antes de poder entrar
+            </label>
+            {createForm.exigir_verificacion && (
+              <Alert tone="info">
+                La cuenta no podrá iniciar sesión hasta que el titular abra el enlace de
+                verificación que se le envía por correo. Si el envío de correo no está
+                configurado, la cuenta quedará inutilizable.
+              </Alert>
+            )}
+
+            {errorFormulario !== null && <Alert tone="error">{errorFormulario}</Alert>}
+
+            <div className="form-actions">
+              <Button variant="secondary" onClick={() => setShowCreate(false)} disabled={guardando}>
                 Cancelar
               </Button>
-              <Button variant="primary" type="submit" loading={actionLoading}>
+              <Button type="submit" loading={guardando} disabled={sinRolesEnAmbito}>
                 Crear usuario
               </Button>
             </div>
@@ -440,86 +750,20 @@ export function ListadoUsuariosPage() {
         </Modal>
       )}
 
-      {/* Modal: Editar Usuario */}
-      {editingUser && (
+      {editando !== null && (
         <Modal
-          onClose={() => setEditingUser(null)}
-          title={`Editar Usuario: ${editingUser.nombre} ${editingUser.apellido}`}
+          title={`Editar ${editando.nombre} ${editando.apellido}`}
+          size="lg"
+          onClose={() => setEditando(null)}
         >
-          <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <Field label="Nombres *">
-                <input
-                  className="input"
-                  value={editForm.nombre}
-                  onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
-                  required
-                />
-              </Field>
-              <Field label="Apellidos *">
-                <input
-                  className="input"
-                  value={editForm.apellido}
-                  onChange={(e) => setEditForm({ ...editForm, apellido: e.target.value })}
-                  required
-                />
-              </Field>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <Field label="Correo electrónico *">
-                <input
-                  type="email"
-                  className="input"
-                  value={editForm.email}
-                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  required
-                />
-              </Field>
-              <Field label="Nombre de usuario *">
-                <input
-                  className="input"
-                  value={editForm.username}
-                  onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
-                  required
-                />
-              </Field>
-            </div>
-
-            <Field label="Teléfono">
-              <input
-                className="input"
-                value={editForm.telefono}
-                onChange={(e) => setEditForm({ ...editForm, telefono: e.target.value })}
-              />
-            </Field>
-
-            <Field label="Roles asignados">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem', background: '#f8fafc', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
-                {roles.map((r) => (
-                  <label key={r.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={editForm.role_ids.includes(r.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setEditForm({ ...editForm, role_ids: [...editForm.role_ids, r.id] })
-                        } else {
-                          setEditForm({ ...editForm, role_ids: editForm.role_ids.filter((id) => id !== r.id) })
-                        }
-                      }}
-                    />
-                    {r.name}
-                  </label>
-                ))}
-              </div>
-            </Field>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-              <Button variant="ghost" onClick={() => setEditingUser(null)}>
+          <form className="form-stack" onSubmit={(evento) => void actualizar(evento)}>
+            {camposComunes(editForm, setEditForm)}
+            {errorFormulario !== null && <Alert tone="error">{errorFormulario}</Alert>}
+            <div className="form-actions">
+              <Button variant="secondary" onClick={() => setEditando(null)} disabled={guardando}>
                 Cancelar
               </Button>
-              <Button variant="primary" type="submit" loading={actionLoading}>
+              <Button type="submit" loading={guardando}>
                 Guardar cambios
               </Button>
             </div>
@@ -527,49 +771,84 @@ export function ListadoUsuariosPage() {
         </Modal>
       )}
 
-      {/* Modal: Asignar Contraseña Administrativa */}
-      {resettingUser && (
+      {cambiandoClave !== null && (
         <Modal
-          onClose={() => setResettingUser(null)}
-          title={`Asignar Contraseña a: ${resettingUser.nombre} ${resettingUser.apellido}`}
+          title={`Contraseña de ${cambiandoClave.nombre} ${cambiandoClave.apellido}`}
+          onClose={() => setCambiandoClave(null)}
         >
-          <form onSubmit={handlePasswordReset} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
-              Establece una nueva clave para este usuario. Se revocarán todas sus sesiones activas inmediatamente.
+          <form className="form-stack" onSubmit={(evento) => void asignarClave(evento)}>
+            <p className="text-muted">
+              Al guardar se revocan todas las sesiones activas de este usuario.
             </p>
-
-            <Field label="Nueva contraseña administrativa *">
+            <Field label="Nueva contraseña" error={erroresCampo.new_password}>
               <input
-                type="password"
-                className="input"
-                minLength={8}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Mínimo 8 caracteres"
+                type="text"
+                value={nuevaClave}
+                onChange={(evento) => setNuevaClave(evento.target.value)}
+                minLength={12}
+                maxLength={72}
+                autoComplete="new-password"
                 required
               />
             </Field>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+            <div className="form-actions-start">
+              <Button variant="secondary" size="sm" onClick={() => setNuevaClave(generarPassword())}>
+                Generar contraseña segura
+              </Button>
+            </div>
+            <ul className="checklist">
+              {requisitosClave.map((requisito) => (
+                <li key={requisito.id} className={requisito.cumple ? 'cumple' : 'pendiente'}>
+                  {requisito.texto}
+                </li>
+              ))}
+            </ul>
+            <label className="check-label">
               <input
                 type="checkbox"
-                checked={mustChangePassword}
-                onChange={(e) => setMustChangePassword(e.target.checked)}
+                checked={exigirCambio}
+                onChange={(evento) => setExigirCambio(evento.target.checked)}
               />
-              Exigir cambio de contraseña en el próximo inicio de sesión
+              Exigir cambio en el próximo inicio de sesión
             </label>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-              <Button variant="ghost" onClick={() => setResettingUser(null)}>
+            {errorFormulario !== null && <Alert tone="error">{errorFormulario}</Alert>}
+            <div className="form-actions">
+              <Button variant="secondary" onClick={() => setCambiandoClave(null)} disabled={guardando}>
                 Cancelar
               </Button>
-              <Button variant="primary" type="submit" loading={actionLoading}>
-                Actualizar contraseña
+              <Button type="submit" loading={guardando}>
+                Asignar contraseña
               </Button>
             </div>
           </form>
         </Modal>
       )}
-    </div>
+
+      {accion !== null && (
+        <ConfirmDialog
+          title={TITULO_ACCION[accion.tipo]}
+          message={
+            <>
+              <p>
+                <strong>
+                  {accion.usuario.nombre} {accion.usuario.apellido}
+                </strong>{' '}
+                (@{accion.usuario.username})
+              </p>
+              <p>{DETALLE_ACCION[accion.tipo]}</p>
+            </>
+          }
+          confirmLabel={TITULO_ACCION[accion.tipo].split(' ')[0]}
+          tone={accion.tipo === 'eliminar' || accion.tipo === 'desactivar' ? 'danger' : 'primary'}
+          loading={guardando}
+          error={errorFormulario}
+          onConfirm={() => void confirmarAccion()}
+          onCancel={() => {
+            setAccion(null)
+            setErrorFormulario(null)
+          }}
+        />
+      )}
+    </section>
   )
 }
