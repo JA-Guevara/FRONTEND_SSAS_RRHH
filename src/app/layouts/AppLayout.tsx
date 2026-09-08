@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
-import { empresasApi } from '../../features/empresas/api/empresasApi'
 import { Button } from '../../shared/components'
 import { useAccess } from '../access/AccessProvider'
 import { NAV_ITEMS } from '../access/navigation'
@@ -12,38 +10,18 @@ export function AppLayout() {
   const { logout, user } = useAuth()
   const { company, companies, error, selectCompany, clearCompany, loading } = useCompanyScope()
   const { can, hasModulo } = useAccess()
-  const [tenantEmpresa, setTenantEmpresa] = useState<string | null>(null)
 
   const esPlataforma = user?.realm === 'platform'
-  const conAlcanceEmpresa = user?.realm === 'tenant' || company !== null
-
-  useEffect(() => {
-    if (user?.realm !== 'tenant' || !user?.empresaId) {
-      setTenantEmpresa(null)
-      return
-    }
-    let active = true
-    empresasApi
-      .get(user.empresaId)
-      .then((empresa) => {
-        if (active) setTenantEmpresa(empresa.nombre_comercial)
-      })
-      .catch(() => {
-        if (active) setTenantEmpresa(null)
-      })
-    return () => {
-      active = false
-    }
-  }, [user?.realm, user?.empresaId])
-
-  const nombreEmpresaActiva = esPlataforma
-    ? company?.nombre_comercial ?? null
-    : tenantEmpresa
+  const esTenant = user?.realm === 'tenant'
+  const conAlcanceEmpresa = esTenant || company !== null
 
   function cambiarEmpresa(idEmpresa: string) {
+    if (idEmpresa === '') {
+      clearCompany()
+      return
+    }
     const next = companies.find((item) => item.id === idEmpresa)
     if (next !== undefined) selectCompany(next)
-    else clearCompany()
   }
 
   // El menú es consecuencia de los módulos habilitados y de los permisos efectivos:
@@ -64,6 +42,8 @@ export function AppLayout() {
     acc.set(grupo, [...(acc.get(grupo) ?? []), item])
     return acc
   }, new Map())
+
+  const mostrarAlcance = esPlataforma || company !== null
 
   return (
     <div className="app-shell">
@@ -91,40 +71,8 @@ export function AppLayout() {
           ))}
         </nav>
 
-        {esPlataforma && (
-          <div className="company-scope">
-            <label htmlFor="company-scope-select" title="Entra al contexto de la empresa seleccionada">
-              Empresa activa
-            </label>
-            {company !== null && (
-              <div className="company-scope-chip">
-                <span className="company-scope-dot" style={{ background: company.color_primario }} />
-                <span>{company.nombre_comercial}</span>
-              </div>
-            )}
-            <select
-              id="company-scope-select"
-              value={company?.id ?? ''}
-              onChange={(event) => cambiarEmpresa(event.target.value)}
-            >
-              <option value="">Seleccionar empresa</option>
-              {companies.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.nombre_comercial}
-                </option>
-              ))}
-            </select>
-            {loading && <small>Cargando catálogo…</small>}
-            {error !== null && <small>{error}</small>}
-            {company !== null && (
-              <small className="company-scope-hint">Todo el menú opera sobre esta empresa.</small>
-            )}
-          </div>
-        )}
-
         <div className="sidebar-user">
           <span>{user?.name}</span>
-          {company !== null && <small>Alcance: {company.nombre_comercial}</small>}
           <small>{user?.email}</small>
           <small>{esPlataforma ? 'Administración global' : 'Usuario de empresa'}</small>
           <Button variant="quiet" onClick={() => void logout()}>
@@ -133,26 +81,28 @@ export function AppLayout() {
         </div>
       </aside>
       <main className="main-content">
-        {conAlcanceEmpresa && (
+        {mostrarAlcance && (
           <header className="scope-header">
-            <div className="scope-header-chip">
-              <span
-                className="scope-header-dot"
-                style={{ background: company?.color_primario ?? 'var(--brand)' }}
-              />
-              <div>
-                <span className="scope-header-label">Empresa activa</span>
-                <strong>{esPlataforma ? (nombreEmpresaActiva ?? 'Sin empresa seleccionada') : (nombreEmpresaActiva ?? 'Mi empresa')}</strong>
+            {company !== null && (
+              <div className="scope-header-chip">
+                <span
+                  className="scope-header-dot"
+                  style={{ background: company?.color_primario ?? 'var(--brand)' }}
+                />
+                <div>
+                  <span className="scope-header-label">Empresa activa</span>
+                  <strong>{company.nombre_comercial}</strong>
+                </div>
               </div>
-            </div>
-            {esPlataforma && companies.length > 1 && (
+            )}
+            {esPlataforma && (
               <select
                 className="scope-header-select"
                 aria-label="Cambiar empresa activa"
                 value={company?.id ?? ''}
                 onChange={(event) => cambiarEmpresa(event.target.value)}
               >
-                <option value="">Sin empresa</option>
+                <option value="">Seleccionar empresa</option>
                 {companies.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.nombre_comercial}
@@ -161,8 +111,10 @@ export function AppLayout() {
               </select>
             )}
             {esPlataforma && company === null && (
-              <small className="scope-header-hint">Selecciona una empresa para operar sobre todo el sistema.</small>
+              <small className="scope-header-hint">Selecciona una empresa para operar sobre todos los módulos.</small>
             )}
+            {loading && <small>Cargando alcance…</small>}
+            {error !== null && <small>{error}</small>}
           </header>
         )}
         <Outlet />

@@ -1,6 +1,18 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
-import { Alert, Badge, Button, Field, Modal, PageHeader, Panel } from '../../../shared/components'
+import {
+  Alert,
+  Badge,
+  Button,
+  DataTable,
+  EmptyState,
+  Field,
+  Modal,
+  PageHeader,
+  Panel,
+  LoadingBlock,
+  type Column,
+} from '../../../shared/components'
 import {
   actualizarHabilidad,
   crearHabilidad,
@@ -9,15 +21,18 @@ import {
 } from '../api/habilidadesApi'
 
 export function HabilidadesPage() {
-  const { company } = useCompanyScope()
+  const { company, loading: scopeLoading } = useCompanyScope()
+  const empresaId = company?.id ?? null
+
   const [items, setItems] = useState<Habilidad[]>([])
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<Habilidad | null>(null)
   const [showModal, setShowModal] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
 
   // Modal Form State
   const [formNombre, setFormNombre] = useState('')
@@ -25,22 +40,31 @@ export function HabilidadesPage() {
   const [formDescripcion, setFormDescripcion] = useState('')
   const [formActivo, setFormActivo] = useState(true)
 
-  async function load() {
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await listarHabilidades(company?.id)
-      setItems(data)
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No se pudieron cargar las habilidades.')
-    } finally {
+  function load() {
+    if (empresaId === null) {
+      setItems([])
       setLoading(false)
+      setLoadError(null)
+      return
     }
+    setLoading(true)
+    setLoadError(null)
+    listarHabilidades(empresaId)
+      .then(setItems)
+      .catch((cause: unknown) => {
+        setItems([])
+        setLoadError(cause instanceof Error ? cause.message : 'No se pudieron cargar las habilidades.')
+      })
+      .finally(() => setLoading(false))
   }
 
   useEffect(() => {
+    setMessage(null)
+    setShowModal(false)
+    setEditing(null)
     void load()
-  }, [company?.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [empresaId])
 
   function openCreate() {
     setEditing(null)
@@ -48,6 +72,7 @@ export function HabilidadesPage() {
     setFormCategoria('Técnica')
     setFormDescripcion('')
     setFormActivo(true)
+    setFormError(null)
     setShowModal(true)
   }
 
@@ -57,14 +82,16 @@ export function HabilidadesPage() {
     setFormCategoria(item.categoria ?? 'General')
     setFormDescripcion(item.descripcion ?? '')
     setFormActivo(item.activo)
+    setFormError(null)
     setShowModal(true)
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (empresaId === null) return
     if (!formNombre.trim()) return
     setSaving(true)
-    setError(null)
+    setFormError(null)
     setMessage(null)
 
     const payload = {
@@ -76,28 +103,29 @@ export function HabilidadesPage() {
 
     try {
       if (editing) {
-        await actualizarHabilidad(editing.id, payload)
+        await actualizarHabilidad(empresaId, editing.id, payload)
         setMessage(`Habilidad "${formNombre}" actualizada correctamente.`)
       } else {
-        await crearHabilidad(payload)
+        await crearHabilidad(empresaId, payload)
         setMessage(`Habilidad "${formNombre}" agregada al catálogo.`)
       }
       setShowModal(false)
-      await load()
+      load()
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No se pudo guardar la habilidad.')
+      setFormError(cause instanceof Error ? cause.message : 'No se pudo guardar la habilidad.')
     } finally {
       setSaving(false)
     }
   }
 
-  async function toggleStatus(item: Habilidad) {
+  const toggleStatus = async (item: Habilidad) => {
+    if (empresaId === null) return
     try {
-      await actualizarHabilidad(item.id, { activo: !item.activo })
+      await actualizarHabilidad(empresaId, item.id, { activo: !item.activo })
       setMessage(`Estado de "${item.nombre}" cambiado a ${!item.activo ? 'activo' : 'inactivo'}.`)
-      await load()
+      load()
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No se pudo cambiar el estado.')
+      setLoadError(cause instanceof Error ? cause.message : 'No se pudo cambiar el estado.')
     }
   }
 
@@ -109,8 +137,63 @@ export function HabilidadesPage() {
     )
   })
 
+  const columns: Column<Habilidad>[] = [
+    {
+      key: 'nombre',
+      header: 'Habilidad',
+      render: (item) => <strong>{item.nombre}</strong>,
+    },
+    {
+      key: 'categoria',
+      header: 'Categoría',
+      render: (item) => <Badge tone="neutral">{item.categoria || 'General'}</Badge>,
+    },
+    {
+      key: 'descripcion',
+      header: 'Descripción',
+      render: (item) => <span className="muted-cell">{item.descripcion || '—'}</span>,
+    },
+    {
+      key: 'estado',
+      header: 'Estado',
+      render: (item) => (
+        <Badge tone={item.activo ? 'success' : 'warning'}>{item.activo ? 'Activa' : 'Inactiva'}</Badge>
+      ),
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      align: 'right',
+      render: (item) => (
+        <div className="row-actions">
+          <Button variant="secondary" size="sm" onClick={() => openEdit(item)}>
+            Editar
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => void toggleStatus(item)}>
+            {item.activo ? 'Desactivar' : 'Activar'}
+          </Button>
+        </div>
+      ),
+    },
+  ]
+
+  if (scopeLoading) {
+    return <LoadingBlock message="Resolviendo empresa activa…" />
+  }
+
+  if (empresaId === null) {
+    return (
+      <div className="page-stack">
+        <EmptyState
+          title="Selecciona una empresa"
+          message="Elige la empresa activa desde el encabezado para gestionar su catálogo de habilidades."
+        />
+      </div>
+    )
+  }
+
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '1.5rem 1rem 3rem' }}>
+    <div className="page-stack">
       <PageHeader
         eyebrow="Reclutamiento y Selección"
         title="Catálogo de Habilidades y Competencias"
@@ -123,24 +206,16 @@ export function HabilidadesPage() {
       />
 
       {message && (
-        <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ marginBottom: '1rem' }}>
           <Alert tone="success" title="Éxito">
             {message}
           </Alert>
         </div>
       )}
 
-      {error && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <Alert tone="error" title="Error">
-            {error}
-          </Alert>
-        </div>
-      )}
-
       <Panel
         title="Catálogo Institucional"
-        eyebrow={`${items.length} habilidades configuradas`}
+        eyebrow={loadError ? 'Sin datos' : `${items.length} habilidades configuradas`}
       >
         <div style={{ marginBottom: '1rem', maxWidth: 400 }}>
           <input
@@ -151,70 +226,28 @@ export function HabilidadesPage() {
           />
         </div>
 
-        {loading ? (
-          <p style={{ color: '#64748b' }}>Cargando catálogo...</p>
-        ) : filteredItems.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', fontStyle: 'italic' }}>
-            No se encontraron habilidades registradas.
-          </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
-                  <th style={{ padding: '0.75rem 1rem' }}>Habilidad</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Categoría</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Descripción</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Estado</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredItems.map((item) => (
-                  <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#0f172a' }}>
-                      {item.nombre}
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <Badge tone="neutral">{item.categoria || 'General'}</Badge>
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem', color: '#475569', fontSize: '0.85rem' }}>
-                      {item.descripcion || '—'}
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <Badge tone={item.activo ? 'success' : 'warning'}>
-                        {item.activo ? 'Activa' : 'Inactiva'}
-                      </Badge>
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                        <Button variant="secondary" size="sm" onClick={() => openEdit(item)}>
-                          ✏️ Editar
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => void toggleStatus(item)}
-                        >
-                          {item.activo ? 'Desactivar' : 'Activar'}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <DataTable<Habilidad>
+          columns={columns}
+          rows={filteredItems}
+          rowKey={(item) => item.id}
+          loading={loading}
+          error={loadError}
+          onRetry={load}
+          emptyMessage={
+            search.trim() !== ''
+              ? 'No hay habilidades que coincidan con la búsqueda.'
+              : 'No se encontraron habilidades registradas para esta empresa.'
+          }
+          caption="Catálogo de habilidades de la empresa activa"
+        />
       </Panel>
 
-      {/* Modal Crear / Editar Habilidad */}
       {showModal && (
         <Modal
           onClose={() => setShowModal(false)}
           title={editing ? `Editar Habilidad: ${editing.nombre}` : 'Nueva Habilidad'}
         >
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <form onSubmit={handleSubmit} className="user-form">
             <Field label="Nombre de la competencia o habilidad *">
               <input
                 className="input"
@@ -259,8 +292,14 @@ export function HabilidadesPage() {
               Habilidad activa para asociar a vacantes
             </label>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-              <Button variant="ghost" onClick={() => setShowModal(false)}>
+            {formError && (
+              <Alert tone="error" title="Error">
+                {formError}
+              </Alert>
+            )}
+
+            <div className="modal-footer">
+              <Button variant="ghost" type="button" onClick={() => setShowModal(false)}>
                 Cancelar
               </Button>
               <Button variant="primary" type="submit" loading={saving}>

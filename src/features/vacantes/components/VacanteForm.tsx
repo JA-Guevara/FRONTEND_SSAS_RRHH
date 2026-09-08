@@ -87,9 +87,21 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
+    if (!empresaId) {
+      setCatalogoHabilidades([])
+      return
+    }
+    let active = true
     listarHabilidades(empresaId)
-      .then((data) => setCatalogoHabilidades(data.filter((h) => h.activo)))
-      .catch(() => setCatalogoHabilidades([]))
+      .then((data) => {
+        if (active) setCatalogoHabilidades(data.filter((h) => h.activo))
+      })
+      .catch(() => {
+        if (active) setCatalogoHabilidades([])
+      })
+    return () => {
+      active = false
+    }
   }, [empresaId])
 
   useEffect(() => {

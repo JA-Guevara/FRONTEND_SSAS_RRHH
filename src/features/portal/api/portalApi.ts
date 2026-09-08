@@ -36,6 +36,28 @@ type ApiErrorPayload = {
   detail?: string | { msg?: string }[]
 }
 
+/** Error del portal con estado HTTP: 0 significa que no se pudo contactar. */
+export class PortalApiError extends Error {
+  status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'PortalApiError'
+    this.status = status
+  }
+
+  get isNetwork(): boolean {
+    return this.status === 0
+  }
+
+  get isNotFound(): boolean {
+    return this.status === 404
+  }
+}
+
+const NETWORK_MESSAGE =
+  'No se pudo contactar con el servidor. Revisa tu conexión e inténtalo de nuevo.'
+
 const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 
 function getApiUrl(path: string) {
@@ -46,7 +68,7 @@ async function readApiError(response: Response) {
   const data = await response.json().catch(() => null) as ApiErrorPayload | null
   const detail = data?.detail
 
-  if (typeof detail === 'string') return detail
+  if (typeof detail === 'string' && detail.trim() !== '') return detail
   if (Array.isArray(detail)) {
     const message = detail
       .map((item) => item.msg)
@@ -59,13 +81,20 @@ async function readApiError(response: Response) {
 }
 
 async function publicRequest<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(getApiUrl(path), {
-    headers: { Accept: 'application/json', ...init?.headers },
-    ...init,
-  })
+  let response: Response
+  try {
+    response = await fetch(getApiUrl(path), {
+      headers: { Accept: 'application/json', ...init?.headers },
+      ...init,
+    })
+  } catch {
+    // Sólo es una red bloqueada o CORS: un fallo de red jamás debe mostrarse
+    // como «Failed to fetch» ni como si la empresa no tuviera vacantes.
+    throw new PortalApiError(NETWORK_MESSAGE, 0)
+  }
 
   if (!response.ok) {
-    throw new Error(await readApiError(response))
+    throw new PortalApiError(await readApiError(response), response.status)
   }
 
   return response.json() as Promise<T>

@@ -10,7 +10,7 @@ type CompanyScopeContextValue = {
   company: Company | null
   companies: Company[]
   selectedCompanyId: string | null
-  /** Mientras se resuelve el catálogo no se puede decidir si hay alcance de empresa. */
+  /** Mientras se resuelve el alcance no se puede decidir si hay empresa activa. */
   loading: boolean
   error: string | null
   selectCompany: (company: Company) => void
@@ -21,6 +21,11 @@ type CompanyScopeContextValue = {
 const STORAGE_KEY = 'ssas.selected-company-id'
 const CompanyScopeContext = createContext<CompanyScopeContextValue | null>(null)
 
+/**
+ * Única fuente de verdad de la empresa activa:
+ * - Plataforma: catálogo de empresas y selección persistida del usuario.
+ * - Empresa (tenant): su propia empresa queda bloqueada como activa.
+ */
 export function CompanyScopeProvider({ children }: { children: ReactNode }) {
   const { user, status } = useAuth()
   const [company, setCompany] = useState<Company | null>(null)
@@ -32,19 +37,19 @@ export function CompanyScopeProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
 
-  const esPlataforma = status === 'authenticated' && user?.realm === 'platform'
+  const realm = status === 'authenticated' ? (user?.realm ?? null) : null
+  const esPlataforma = realm === 'platform'
+  const esTenant = realm === 'tenant'
 
+  // Al cambiar de sesión se descarta el alcance anterior.
   useEffect(() => {
-    if (status !== 'authenticated' || user?.realm !== 'platform') {
-      sessionStorage.removeItem(STORAGE_KEY)
-      setCompany(null)
-      setCompanies([])
-      setSelectedCompanyId(null)
-    }
-  }, [status, user?.realm])
+    if (realm !== 'platform') sessionStorage.removeItem(STORAGE_KEY)
+    setCompany(null)
+    setCompanies([])
+    setSelectedCompanyId(realm === 'platform' ? sessionStorage.getItem(STORAGE_KEY) : null)
+  }, [realm])
 
-  // El catálogo se resuelve aquí y no en el layout: así una recarga profunda en
-  // /usuarios rehidrata la empresa seleccionada antes de que el guard decida.
+  // Plataforma: catálogo de empresas y la empresa seleccionada como activa.
   useEffect(() => {
     if (!esPlataforma) return
     let active = true
@@ -72,6 +77,33 @@ export function CompanyScopeProvider({ children }: { children: ReactNode }) {
       active = false
     }
   }, [esPlataforma, reloadToken])
+
+  // Empresa (tenant): su empresa es siempre la activa y no se puede cambiar.
+  useEffect(() => {
+    if (!esTenant || !user?.empresaId) return
+    let active = true
+    setLoading(true)
+    setError(null)
+    empresasApi
+      .get(user.empresaId)
+      .then((empresa) => {
+        if (!active) return
+        setCompanies([empresa])
+        setSelectedCompanyId(empresa.id)
+        setCompany(empresa)
+      })
+      .catch((cause: unknown) => {
+        if (!active) return
+        setCompany(null)
+        setError(cause instanceof Error ? cause.message : 'No fue posible consultar tu empresa.')
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [esTenant, user?.empresaId, reloadToken])
 
   const selectCompany = useCallback((nextCompany: Company) => {
     sessionStorage.setItem(STORAGE_KEY, nextCompany.id)
