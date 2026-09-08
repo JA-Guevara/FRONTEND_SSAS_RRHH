@@ -6,7 +6,7 @@
 ## 1. Información general
 
 | Campo | Valor real |
-|---|---|
+|---|---| 
 | Proyecto | `frontend_ssas_rrhh` |
 | Objetivo | Interfaz web multiempresa para administración y procesos de RRHH |
 | Lenguaje | TypeScript 5.8 |
