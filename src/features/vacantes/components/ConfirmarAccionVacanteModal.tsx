@@ -2,12 +2,14 @@ import { useState } from 'react'
 import {
   publicarVacante,
   pausarVacante,
+  reanudarVacante,
   cerrarVacante,
+  eliminarVacante,
   type VacanteListItem,
 } from '../api/vacantesApi'
 import { ApiError } from '../../../shared/api/httpClient'
 
-export type AccionVacante = 'publicar' | 'pausar' | 'cerrar'
+export type AccionVacante = 'publicar' | 'pausar' | 'reanudar' | 'cerrar' | 'eliminar'
 
 type Props = {
   vacante: VacanteListItem | null
@@ -47,12 +49,26 @@ export function ConfirmarAccionVacanteModal({
       btnClase: 'vac-btn-warning',
       icono: '⏸️',
     },
+    reanudar: {
+      titulo: 'Reanudar vacante',
+      descripcion: `¿Deseas reactivar la vacante "${vacante.titulo}"? Volverá a estar visible para postulantes en el portal público.`,
+      btnTexto: 'Reanudar vacante',
+      btnClase: 'vac-btn-primary',
+      icono: '▶️',
+    },
     cerrar: {
       titulo: 'Cerrar vacante',
       descripcion: `¿Deseas cerrar la vacante "${vacante.titulo}"? Se finalizará la recepción de postulaciones.`,
       btnTexto: 'Cerrar vacante',
       btnClase: 'vac-btn-danger',
       icono: '🔒',
+    },
+    eliminar: {
+      titulo: 'Eliminar vacante',
+      descripcion: `¿Estás seguro de que deseas eliminar la vacante "${vacante.titulo}"? Esta acción no se puede deshacer.`,
+      btnTexto: 'Eliminar definitivamente',
+      btnClase: 'vac-btn-danger',
+      icono: '🗑️',
     },
   }[accion]
 
@@ -65,7 +81,9 @@ export function ConfirmarAccionVacanteModal({
     try {
       if (accion === 'publicar') await publicarVacante(vacante.id, empresaId)
       if (accion === 'pausar') await pausarVacante(vacante.id, empresaId)
+      if (accion === 'reanudar') await reanudarVacante(vacante.id, empresaId)
       if (accion === 'cerrar') await cerrarVacante(vacante.id, empresaId)
+      if (accion === 'eliminar') await eliminarVacante(vacante.id, empresaId)
       await onSuccess()
       onClose()
     } catch (err: unknown) {

@@ -2,8 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   getVacantes,
-  getDepartamentosOpcion,
-  type DepartamentoOpcion,
   type EstadoVacante,
   type PaginatedVacantes,
   type VacanteListItem,
@@ -27,9 +25,9 @@ export function VacantesListPage() {
   const [perPage, setPerPage] = useState(10)
 
   // Datos
-  const [departamentos, setDepartamentos] = useState<DepartamentoOpcion[]>([])
   const [data, setData] = useState<PaginatedVacantes>({
     items: [],
+    departamentos: [],
     total: 0,
     all_total: 0,
     counts: { BORRADOR: 0, PUBLICADA: 0, PAUSADA: 0, CERRADA: 0, CANCELADA: 0 },
@@ -44,15 +42,6 @@ export function VacantesListPage() {
   // Modal de acción (T1-14)
   const [selectedVacante, setSelectedVacante] = useState<VacanteListItem | null>(null)
   const [selectedAccion, setSelectedAccion] = useState<AccionVacante | null>(null)
-
-  const loadDepartamentos = useCallback(async () => {
-    try {
-      const deps = await getDepartamentosOpcion(company?.id)
-      setDepartamentos(deps)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudieron cargar los departamentos')
-    }
-  }, [company?.id])
 
   const loadVacantes = useCallback(async () => {
     setLoading(true)
@@ -75,10 +64,6 @@ export function VacantesListPage() {
   }, [busqueda, company?.id, estadoFilter, departamentoFilter, page, perPage])
 
   useEffect(() => {
-    void loadDepartamentos()
-  }, [loadDepartamentos])
-
-  useEffect(() => {
     void loadVacantes()
   }, [loadVacantes])
 
@@ -98,7 +83,9 @@ export function VacantesListPage() {
     const mensajes: Record<AccionVacante, string> = {
       publicar: 'Vacante publicada exitosamente. Ahora está visible para recibir postulaciones.',
       pausar: 'Vacante pausada. Ya no está visible en el portal público.',
+      reanudar: 'Vacante reanudada exitosamente. Vuelve a estar visible en el portal público.',
       cerrar: 'Vacante cerrada correctamente.',
+      eliminar: 'Vacante eliminada exitosamente.',
     }
     setMensajeExito(mensajes[accion])
     setTimeout(() => setMensajeExito(null), 5000)
@@ -238,7 +225,7 @@ export function VacantesListPage() {
               }}
             >
               <option value="TODOS">Todos los departamentos</option>
-              {departamentos.map((d) => (
+              {data.departamentos.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.nombre}
                 </option>
@@ -366,7 +353,8 @@ export function VacantesListPage() {
                             </span>
                           </Link>
 
-                          {vacante.estado === 'BORRADOR' && (
+                          {/* Acciones de ciclo de vida */}
+                          {(vacante.estado === 'BORRADOR' || vacante.estado === 'PAUSADA') && (
                             <Link
                               to={`/vacantes/${vacante.id}/editar`}
                               className="vac-action-btn edit"
@@ -376,16 +364,25 @@ export function VacantesListPage() {
                             </Link>
                           )}
 
-                          {/* Acciones de ciclo de vida (T1-14) */}
                           {vacante.estado === 'BORRADOR' && (
-                            <button
-                              type="button"
-                              className="vac-action-btn publish"
-                              title="Publicar vacante"
-                              onClick={() => handleOpenAction(vacante, 'publicar')}
-                            >
-                              📢 Publicar
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                className="vac-action-btn publish"
+                                title="Publicar vacante"
+                                onClick={() => handleOpenAction(vacante, 'publicar')}
+                              >
+                                📢 Publicar
+                              </button>
+                              <button
+                                type="button"
+                                className="vac-action-btn close-vac"
+                                title="Eliminar vacante"
+                                onClick={() => handleOpenAction(vacante, 'eliminar')}
+                              >
+                                🗑️ Eliminar
+                              </button>
+                            </>
                           )}
 
                           {vacante.estado === 'PUBLICADA' && (
@@ -410,13 +407,34 @@ export function VacantesListPage() {
                           )}
 
                           {vacante.estado === 'PAUSADA' && (
+                            <>
+                              <button
+                                type="button"
+                                className="vac-action-btn publish"
+                                title="Reanudar vacante"
+                                onClick={() => handleOpenAction(vacante, 'reanudar')}
+                              >
+                                ▶️ Reanudar
+                              </button>
+                              <button
+                                type="button"
+                                className="vac-action-btn close-vac"
+                                title="Cerrar vacante"
+                                onClick={() => handleOpenAction(vacante, 'cerrar')}
+                              >
+                                🔒 Cerrar
+                              </button>
+                            </>
+                          )}
+
+                          {vacante.estado === 'CANCELADA' && (
                             <button
                               type="button"
                               className="vac-action-btn close-vac"
-                              title="Cerrar vacante"
-                              onClick={() => handleOpenAction(vacante, 'cerrar')}
+                              title="Eliminar vacante"
+                              onClick={() => handleOpenAction(vacante, 'eliminar')}
                             >
-                              🔒 Cerrar
+                              🗑️ Eliminar
                             </button>
                           )}
 

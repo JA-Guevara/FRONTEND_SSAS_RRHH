@@ -1,25 +1,8 @@
 import type { components } from '../../../shared/api/schema'
 
-export type EmpresaPublica = {
-  slug: string
-  nombre_comercial: string
-  ciudad: string
-}
+export type EmpresaPublica = components['schemas']['EmpresaPublicaResponse']
 
-export type VacantePublica = components['schemas']['VacantePublicaResponse'] & {
-  id: string
-  empresa_nombre: string
-  titulo: string
-  descripcion: string
-  requisitos: string | null
-  beneficios: string | null
-  modalidad: string
-  ubicacion: string | null
-  fecha_cierre: string
-  mostrar_salario: boolean
-  salario_min: string | null
-  salario_max: string | null
-}
+export type VacantePublica = components['schemas']['VacantePublicaResponse']
 
 export type NivelEducativo =
   | 'SECUNDARIA'
@@ -88,24 +71,17 @@ async function publicRequest<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export async function getVacantesPublicas(slug: string) {
+export async function getEmpresaPublica(slug: string): Promise<EmpresaPublica> {
+  return publicRequest<EmpresaPublica>(`/api/v1/publico/${encodeURIComponent(slug)}`)
+}
+
+export async function getVacantesPublicas(slug: string): Promise<VacantePublica[]> {
   return publicRequest<VacantePublica[]>(
     `/api/v1/publico/${encodeURIComponent(slug)}/vacantes`,
   )
 }
 
-export async function getEmpresaPublica(slug: string) {
-  const vacantes = await getVacantesPublicas(slug)
-  const firstVacante = vacantes[0]
-
-  return {
-    slug,
-    nombre_comercial: firstVacante?.empresa_nombre ?? slug,
-    ciudad: firstVacante?.ubicacion ?? '',
-  }
-}
-
-export async function getVacantePublica(slug: string, id: string) {
+export async function getVacantePublica(slug: string, id: string): Promise<VacantePublica> {
   return publicRequest<VacantePublica>(
     `/api/v1/publico/${encodeURIComponent(slug)}/vacantes/${encodeURIComponent(id)}`,
   )
@@ -130,3 +106,10 @@ export async function enviarPostulacion(vacanteId: string, data: PostulacionForm
     { method: 'POST', body: formData },
   )
 }
+
+export async function consultarPostulacion(codigo: string) {
+  return publicRequest<components['schemas']['SeguimientoPostulacionResponse']>(
+    `/api/v1/publico/postulaciones/${encodeURIComponent(codigo)}`,
+  )
+}
+

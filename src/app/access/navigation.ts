@@ -50,6 +50,13 @@ export const NAV_ITEMS: NavItem[] = [
     grupo: 'Empresa',
   },
   {
+    to: '/empresa/configuracion',
+    label: 'Configuración',
+    modulo: 'ORGANIZACION',
+    permisos: ['empresa:ver', 'empresa:editar', 'platform:empresas:ver'],
+    grupo: 'Empresa',
+  },
+  {
     to: '/usuarios',
     label: 'Usuarios',
     modulo: 'USUARIOS',

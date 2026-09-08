@@ -184,6 +184,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/registro-empresa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registrar nueva empresa y administrador
+         * @description Permite el auto-registro público de un nuevo tenant con su cuenta administradora inicial.
+         */
+        post: operations["registro_empresa_api_v1_auth_registro_empresa_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/bitacora": {
         parameters: {
             query?: never;
@@ -1070,7 +1090,7 @@ export interface paths {
         get: operations["listar_vacantes_api_v1_vacantes_get"];
         put?: never;
         /**
-         * Crear Vacante
+         * Crear vacante
          * @description Crea una vacante en la empresa autorizada.
          */
         post: operations["crear_vacante_api_v1_vacantes_post"];
@@ -1088,18 +1108,18 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Obtener Vacante
+         * Obtener vacante
          * @description Obtiene una vacante de la empresa autorizada.
          */
         get: operations["obtener_vacante_api_v1_vacantes__vacante_id__get"];
         /**
-         * Actualizar Vacante
+         * Actualizar vacante
          * @description Actualiza una vacante que todavía está en borrador.
          */
         put: operations["actualizar_vacante_api_v1_vacantes__vacante_id__put"];
         post?: never;
         /**
-         * Eliminar Vacante
+         * Eliminar vacante
          * @description Elimina una vacante que todavía no tiene publicaciones activas.
          */
         delete: operations["eliminar_vacante_api_v1_vacantes__vacante_id__delete"];
@@ -1122,10 +1142,30 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Publicar Vacante
+         * Publicar vacante
          * @description Publica una vacante en el portal público.
          */
         patch: operations["publicar_vacante_api_v1_vacantes__vacante_id__publicar_patch"];
+        trace?: never;
+    };
+    "/api/v1/vacantes/{vacante_id}/reanudar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Reanudar vacante
+         * @description Reanuda una vacante pausada (PAUSADA -> PUBLICADA).
+         */
+        patch: operations["reanudar_vacante_api_v1_vacantes__vacante_id__reanudar_patch"];
         trace?: never;
     };
     "/api/v1/vacantes/{vacante_id}/pausar": {
@@ -1166,6 +1206,26 @@ export interface paths {
          * @description Cierra el proceso de una vacante publicada o pausada (PUBLICADA|PAUSADA -> CERRADA). Devuelve 409 si la vacante está en otro estado.
          */
         patch: operations["cerrar_vacante_api_v1_vacantes__vacante_id__cerrar_patch"];
+        trace?: never;
+    };
+    "/api/v1/publico/{empresa_slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar información pública de empresa
+         * @description Devuelve el perfil público de una empresa para su portal de empleo.
+         */
+        get: operations["obtener_empresa_publica_api_v1_publico__empresa_slug__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/publico/{empresa_slug}/vacantes": {
@@ -1236,10 +1296,18 @@ export interface components {
         ActualizarCargoRequest: {
             /** Nombre */
             nombre?: string | null;
+            /** Codigo */
+            codigo?: string | null;
             /** Departamento Id */
             departamento_id?: string | null;
             /** Descripcion */
             descripcion?: string | null;
+            /** Nivel */
+            nivel?: string | null;
+            /** Salario Min */
+            salario_min?: number | string | null;
+            /** Salario Max */
+            salario_max?: number | string | null;
             /** Activo */
             activo?: boolean | null;
         };
@@ -1247,8 +1315,14 @@ export interface components {
         ActualizarDepartamentoRequest: {
             /** Nombre */
             nombre?: string | null;
+            /** Codigo */
+            codigo?: string | null;
             /** Descripcion */
             descripcion?: string | null;
+            /** Departamento Padre Id */
+            departamento_padre_id?: string | null;
+            /** Responsable Id */
+            responsable_id?: string | null;
             /** Activo */
             activo?: boolean | null;
         };
@@ -1315,6 +1389,8 @@ export interface components {
             experiencia_min?: number | null;
             /** Fecha Cierre */
             fecha_cierre?: string | null;
+            /** Habilidades */
+            habilidades?: components["schemas"]["HabilidadRequeridaVacanteItem"][] | null;
         };
         /** AssignPermissionsRequest */
         AssignPermissionsRequest: {
@@ -1454,8 +1530,16 @@ export interface components {
             departamento_id: string | null;
             /** Nombre */
             nombre: string;
+            /** Codigo */
+            codigo?: string | null;
             /** Descripcion */
-            descripcion: string | null;
+            descripcion?: string | null;
+            /** Nivel */
+            nivel?: string | null;
+            /** Salario Min */
+            salario_min?: string | null;
+            /** Salario Max */
+            salario_max?: string | null;
             /** Activo */
             activo: boolean;
             /**
@@ -1480,10 +1564,18 @@ export interface components {
         CrearCargoRequest: {
             /** Nombre */
             nombre: string;
+            /** Codigo */
+            codigo?: string | null;
             /** Departamento Id */
             departamento_id?: string | null;
             /** Descripcion */
             descripcion?: string | null;
+            /** Nivel */
+            nivel?: string | null;
+            /** Salario Min */
+            salario_min?: number | string | null;
+            /** Salario Max */
+            salario_max?: number | string | null;
             /**
              * Activo
              * @default true
@@ -1494,8 +1586,14 @@ export interface components {
         CrearDepartamentoRequest: {
             /** Nombre */
             nombre: string;
+            /** Codigo */
+            codigo?: string | null;
             /** Descripcion */
             descripcion?: string | null;
+            /** Departamento Padre Id */
+            departamento_padre_id?: string | null;
+            /** Responsable Id */
+            responsable_id?: string | null;
             /**
              * Activo
              * @default true
@@ -1607,6 +1705,11 @@ export interface components {
             experiencia_min: number;
             /** Fecha Cierre */
             fecha_cierre?: string | null;
+            /**
+             * Habilidades
+             * @default []
+             */
+            habilidades: components["schemas"]["HabilidadRequeridaVacanteItem"][];
         };
         /** CreateRoleRequest */
         CreateRoleRequest: {
@@ -1625,8 +1728,14 @@ export interface components {
             empresa_id: string;
             /** Nombre */
             nombre: string;
+            /** Codigo */
+            codigo?: string | null;
             /** Descripcion */
             descripcion?: string | null;
+            /** Departamento Padre Id */
+            departamento_padre_id?: string | null;
+            /** Responsable Id */
+            responsable_id?: string | null;
             /** Activo */
             activo: boolean;
             /** Created At */
@@ -1654,6 +1763,18 @@ export interface components {
             ciudad?: string | null;
             /** Logo Url */
             logo_url?: string | null;
+            /** Descripcion */
+            descripcion?: string | null;
+            /**
+             * Color Primario
+             * @default #2563eb
+             */
+            color_primario: string;
+            /**
+             * Portal Publico Activo
+             * @default true
+             */
+            portal_publico_activo: boolean;
         };
         /** EmpresaPageResponse */
         EmpresaPageResponse: {
@@ -1667,6 +1788,31 @@ export interface components {
             per_page: number;
             /** Total Pages */
             total_pages: number;
+        };
+        /** EmpresaPublicaResponse */
+        EmpresaPublicaResponse: {
+            /** Id */
+            id: string;
+            /** Nombre */
+            nombre: string;
+            /** Nombre Comercial */
+            nombre_comercial?: string | null;
+            /** Slug */
+            slug: string;
+            /** Descripcion */
+            descripcion?: string | null;
+            /** Logo Url */
+            logo_url?: string | null;
+            /**
+             * Color Primario
+             * @default #2563eb
+             */
+            color_primario: string;
+            /**
+             * Portal Publico Activo
+             * @default true
+             */
+            portal_publico_activo: boolean;
         };
         /** EmpresaResponse */
         EmpresaResponse: {
@@ -1690,6 +1836,18 @@ export interface components {
             ciudad?: string | null;
             /** Logo Url */
             logo_url?: string | null;
+            /** Descripcion */
+            descripcion?: string | null;
+            /**
+             * Color Primario
+             * @default #2563eb
+             */
+            color_primario: string;
+            /**
+             * Portal Publico Activo
+             * @default true
+             */
+            portal_publico_activo: boolean;
             /** Activo */
             activo: boolean;
             /** Eliminado At */
@@ -1737,6 +1895,12 @@ export interface components {
             ciudad?: string | null;
             /** Logo Url */
             logo_url?: string | null;
+            /** Descripcion */
+            descripcion?: string | null;
+            /** Color Primario */
+            color_primario?: string | null;
+            /** Portal Publico Activo */
+            portal_publico_activo?: boolean | null;
         };
         /** EtapaResponse */
         EtapaResponse: {
@@ -1777,6 +1941,23 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** HabilidadRequeridaVacanteItem */
+        HabilidadRequeridaVacanteItem: {
+            /** Habilidad Id */
+            habilidad_id: string;
+            /** Nivel Requerido */
+            nivel_requerido: string;
+            /**
+             * Es Obligatorio
+             * @default true
+             */
+            es_obligatorio: boolean;
+            /**
+             * Peso
+             * @default 1.0
+             */
+            peso: number | string;
+        };
         /** HabilidadRequest */
         HabilidadRequest: {
             /** Nombre */
@@ -1808,6 +1989,22 @@ export interface components {
             id: string;
             /** Empresa Id */
             empresa_id: string;
+        };
+        /** HabilidadVacanteResponse */
+        HabilidadVacanteResponse: {
+            /** Habilidad Id */
+            habilidad_id: string;
+            /** Nombre */
+            nombre: string;
+            /** Nivel Requerido */
+            nivel_requerido: string;
+            /** Es Obligatorio */
+            es_obligatorio: boolean;
+            /**
+             * Peso
+             * @default 1.0
+             */
+            peso: string;
         };
         /** InitialAdminData */
         InitialAdminData: {
@@ -2063,6 +2260,75 @@ export interface components {
         RefreshTokenSchema: {
             /** Refresh Token */
             refresh_token: string;
+        };
+        /** RegistroEmpresaRequest */
+        RegistroEmpresaRequest: {
+            /** Razon Social */
+            razon_social: string;
+            /** Nombre Comercial */
+            nombre_comercial: string;
+            /** Slug */
+            slug: string;
+            /** Nit */
+            nit?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Telefono */
+            telefono?: string | null;
+            /** Ciudad */
+            ciudad?: string | null;
+            /**
+             * Color Primario
+             * @default #2563eb
+             */
+            color_primario: string;
+            /** Descripcion */
+            descripcion?: string | null;
+            /** Admin Nombre */
+            admin_nombre: string;
+            /** Admin Apellido */
+            admin_apellido: string;
+            /**
+             * Admin Email
+             * Format: email
+             */
+            admin_email: string;
+            /** Admin Username */
+            admin_username: string;
+            /** Admin Password */
+            admin_password: string;
+            /** Admin Telefono */
+            admin_telefono?: string | null;
+        };
+        /** RegistroEmpresaResponse */
+        RegistroEmpresaResponse: {
+            /** Access Token */
+            access_token: string;
+            /** Refresh Token */
+            refresh_token: string;
+            /**
+             * Token Type
+             * @default bearer
+             */
+            token_type: string;
+            /** Empresa Id */
+            empresa_id: string;
+            /** Empresa Nombre */
+            empresa_nombre: string;
+            /** Empresa Slug */
+            empresa_slug: string;
+            /** Usuario Id */
+            usuario_id: string;
+            /**
+             * Usuario Email
+             * Format: email
+             */
+            usuario_email: string;
+            /**
+             * Message
+             * @default Empresa registrada exitosamente
+             */
+            message: string;
         };
         /** ResendVerificationSchema */
         ResendVerificationSchema: {
@@ -2330,6 +2596,10 @@ export interface components {
             id: string;
             /** Empresa Nombre */
             empresa_nombre: string;
+            /** Cargo Nombre */
+            cargo_nombre?: string | null;
+            /** Departamento Nombre */
+            departamento_nombre?: string | null;
             /** Titulo */
             titulo: string;
             /** Descripcion */
@@ -2359,6 +2629,11 @@ export interface components {
             fecha_publicacion: string;
             /** Fecha Cierre */
             fecha_cierre: string | null;
+            /**
+             * Habilidades
+             * @default []
+             */
+            habilidades: components["schemas"]["HabilidadVacanteResponse"][];
         };
         /** VacanteResponse */
         VacanteResponse: {
@@ -2372,6 +2647,10 @@ export interface components {
             departamento_id: string;
             /** Responsable Id */
             responsable_id: string;
+            /** Cargo Nombre */
+            cargo_nombre?: string | null;
+            /** Departamento Nombre */
+            departamento_nombre?: string | null;
             /** Titulo */
             titulo: string;
             /** Descripcion */
@@ -2415,6 +2694,11 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /**
+             * Habilidades
+             * @default []
+             */
+            habilidades: components["schemas"]["HabilidadVacanteResponse"][];
         };
         /** ValidationError */
         ValidationError: {
@@ -2837,6 +3121,44 @@ export interface operations {
                 content?: never;
             };
             /** @description La contraseña nueva no cumple la política de seguridad. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    registro_empresa_api_v1_auth_registro_empresa_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistroEmpresaRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistroEmpresaResponse"];
+                };
+            };
+            /** @description Ya existe una empresa con ese NIT o slug, o el usuario/correo ya está en uso. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos de registro inválidos. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -6107,6 +6429,40 @@ export interface operations {
             };
         };
     };
+    reanudar_vacante_api_v1_vacantes__vacante_id__reanudar_patch: {
+        parameters: {
+            query?: {
+                /** @description Identificador de empresa. Los administradores de plataforma pueden indicarlo para seleccionar el alcance; los usuarios empresariales quedan limitados a su propia empresa. */
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path: {
+                vacante_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacanteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     pausar_vacante_api_v1_vacantes__vacante_id__pausar_patch: {
         parameters: {
             query?: {
@@ -6177,6 +6533,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obtener_empresa_publica_api_v1_publico__empresa_slug__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmpresaPublicaResponse"];
+                };
             };
             /** @description Validation Error */
             422: {

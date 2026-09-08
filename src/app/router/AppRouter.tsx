@@ -3,10 +3,12 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { ChangePasswordPage } from '../../features/auth/pages/ChangePasswordPage'
 import { ForgotPasswordPage } from '../../features/auth/pages/ForgotPasswordPage'
 import { LoginPage } from '../../features/auth/pages/LoginPage'
+import { RegisterCompanyPage } from '../../features/auth/pages/RegisterCompanyPage'
 import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { BitacoraPage } from '../../features/bitacora/pages/BitacoraPage'
 import { AltaEmpresaPage } from '../../features/empresas/pages/AltaEmpresaPage'
+import { ConfiguracionEmpresaPage } from '../../features/empresas/pages/ConfiguracionEmpresaPage'
 import { EmpresaModulosPage } from '../../features/empresas/pages/EmpresaModulosPage'
 import { OrganizacionPage } from '../../features/organizacion/pages/OrganizacionPage'
 import { PortalPublicoPage } from '../../features/portal/pages/PortalPublicoPage'
@@ -67,10 +69,14 @@ export function AppRouter() {
   return (
     <Routes>
       <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
+      <Route path="/registro" element={<GuestOnly><RegisterCompanyPage /></GuestOnly>} />
       <Route path="/recuperar-clave" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} />
       <Route path="/restablecer-clave" element={<GuestOnly><ResetPasswordPage /></GuestOnly>} />
 
-      {/* Portal público: sin sesión */}
+      {/* Portal público de empleo (rutas limpias /empleos/:slug y retrocompatibilidad /publico/:slug) */}
+      <Route path="/empleos/:slug" element={<PortalPublicoPage />} />
+      <Route path="/empleos/:slug/vacantes/:vacanteId" element={<PortalPublicoPage />} />
+      <Route path="/empleos/:slug/seguimiento" element={<PortalPublicoPage />} />
       <Route path="/publico/:slug" element={<PortalPublicoPage />} />
       <Route path="/publico/:slug/vacantes/:vacanteId" element={<PortalPublicoPage />} />
       <Route path="/publico/:slug/seguimiento" element={<PortalPublicoPage />} />
@@ -84,6 +90,15 @@ export function AppRouter() {
           path="empresas/:empresaId/modulos"
           element={plataforma(<EmpresaModulosPage />, ['platform:modulos:ver', 'platform:modulos:gestionar'])}
         />
+        <Route
+          path="empresa/configuracion"
+          element={empresa(<ConfiguracionEmpresaPage />, 'ORGANIZACION', [
+            'empresa:ver',
+            'empresa:editar',
+            'platform:empresas:ver',
+          ])}
+        />
+        <Route path="configuracion" element={<Navigate to="/empresa/configuracion" replace />} />
 
         <Route
           path="usuarios"

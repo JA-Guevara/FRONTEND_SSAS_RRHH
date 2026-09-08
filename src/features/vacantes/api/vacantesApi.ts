@@ -25,6 +25,14 @@ export type DepartamentoOpcion = {
   nombre: string
 }
 
+export type VacanteHabilidad = {
+  habilidad_id: string
+  nombre: string
+  nivel_requerido: string
+  es_obligatorio: boolean
+  peso: number
+}
+
 export type Vacante = {
   id: string
   titulo: string
@@ -42,6 +50,9 @@ export type Vacante = {
   experiencia_min: number
   fecha_cierre: string
   estado: EstadoVacante
+  cargo_nombre?: string | null
+  departamento_nombre?: string | null
+  habilidades?: VacanteHabilidad[]
 }
 
 export type VacanteListItem = Vacante & {
@@ -63,6 +74,7 @@ export type VacantesFilters = {
 
 export type PaginatedVacantes = {
   items: VacanteListItem[]
+  departamentos: DepartamentoOpcion[]
   total: number
   all_total: number
   counts: Record<EstadoVacante, number>
@@ -93,6 +105,15 @@ function toVacante(item: VacanteResponse): Vacante {
     experiencia_min: item.experiencia_min,
     fecha_cierre: item.fecha_cierre ?? '',
     estado: item.estado as EstadoVacante,
+    cargo_nombre: item.cargo_nombre,
+    departamento_nombre: item.departamento_nombre,
+    habilidades: (item.habilidades || []).map((h) => ({
+      habilidad_id: h.habilidad_id,
+      nombre: h.nombre,
+      nivel_requerido: h.nivel_requerido,
+      es_obligatorio: h.es_obligatorio,
+      peso: Number(h.peso),
+    })),
   }
 }
 
@@ -136,20 +157,24 @@ export async function getVacantes(filters: VacantesFilters = {}): Promise<Pagina
     empresa_id,
   } = filters
 
-  const [rawVacantes, cargos, departamentos] = await Promise.all([
-    apiRequest<VacanteResponse[]>(scopedPath('/api/v1/vacantes', empresa_id)),
-    apiRequest<CargoResponse[]>(scopedPath('/api/v1/cargos', empresa_id)),
-    apiRequest<DepartamentoResponse[]>(scopedPath('/api/v1/departamentos', empresa_id)),
-  ])
+  const rawVacantes = await apiRequest<VacanteResponse[]>(
+    scopedPath('/api/v1/vacantes', empresa_id),
+  )
 
-  const cargosById = new Map(cargos.map((item) => [item.id, item.nombre]))
-  const departamentosById = new Map(departamentos.map((item) => [item.id, item.nombre]))
   const allItems: VacanteListItem[] = rawVacantes.map((item) => ({
     ...toVacante(item),
-    cargo_nombre: cargosById.get(item.cargo_id) ?? 'Cargo no disponible',
-    departamento_nombre: departamentosById.get(item.departamento_id) ?? 'Departamento no disponible',
+    cargo_nombre: item.cargo_nombre ?? 'Cargo no disponible',
+    departamento_nombre: item.departamento_nombre ?? 'Departamento no disponible',
     postulantes_count: null,
   }))
+  const departamentos = Array.from(
+    new Map(
+      allItems.map((item) => [
+        item.departamento_id,
+        { id: item.departamento_id, nombre: item.departamento_nombre },
+      ]),
+    ).values(),
+  ).sort((left, right) => left.nombre.localeCompare(right.nombre, 'es'))
 
   const counts: Record<EstadoVacante, number> = {
     BORRADOR: 0,
@@ -180,6 +205,7 @@ export async function getVacantes(filters: VacantesFilters = {}): Promise<Pagina
 
   return {
     items: list.slice(startIndex, startIndex + per_page),
+    departamentos,
     total,
     all_total: allItems.length,
     counts,
@@ -212,6 +238,14 @@ export async function actualizarVacante(
 export async function publicarVacante(id: string, empresaId?: string): Promise<Vacante> {
   const item = await apiRequest<VacanteResponse>(
     scopedPath(`/api/v1/vacantes/${encodeURIComponent(id)}/publicar`, empresaId),
+    { method: 'PATCH' },
+  )
+  return toVacante(item)
+}
+
+export async function reanudarVacante(id: string, empresaId?: string): Promise<Vacante> {
+  const item = await apiRequest<VacanteResponse>(
+    scopedPath(`/api/v1/vacantes/${encodeURIComponent(id)}/reanudar`, empresaId),
     { method: 'PATCH' },
   )
   return toVacante(item)

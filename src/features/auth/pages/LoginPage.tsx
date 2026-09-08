@@ -12,7 +12,12 @@ export function LoginPage() {
     <AuthShell title="Bienvenido" description="Seleccioná tu tipo de acceso e ingresá tus credenciales.">
       <LoginForm realm={realm} onRealmChange={setRealm} onSubmit={login} />
       {realm === 'tenant' ? (
-        <p className="auth-link"><Link to="/recuperar-clave">¿Olvidaste tu contraseña?</Link></p>
+        <>
+          <p className="auth-link"><Link to="/recuperar-clave">¿Olvidaste tu contraseña?</Link></p>
+          <p className="auth-link" style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #e2e8f0' }}>
+            ¿No tienes cuenta? <Link to="/registro" style={{ fontWeight: 600 }}>Registra tu empresa aquí</Link>
+          </p>
+        </>
       ) : (
         <p className="auth-link">La recuperación de plataforma debe gestionarla un administrador autorizado.</p>
       )}

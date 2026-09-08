@@ -7,6 +7,7 @@ import {
   type ModalidadVacante,
   type Vacante,
 } from '../api/vacantesApi'
+import { listarHabilidades, type Habilidad } from '../../habilidades/api/habilidadesApi'
 
 type Props = {
   cargos: CargoOpcion[]
@@ -28,6 +29,14 @@ type FormState = {
   ubicacion: string
   experiencia_min: string
   fecha_cierre: string
+}
+
+type HabilidadSeleccionada = {
+  habilidad_id: string
+  nombre: string
+  nivel_requerido: string
+  es_obligatorio: boolean
+  peso: number
 }
 
 const empty: FormState = {
@@ -66,13 +75,42 @@ function toForm(v: Vacante): FormState {
 
 export function VacanteForm({ cargos, vacante, empresaId }: Props) {
   const [form, setForm] = useState<FormState>(vacante ? toForm(vacante) : empty)
+  const [habilidadesRequeridas, setHabilidadesRequeridas] = useState<HabilidadSeleccionada[]>([])
+  const [catalogoHabilidades, setCatalogoHabilidades] = useState<Habilidad[]>([])
+  const [selectedHabilidadId, setSelectedHabilidadId] = useState('')
+  const [selectedNivel, setSelectedNivel] = useState('INTERMEDIO')
+  const [selectedObligatorio, setSelectedObligatorio] = useState(true)
+  const [selectedPeso, setSelectedPeso] = useState('1.0')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [ok, setOk] = useState('')
   const [bad, setBad] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    if (vacante) setForm(toForm(vacante))
+    listarHabilidades(empresaId)
+      .then((data) => setCatalogoHabilidades(data.filter((h) => h.activo)))
+      .catch(() => setCatalogoHabilidades([]))
+  }, [empresaId])
+
+  useEffect(() => {
+    if (vacante) {
+      setForm(toForm(vacante))
+      if (vacante.habilidades && vacante.habilidades.length > 0) {
+        setHabilidadesRequeridas(
+          vacante.habilidades.map((h) => ({
+            habilidad_id: h.habilidad_id,
+            nombre: h.nombre || 'Habilidad',
+            nivel_requerido: h.nivel_requerido,
+            es_obligatorio: h.es_obligatorio,
+            peso: Number(h.peso) || 1,
+          })),
+        )
+      } else {
+        setHabilidadesRequeridas([])
+      }
+    } else {
+      setHabilidadesRequeridas([])
+    }
   }, [vacante])
 
   const departamento = useMemo(() => {
@@ -106,6 +144,30 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
     return Object.keys(e).length === 0
   }
 
+  function handleAddHabilidad(e?: React.MouseEvent) {
+    if (e) e.preventDefault()
+    if (!selectedHabilidadId) return
+    if (habilidadesRequeridas.some((h) => h.habilidad_id === selectedHabilidadId)) {
+      return
+    }
+    const hab = catalogoHabilidades.find((h) => h.id === selectedHabilidadId)
+    setHabilidadesRequeridas((prev) => [
+      ...prev,
+      {
+        habilidad_id: selectedHabilidadId,
+        nombre: hab ? hab.nombre : 'Habilidad',
+        nivel_requerido: selectedNivel,
+        es_obligatorio: selectedObligatorio,
+        peso: Number(selectedPeso) || 1.0,
+      },
+    ])
+    setSelectedHabilidadId('')
+  }
+
+  function handleRemoveHabilidad(habilidadId: string) {
+    setHabilidadesRequeridas((prev) => prev.filter((h) => h.habilidad_id !== habilidadId))
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setOk('')
@@ -130,11 +192,18 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
         ubicacion: form.ubicacion.trim() || null,
         experiencia_min: form.experiencia_min === '' ? 0 : Number(form.experiencia_min),
         fecha_cierre: `${form.fecha_cierre}T23:59:59`,
+        habilidades: habilidadesRequeridas.map((h) => ({
+          habilidad_id: h.habilidad_id,
+          nivel_requerido: h.nivel_requerido,
+          es_obligatorio: h.es_obligatorio,
+          peso: Number(h.peso) || 1.0,
+        })),
       }
       if (vacante) await actualizarVacante(vacante.id, payload, empresaId)
       else {
         await crearVacante(payload, empresaId)
         setForm(empty)
+        setHabilidadesRequeridas([])
       }
       setOk(vacante ? 'Vacante actualizada' : 'Vacante guardada como borrador')
     } catch (err) {
@@ -219,6 +288,155 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
 
       <label className="vac-label">Beneficios</label>
       <textarea className="vac-textarea" rows={2} value={form.beneficios} onChange={(e) => setForm({ ...form, beneficios: e.target.value })} />
+
+      {/* Sección de Habilidades Requeridas */}
+      <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '1.25rem' }}>
+        <label className="vac-label" style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.35rem', display: 'block' }}>
+          🎯 Habilidades requeridas para la vacante
+        </label>
+        <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1rem' }}>
+          Asocia competencias técnicas o blandas para evaluar automáticamente la compatibilidad de los candidatos.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', alignItems: 'flex-end', background: '#f8fafc', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+          <div style={{ gridColumn: 'span 2' }}>
+            <label className="vac-label" style={{ fontSize: '0.8rem' }}>Habilidad</label>
+            <select
+              className="vac-select"
+              value={selectedHabilidadId}
+              onChange={(e) => setSelectedHabilidadId(e.target.value)}
+            >
+              <option value="">-- Seleccionar habilidad --</option>
+              {catalogoHabilidades
+                .filter((h) => !habilidadesRequeridas.some((req) => req.habilidad_id === h.id))
+                .map((h) => (
+                  <option key={h.id} value={h.id}>
+                    {h.nombre} ({h.categoria || 'General'})
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="vac-label" style={{ fontSize: '0.8rem' }}>Nivel requerido</label>
+            <select
+              className="vac-select"
+              value={selectedNivel}
+              onChange={(e) => setSelectedNivel(e.target.value)}
+            >
+              <option value="BASICO">Básico</option>
+              <option value="INTERMEDIO">Intermedio</option>
+              <option value="AVANZADO">Avanzado</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="vac-label" style={{ fontSize: '0.8rem' }}>Peso (ponderación)</label>
+            <input
+              type="number"
+              step="0.1"
+              min="0.1"
+              max="5.0"
+              className="vac-input"
+              value={selectedPeso}
+              onChange={(e) => setSelectedPeso(e.target.value)}
+            />
+          </div>
+
+          <div style={{ paddingBottom: '0.4rem' }}>
+            <label className="vac-switch" style={{ margin: 0, fontSize: '0.85rem' }}>
+              <input
+                type="checkbox"
+                checked={selectedObligatorio}
+                onChange={(e) => setSelectedObligatorio(e.target.checked)}
+              />
+              Obligatoria
+            </label>
+          </div>
+
+          <div>
+            <button
+              type="button"
+              className="vac-btn vac-btn-primary"
+              style={{ width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+              disabled={!selectedHabilidadId}
+              onClick={handleAddHabilidad}
+            >
+              + Agregar
+            </button>
+          </div>
+        </div>
+
+        {habilidadesRequeridas.length > 0 ? (
+          <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {habilidadesRequeridas.map((item) => (
+              <div
+                key={item.habilidad_id}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  background: '#f1f5f9',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '2rem',
+                  padding: '0.35rem 0.85rem',
+                  fontSize: '0.85rem',
+                }}
+              >
+                <span style={{ fontWeight: 600, color: '#0f172a' }}>{item.nombre}</span>
+                <span
+                  style={{
+                    background: '#e2e8f0',
+                    color: '#475569',
+                    borderRadius: '1rem',
+                    padding: '0.1rem 0.45rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  {item.nivel_requerido}
+                </span>
+                {item.es_obligatorio && (
+                  <span
+                    style={{
+                      background: '#fee2e2',
+                      color: '#b91c1c',
+                      borderRadius: '1rem',
+                      padding: '0.1rem 0.45rem',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Obligatoria
+                  </span>
+                )}
+                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>x{item.peso}</span>
+                <button
+                  type="button"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#94a3b8',
+                    fontWeight: 'bold',
+                    marginLeft: '0.25rem',
+                    fontSize: '1rem',
+                    lineHeight: 1,
+                  }}
+                  onClick={() => handleRemoveHabilidad(item.habilidad_id)}
+                  title="Eliminar habilidad"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ marginTop: '0.5rem', fontStyle: 'italic', fontSize: '0.85rem', color: '#94a3b8' }}>
+            No se han asignado habilidades a esta vacante aún.
+          </div>
+        )}
+      </div>
 
       {bad && <div className="vac-bad">{bad}</div>}
       {ok && <div className="vac-ok">{ok}</div>}

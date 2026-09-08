@@ -18,6 +18,9 @@ export function AltaEmpresaForm({ onCreated }: { onCreated: () => void }) {
           telefono: String(form.get('telefono') || '') || null,
           ciudad: String(form.get('ciudad') || '') || null,
           direccion: String(form.get('direccion') || '') || null,
+          descripcion: String(form.get('descripcion') || '') || null,
+          color_primario: String(form.get('color_primario') || '#2563eb'),
+          portal_publico_activo: form.get('portal_publico_activo') !== 'off',
         },
         administrador: {
           nombre: String(form.get('admin_nombre')),

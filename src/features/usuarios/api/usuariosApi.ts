@@ -18,4 +18,9 @@ export const usuariosApi = {
   activate: (id: string) => apiRequest<User>(`/api/v1/usuarios/${id}/activar`, { method: 'PATCH' }),
   deactivate: (id: string) => apiRequest<User>(`/api/v1/usuarios/${id}/desactivar`, { method: 'PATCH' }),
   unlock: (id: string) => apiRequest<User>(`/api/v1/usuarios/${id}/desbloquear`, { method: 'PATCH' }),
+  changePassword: (id: string, data: { new_password: string; must_change?: boolean }, empresaId?: string) => {
+    const q = empresaId ? `?empresa_id=${encodeURIComponent(empresaId)}` : ''
+    return apiRequest<User>(`/api/v1/usuarios/${id}/password${q}`, { method: 'PUT', body: data })
+  },
 }
+

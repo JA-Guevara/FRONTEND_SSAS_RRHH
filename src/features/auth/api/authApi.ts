@@ -56,4 +56,12 @@ export const authApi = {
     apiRequest<components['schemas']['MessageSchema']>(`${AUTH_BASE}/password/change`, {
       method: 'POST', body: { current_password: currentPassword, new_password: newPassword },
     }),
+
+  registroEmpresa: (data: components['schemas']['RegistroEmpresaRequest']) =>
+    apiRequest<components['schemas']['RegistroEmpresaResponse']>(`${AUTH_BASE}/registro-empresa`, {
+      method: 'POST',
+      body: data,
+      skipAuth: true,
+    }),
 }
+
