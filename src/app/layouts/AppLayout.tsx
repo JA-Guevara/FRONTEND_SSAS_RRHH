@@ -1,27 +1,38 @@
-import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
-import { empresasApi } from '../../features/empresas/api/empresasApi'
-import { useCompanyScope } from '../context/CompanyScopeContext.tsx'
-import type { components } from '../../shared/api/schema'
-
-type Company = components['schemas']['EmpresaResponse']
+import { Button } from '../../shared/components'
+import { useAccess } from '../access/AccessProvider'
+import { NAV_ITEMS } from '../access/navigation'
+import type { NavItem } from '../access/navigation'
+import { useCompanyScope } from '../context/CompanyScopeContext'
 
 export function AppLayout() {
   const { logout, user } = useAuth()
-  const { company, selectedCompanyId, selectCompany, clearCompany } = useCompanyScope()
-  const [companies, setCompanies] = useState<Company[]>([])
+  const { company, companies, error, selectCompany, clearCompany } = useCompanyScope()
+  const { can, hasModulo } = useAccess()
 
-  useEffect(() => {
-    if (user?.realm !== 'platform') return
-    void empresasApi.list().then((page) => {
-      setCompanies(page.items)
-      const selected = page.items.find((item) => item.id === selectedCompanyId)
-      if (selected) selectCompany(selected)
-    }).catch(() => setCompanies([]))
-  }, [selectedCompanyId, user?.realm])
+  const esPlataforma = user?.realm === 'platform'
+  const conAlcanceEmpresa = user?.realm === 'tenant' || company !== null
 
-  const hasTenantScope = user?.realm === 'tenant' || company !== null
+  // El menú es consecuencia de los módulos habilitados y de los permisos efectivos:
+  // no hay ninguna entrada fija salvo Inicio y la cuenta.
+  function visible(item: NavItem): boolean {
+    if (item.soloRealm !== undefined && item.soloRealm !== user?.realm) return false
+    if (item.modulo !== undefined) {
+      if (!conAlcanceEmpresa) return false
+      if (!hasModulo(item.modulo)) return false
+    }
+    if (item.permisos !== undefined && !can(...item.permisos)) return false
+    return true
+  }
+
+  const items = NAV_ITEMS.filter(visible)
+  const grupos = items.reduce<Map<string, NavItem[]>>((acc, item) => {
+    const grupo = item.grupo ?? ''
+    acc.set(grupo, [...(acc.get(grupo) ?? []), item])
+    return acc
+  }, new Map())
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -34,24 +45,21 @@ export function AppLayout() {
             <span>Recursos Humanos</span>
           </div>
         </div>
+
         <nav className="main-nav" aria-label="Navegación principal">
-          <NavLink to="/" end>
-            Inicio
-          </NavLink>
-          {hasTenantScope ? (
-            <>
-              <NavLink to="/vacantes">Vacantes</NavLink>
-              <NavLink to="/organizacion">Organización</NavLink>
-              <NavLink to="/usuarios">Usuarios</NavLink>
-              <NavLink to="/roles">Roles</NavLink>
-              <NavLink to="/bitacora">Bitácora</NavLink>
-            </>
-          ) : (
-            <NavLink to="/empresas">Empresas</NavLink>
-          )}
-          <NavLink to="/cambiar-clave">Cambiar contraseña</NavLink>
+          {[...grupos.entries()].map(([grupo, entradas]) => (
+            <div key={grupo}>
+              {grupo !== '' && <p className="nav-group-title">{grupo}</p>}
+              {entradas.map((item) => (
+                <NavLink key={item.to} to={item.to} end={item.to === '/'}>
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          ))}
         </nav>
-        {user?.realm === 'platform' && (
+
+        {esPlataforma && (
           <div className="company-scope">
             <label htmlFor="company-scope-select">Empresa activa</label>
             <select
@@ -59,31 +67,29 @@ export function AppLayout() {
               value={company?.id ?? ''}
               onChange={(event) => {
                 const selected = companies.find((item) => item.id === event.target.value)
-                if (selected) selectCompany(selected)
+                if (selected !== undefined) selectCompany(selected)
                 else clearCompany()
               }}
             >
               <option value="">Seleccionar empresa</option>
-              {companies.map((item) => <option key={item.id} value={item.id}>{item.nombre_comercial}</option>)}
+              {companies.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.nombre_comercial}
+                </option>
+              ))}
             </select>
+            {error !== null && <small>{error}</small>}
           </div>
         )}
+
         <div className="sidebar-user">
           <span>{user?.name}</span>
-          {company && <small>Alcance: {company.nombre_comercial}</small>}
+          {company !== null && <small>Alcance: {company.nombre_comercial}</small>}
           <small>{user?.email}</small>
-          <small>
-            {user?.realm === 'platform'
-              ? 'Administración global'
-              : 'Usuario de empresa'}
-          </small>
-          <button
-            className="button button-quiet"
-            onClick={() => void logout()}
-            type="button"
-          >
+          <small>{esPlataforma ? 'Administración global' : 'Usuario de empresa'}</small>
+          <Button variant="quiet" onClick={() => void logout()}>
             Cerrar sesión
-          </button>
+          </Button>
         </div>
       </aside>
       <main className="main-content">

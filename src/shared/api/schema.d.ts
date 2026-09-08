@@ -1422,6 +1422,7 @@ export interface components {
             anios_experiencia: number;
             /**
              * Cv
+             * Format: binary
              * @description Archivo CV en PDF o DOCX, maximo 5 MB.
              */
             cv: string;
@@ -2423,10 +2424,6 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
         };
         /** VerifyEmailSchema */
         VerifyEmailSchema: {

@@ -51,16 +51,20 @@ function toForm(v: Vacante): FormState {
     titulo: v.titulo,
     cargo_id: String(v.cargo_id),
     descripcion: v.descripcion,
-    requisitos: v.requisitos,
-    beneficios: v.beneficios,
+    requisitos: v.requisitos ?? '',
+    beneficios: v.beneficios ?? '',
     cantidad_vacantes: String(v.cantidad_vacantes),
     salario_min: v.salario_min == null ? '' : String(v.salario_min),
     salario_max: v.salario_max == null ? '' : String(v.salario_max),
     mostrar_salario: v.mostrar_salario,
-    modalidad: v.modalidad,
-    ubicacion: v.ubicacion,
+    modalidad: v.modalidad as ModalidadVacante,
+    ubicacion: v.ubicacion ?? '',
     experiencia_min: v.experiencia_min == null ? '' : String(v.experiencia_min),
+<<<<<<< HEAD
     fecha_cierre: v.fecha_cierre ? v.fecha_cierre.slice(0, 10) : '',
+=======
+    fecha_cierre: v.fecha_cierre ?? '',
+>>>>>>> 2d47e47 (mejoras en sprint 1)
   }
 }
 
@@ -118,7 +122,11 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
       const payload = {
         titulo: form.titulo.trim(),
         cargo_id: form.cargo_id,
+<<<<<<< HEAD
         departamento_id: cargo.departamento_id,
+=======
+        departamento_id: cargos.find((cargo) => cargo.id === form.cargo_id)?.departamento_id ?? '',
+>>>>>>> 2d47e47 (mejoras en sprint 1)
         descripcion: form.descripcion.trim(),
         requisitos: form.requisitos.trim() || null,
         beneficios: form.beneficios.trim() || null,
@@ -127,9 +135,15 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
         salario_max: form.salario_max === '' ? null : Number(form.salario_max),
         mostrar_salario: form.mostrar_salario,
         modalidad: form.modalidad,
+<<<<<<< HEAD
         ubicacion: form.ubicacion.trim() || null,
         experiencia_min: form.experiencia_min === '' ? 0 : Number(form.experiencia_min),
         fecha_cierre: `${form.fecha_cierre}T23:59:59`,
+=======
+        ubicacion: form.ubicacion.trim(),
+        experiencia_min: form.experiencia_min === '' ? 0 : Number(form.experiencia_min),
+        fecha_cierre: form.fecha_cierre,
+>>>>>>> 2d47e47 (mejoras en sprint 1)
       }
       if (vacante) await actualizarVacante(vacante.id, payload, empresaId)
       else {

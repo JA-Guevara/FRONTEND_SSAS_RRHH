@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { apiRequest } from '../../../shared/api/httpClient'
 import type { components } from '../../../shared/api/schema'
 
@@ -186,9 +187,58 @@ export async function getVacantes(filters: VacantesFilters = {}): Promise<Pagina
     page: safePage,
     per_page,
     total_pages,
-  }
+=======
+import { apiRequest, buildQuery } from '../../../shared/api/httpClient'
+import { getCargos, getDepartamentos } from '../../organizacion/api/organizacionApi'
+import type { components } from '../../../shared/api/schema'
+
+export type ModalidadVacante = 'PRESENCIAL' | 'HIBRIDO' | 'REMOTO'
+export const MODALIDADES: ModalidadVacante[] = ['PRESENCIAL', 'HIBRIDO', 'REMOTO']
+export type EstadoVacante = 'BORRADOR' | 'PUBLICADA' | 'PAUSADA' | 'CERRADA'
+export const ESTADOS_VACANTE: EstadoVacante[] = ['BORRADOR', 'PUBLICADA', 'PAUSADA', 'CERRADA']
+
+export type CargoOpcion = { id: string; nombre: string; departamento_id: string | null; departamento_nombre: string }
+export type DepartamentoOpcion = { id: string; nombre: string }
+export type Vacante = components['schemas']['VacanteResponse']
+export type VacanteFormData = components['schemas']['CrearVacanteRequest']
+export type VacanteListItem = Vacante & { cargo_nombre: string; departamento_nombre: string; postulantes_count: number }
+export type VacantesFilters = { estado?: EstadoVacante | 'TODAS'; departamento_id?: string | 'TODOS'; busqueda?: string; page?: number; per_page?: number }
+export type PaginatedVacantes = { items: VacanteListItem[]; total: number; page: number; per_page: number; total_pages: number }
+
+function normalize(vacante: Vacante): VacanteListItem {
+  return { ...vacante, cargo_nombre: vacante.cargo_id, departamento_nombre: vacante.departamento_id, postulantes_count: 0 }
 }
 
+export async function getCargosOpcion(empresaId?: string) {
+  const [cargos, departamentos] = await Promise.all([getCargos(empresaId), getDepartamentos(empresaId)])
+  return cargos.map((cargo) => ({ id: cargo.id, nombre: cargo.nombre, departamento_id: cargo.departamento_id, departamento_nombre: departamentos.find((d) => d.id === cargo.departamento_id)?.nombre ?? cargo.departamento_id ?? 'Sin departamento' }))
+}
+
+export async function getDepartamentosOpcion(empresaId?: string) {
+  return (await getDepartamentos(empresaId)).map(({ id, nombre }) => ({ id, nombre }))
+}
+
+export function getVacante(id: string) {
+  return apiRequest<Vacante>(`/api/v1/vacantes/${id}`)
+}
+
+export async function getVacantes(filters: VacantesFilters = {}): Promise<PaginatedVacantes> {
+  const items = await apiRequest<Vacante[]>(`/api/v1/vacantes${buildQuery({ estado: filters.estado === 'TODAS' ? undefined : filters.estado })}`)
+  let list = items.map(normalize)
+  if (filters.departamento_id && filters.departamento_id !== 'TODOS') list = list.filter((item) => item.departamento_id === filters.departamento_id)
+  if (filters.busqueda?.trim()) {
+    const query = filters.busqueda.trim().toLowerCase()
+    list = list.filter((item) => `${item.titulo} ${item.descripcion} ${item.cargo_nombre} ${item.departamento_nombre} ${item.ubicacion ?? ''}`.toLowerCase().includes(query))
+>>>>>>> 2d47e47 (mejoras en sprint 1)
+  }
+  const page = filters.page ?? 1
+  const perPage = filters.per_page ?? 10
+  const totalPages = Math.max(1, Math.ceil(list.length / perPage))
+  const safePage = Math.min(page, totalPages)
+  return { items: list.slice((safePage - 1) * perPage, safePage * perPage), total: list.length, page: safePage, per_page: perPage, total_pages: totalPages }
+}
+
+<<<<<<< HEAD
 export async function crearVacante(data: VacanteFormData, empresaId?: string): Promise<Vacante> {
   const item = await apiRequest<VacanteResponse>(scopedPath('/api/v1/vacantes', empresaId), {
     method: 'POST',
@@ -238,4 +288,24 @@ export function eliminarVacante(id: string, empresaId?: string) {
     scopedPath(`/api/v1/vacantes/${encodeURIComponent(id)}`, empresaId),
     { method: 'DELETE' },
   )
+=======
+export function crearVacante(data: VacanteFormData) {
+  return apiRequest<Vacante>('/api/v1/vacantes', { method: 'POST', body: data })
+}
+
+export function actualizarVacante(id: string, data: components['schemas']['ActualizarVacanteRequest']) {
+  return apiRequest<Vacante>(`/api/v1/vacantes/${id}`, { method: 'PUT', body: data })
+}
+
+export function publicarVacante(id: string) {
+  return apiRequest<Vacante>(`/api/v1/vacantes/${id}/publicar`, { method: 'PATCH' })
+}
+
+export function pausarVacante(id: string) {
+  return apiRequest<Vacante>(`/api/v1/vacantes/${id}/pausar`, { method: 'PATCH' })
+}
+
+export function cerrarVacante(id: string) {
+  return apiRequest<Vacante>(`/api/v1/vacantes/${id}/cerrar`, { method: 'PATCH' })
+>>>>>>> 2d47e47 (mejoras en sprint 1)
 }

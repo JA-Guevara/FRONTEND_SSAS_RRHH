@@ -1,8 +1,5 @@
 import type { ReactNode } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
-import { RequireRealm } from '../guards/RequireRealm'
-import { AppLayout } from '../layouts/AppLayout'
-import { DashboardPage } from '../pages/DashboardPage'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { ChangePasswordPage } from '../../features/auth/pages/ChangePasswordPage'
 import { ForgotPasswordPage } from '../../features/auth/pages/ForgotPasswordPage'
 import { LoginPage } from '../../features/auth/pages/LoginPage'
@@ -10,19 +7,34 @@ import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { BitacoraPage } from '../../features/bitacora/pages/BitacoraPage'
 import { AltaEmpresaPage } from '../../features/empresas/pages/AltaEmpresaPage'
-import { RolesPage } from '../../features/roles/pages/RolesPage'
-import { ListadoUsuariosPage } from '../../features/usuarios/pages/ListadoUsuariosPage'
+import { EmpresaModulosPage } from '../../features/empresas/pages/EmpresaModulosPage'
 import { OrganizacionPage } from '../../features/organizacion/pages/OrganizacionPage'
-import { VacantesListPage } from '../../features/vacantes/pages/VacantesListPage'
-import { VacanteFormPage } from '../../features/vacantes/pages/VacanteFormPage'
-import { TableroPage } from '../../features/tablero/pages/TableroPage'
 import { PortalPublicoPage } from '../../features/portal/pages/PortalPublicoPage'
-import { FullPageStatus } from '../../shared/components/FullPageStatus'
+import { RolesPage } from '../../features/roles/pages/RolesPage'
+import { TableroPage } from '../../features/tablero/pages/TableroPage'
+import { ListadoUsuariosPage } from '../../features/usuarios/pages/ListadoUsuariosPage'
+import { VacanteFormPage } from '../../features/vacantes/pages/VacanteFormPage'
+import { VacantesListPage } from '../../features/vacantes/pages/VacantesListPage'
+import { HabilidadesPage } from '../../features/habilidades/pages/HabilidadesPage'
+import { PostulantesPage } from '../../features/postulantes/pages/PostulantesPage'
+import { FullPageStatus } from '../../shared/components'
+import { RequireAccess } from '../guards/RequireAccess'
+import { RequireRealm } from '../guards/RequireRealm'
+import { AppLayout } from '../layouts/AppLayout'
+import { DashboardPage } from '../pages/DashboardPage'
+import { NotFoundPage } from '../pages/NotFoundPage'
 
 function ProtectedArea() {
-  const { status } = useAuth()
+  const { status, user } = useAuth()
+  const location = useLocation()
   if (status === 'loading') return <FullPageStatus message="Comprobando tu sesión…" />
-  return status === 'authenticated' ? <AppLayout /> : <Navigate to="/login" replace />
+  if (status !== 'authenticated') return <Navigate to="/login" replace />
+  // Una contraseña provisional bloquea el resto de la aplicación: el backend
+  // devuelve 403 en todos los endpoints con permiso hasta que se cambie.
+  if (user?.must_change_password === true && location.pathname !== '/cambiar-clave') {
+    return <Navigate to="/cambiar-clave" replace />
+  }
+  return <AppLayout />
 }
 
 function GuestOnly({ children }: { children: ReactNode }) {
@@ -31,8 +43,25 @@ function GuestOnly({ children }: { children: ReactNode }) {
   return status === 'authenticated' ? <Navigate to="/" replace /> : children
 }
 
-const tenant = (page: ReactNode) => <RequireRealm realm="tenant" allowPlatformScope>{page}</RequireRealm>
-const platform = (page: ReactNode) => <RequireRealm realm="platform">{page}</RequireRealm>
+function empresa(page: ReactNode, modulo: string, permisos: string[]) {
+  return (
+    <RequireRealm realm="tenant" allowPlatformScope>
+      <RequireAccess modulo={modulo} permisos={permisos}>
+        {page}
+      </RequireAccess>
+    </RequireRealm>
+  )
+}
+
+function plataforma(page: ReactNode, permisos: string[]) {
+  return (
+    <RequireRealm realm="platform">
+      <RequireAccess permisos={permisos}>{page}</RequireAccess>
+    </RequireRealm>
+  )
+}
+
+const RECLUTAMIENTO = ['vacantes:ver', 'platform:vacantes:gestionar']
 
 export function AppRouter() {
   return (
@@ -43,23 +72,60 @@ export function AppRouter() {
 
       {/* Portal público: sin sesión */}
       <Route path="/publico/:slug" element={<PortalPublicoPage />} />
+      <Route path="/publico/:slug/vacantes/:vacanteId" element={<PortalPublicoPage />} />
+      <Route path="/publico/:slug/seguimiento" element={<PortalPublicoPage />} />
 
       <Route element={<ProtectedArea />}>
         <Route index element={<DashboardPage />} />
         <Route path="cambiar-clave" element={<ChangePasswordPage />} />
-        <Route path="usuarios" element={tenant(<ListadoUsuariosPage />)} />
-        <Route path="roles" element={tenant(<RolesPage />)} />
-        <Route path="bitacora" element={tenant(<BitacoraPage />)} />
-        <Route path="empresas" element={platform(<AltaEmpresaPage />)} />
-        <Route path="organizacion" element={tenant(<OrganizacionPage />)} />
-        <Route path="vacantes" element={tenant(<VacantesListPage />)} />
-        <Route path="vacantes/nueva" element={tenant(<VacanteFormPage />)} />
-        <Route path="vacantes/:id/editar" element={tenant(<VacanteFormPage />)} />
-        <Route path="vacantes/:id/tablero" element={tenant(<TableroPage />)} />
-        <Route path="vacantes/tablero" element={tenant(<TableroPage />)} />
+
+        <Route path="empresas" element={plataforma(<AltaEmpresaPage />, ['platform:empresas:ver'])} />
+        <Route
+          path="empresas/:empresaId/modulos"
+          element={plataforma(<EmpresaModulosPage />, ['platform:modulos:ver', 'platform:modulos:gestionar'])}
+        />
+
+        <Route
+          path="usuarios"
+          element={empresa(<ListadoUsuariosPage />, 'USUARIOS', ['usuarios:ver', 'platform:usuarios:gestionar'])}
+        />
+        <Route
+          path="roles"
+          element={empresa(<RolesPage />, 'ROLES', ['roles:gestionar', 'platform:usuarios:gestionar'])}
+        />
+        <Route
+          path="bitacora"
+          element={empresa(<BitacoraPage />, 'BITACORA', ['bitacora:ver', 'platform:bitacora:ver'])}
+        />
+        <Route
+          path="organizacion"
+          element={empresa(<OrganizacionPage />, 'ORGANIZACION', [
+            'departamentos:ver',
+            'cargos:ver',
+            'platform:organizacion:gestionar',
+          ])}
+        />
+
+        <Route path="vacantes" element={empresa(<VacantesListPage />, 'RECLUTAMIENTO', RECLUTAMIENTO)} />
+        <Route path="postulantes" element={empresa(<PostulantesPage />, 'RECLUTAMIENTO', ['postulantes:ver', 'platform:postulantes:gestionar'])} />
+        <Route path="habilidades" element={empresa(<HabilidadesPage />, 'RECLUTAMIENTO', ['habilidades:ver', 'platform:habilidades:gestionar'])} />
+        <Route
+          path="vacantes/nueva"
+          element={empresa(<VacanteFormPage />, 'RECLUTAMIENTO', ['vacantes:crear', 'platform:vacantes:gestionar'])}
+        />
+        <Route
+          path="vacantes/:id/editar"
+          element={empresa(<VacanteFormPage />, 'RECLUTAMIENTO', ['vacantes:editar', 'platform:vacantes:gestionar'])}
+        />
+        <Route
+          path="vacantes/:id/tablero"
+          element={empresa(<TableroPage />, 'RECLUTAMIENTO', ['postulaciones:ver', 'platform:postulaciones:ver'])}
+        />
+
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

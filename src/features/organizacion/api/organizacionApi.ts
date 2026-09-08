@@ -3,34 +3,47 @@ import type { components } from '../../../shared/api/schema'
 
 export type Departamento = components['schemas']['DepartamentoResponse']
 export type Cargo = components['schemas']['CargoResponse']
+export type CrearDepartamento = components['schemas']['CrearDepartamentoRequest']
+export type ActualizarDepartamento = components['schemas']['ActualizarDepartamentoRequest']
+export type CrearCargo = components['schemas']['CrearCargoRequest']
+export type ActualizarCargo = components['schemas']['ActualizarCargoRequest']
 
-type DepartamentoRequest = components['schemas']['CrearDepartamentoRequest']
-type CargoRequest = components['schemas']['CrearCargoRequest']
-
-function scopedPath(path: string, empresaId?: string) {
-  return empresaId ? `${path}?empresa_id=${encodeURIComponent(empresaId)}` : path
+function scope(empresaId?: string | null) {
+  return empresaId ? `?empresa_id=${encodeURIComponent(empresaId)}` : ''
 }
 
-export function getDepartamentos(empresaId?: string) {
-  return apiRequest<Departamento[]>(scopedPath('/api/v1/departamentos', empresaId))
+export function getDepartamentos(empresaId?: string | null) {
+  return apiRequest<Departamento[]>(`/api/v1/departamentos${scope(empresaId)}`)
 }
 
-export function crearDepartamento(data: DepartamentoRequest) {
-  return apiRequest<Departamento>('/api/v1/departamentos', { method: 'POST', body: data })
+export function crearDepartamento(data: CrearDepartamento, empresaId?: string | null) {
+  return apiRequest<Departamento>(`/api/v1/departamentos${scope(empresaId)}`, {
+    method: 'POST', body: data,
+  })
 }
 
-export function actualizarDepartamento(id: string, data: Partial<DepartamentoRequest>) {
-  return apiRequest<Departamento>(`/api/v1/departamentos/${id}`, { method: 'PUT', body: data })
+export function actualizarDepartamento(id: string, data: ActualizarDepartamento, empresaId?: string | null) {
+  return apiRequest<Departamento>(`/api/v1/departamentos/${id}${scope(empresaId)}`, {
+    method: 'PUT', body: data,
+  })
 }
 
-export function getCargos(empresaId?: string) {
-  return apiRequest<Cargo[]>(scopedPath('/api/v1/cargos', empresaId))
+export function eliminarDepartamento(id: string, empresaId?: string | null) {
+  return apiRequest<void>(`/api/v1/departamentos/${id}${scope(empresaId)}`, { method: 'DELETE' })
 }
 
-export function crearCargo(data: CargoRequest) {
-  return apiRequest<Cargo>('/api/v1/cargos', { method: 'POST', body: data })
+export function getCargos(empresaId?: string | null) {
+  return apiRequest<Cargo[]>(`/api/v1/cargos${scope(empresaId)}`)
 }
 
-export function actualizarCargo(id: string, data: Partial<CargoRequest>) {
-  return apiRequest<Cargo>(`/api/v1/cargos/${id}`, { method: 'PUT', body: data })
+export function crearCargo(data: CrearCargo, empresaId?: string | null) {
+  return apiRequest<Cargo>(`/api/v1/cargos${scope(empresaId)}`, { method: 'POST', body: data })
+}
+
+export function actualizarCargo(id: string, data: ActualizarCargo, empresaId?: string | null) {
+  return apiRequest<Cargo>(`/api/v1/cargos/${id}${scope(empresaId)}`, { method: 'PUT', body: data })
+}
+
+export function eliminarCargo(id: string, empresaId?: string | null) {
+  return apiRequest<void>(`/api/v1/cargos/${id}${scope(empresaId)}`, { method: 'DELETE' })
 }

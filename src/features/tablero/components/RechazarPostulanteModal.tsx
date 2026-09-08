@@ -1,8 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import {
+<<<<<<< HEAD
   getMotivosRechazo,
   rechazarPostulante,
   type MotivoRechazo,
+=======
+  getMotivos,
+  rechazarPostulante,
+  type Motivo,
+>>>>>>> 2d47e47 (mejoras en sprint 1)
   type PostulanteDetalle,
 } from '../api/tableroApi'
 
@@ -17,6 +23,7 @@ export function RechazarPostulanteModal({ postulante, empresaId, onClose, onSucc
   const [motivoId, setMotivoId] = useState('')
   const [motivos, setMotivos] = useState<MotivoRechazo[]>([])
   const [loading, setLoading] = useState(false)
+<<<<<<< HEAD
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -28,6 +35,15 @@ export function RechazarPostulanteModal({ postulante, empresaId, onClose, onSucc
       .catch((err: Error) => { if (active) setError(err.message) })
     return () => { active = false }
   }, [empresaId, postulante])
+=======
+  const [error, setError] = useState<string | null>(null)
+  const [motivos, setMotivos] = useState<Motivo[]>([])
+
+  useEffect(() => {
+    if (postulante === null) return
+    void getMotivos().then(setMotivos).catch(() => setMotivos([]))
+  }, [postulante])
+>>>>>>> 2d47e47 (mejoras en sprint 1)
 
   if (!postulante) return null
 
@@ -40,8 +56,13 @@ export function RechazarPostulanteModal({ postulante, empresaId, onClose, onSucc
     setLoading(true)
     setError('')
     try {
+<<<<<<< HEAD
       await rechazarPostulante(postulante!.id, motivoId, empresaId)
       await onSuccess()
+=======
+      const actualizado = await rechazarPostulante(postulante!.id, { motivo_rechazo: motivo })
+      onSuccess(actualizado)
+>>>>>>> 2d47e47 (mejoras en sprint 1)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo rechazar la postulación')
@@ -73,8 +94,17 @@ export function RechazarPostulanteModal({ postulante, empresaId, onClose, onSucc
                 onChange={(event) => setMotivoId(event.target.value)}
                 required
               >
+<<<<<<< HEAD
                 <option value="">Seleccionar motivo</option>
                 {motivos.map((motivo) => <option key={motivo.id} value={motivo.id}>{motivo.nombre}</option>)}
+=======
+                <option value="">-- Selecciona un motivo de rechazo --</option>
+                {motivos.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nombre}
+                  </option>
+                ))}
+>>>>>>> 2d47e47 (mejoras en sprint 1)
               </select>
             </div>
             {motivos.length === 0 && !error && <p>No existen motivos de rechazo configurados.</p>}

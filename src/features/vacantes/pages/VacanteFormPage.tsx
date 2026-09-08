@@ -16,7 +16,11 @@ export function VacanteFormPage() {
     setError('')
     void getCargosOpcion(company?.id).then(setCargos).catch((err: Error) => setError(err.message))
     if (id) {
+<<<<<<< HEAD
       void getVacante(id, company?.id)
+=======
+      void getVacante(id)
+>>>>>>> 2d47e47 (mejoras en sprint 1)
         .then(setVacante)
         .catch((err: Error) => setError(err.message))
     }

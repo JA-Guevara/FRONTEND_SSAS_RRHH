@@ -13,13 +13,18 @@ function formatFecha(iso: string) {
   return new Date(iso).toLocaleDateString('es-BO')
 }
 
+<<<<<<< HEAD
 export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: Props) {
+=======
+export function TableroKanban({ etapas, postulaciones, onChanged }: Props) {
+>>>>>>> 2d47e47 (mejoras en sprint 1)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [overEtapa, setOverEtapa] = useState<string | null>(null)
   const [selectedPostulante, setSelectedPostulante] = useState<PostulanteDetalle | null>(null)
   const [error, setError] = useState('')
 
   async function mover(id: string, etapaId: string) {
+<<<<<<< HEAD
     setError('')
     try {
       await moverPostulacion(id, etapaId, empresaId)
@@ -27,6 +32,10 @@ export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: P
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo cambiar la etapa')
     }
+=======
+    await moverPostulacion(id, etapaId)
+    await onChanged()
+>>>>>>> 2d47e47 (mejoras en sprint 1)
   }
 
   return (
@@ -41,9 +50,15 @@ export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: P
               className={`tb-col ${overEtapa === etapa.id ? 'over' : ''}`}
               onDragOver={(event) => { event.preventDefault(); setOverEtapa(etapa.id) }}
               onDragLeave={() => setOverEtapa(null)}
+<<<<<<< HEAD
               onDrop={(event) => {
                 event.preventDefault()
                 const postulacionId = event.dataTransfer.getData('text/plain') || draggingId
+=======
+              onDrop={async (e) => {
+                e.preventDefault()
+                const id = e.dataTransfer.getData('text/plain') || draggingId
+>>>>>>> 2d47e47 (mejoras en sprint 1)
                 setOverEtapa(null)
                 setDraggingId(null)
                 if (postulacionId) void mover(postulacionId, etapa.id)

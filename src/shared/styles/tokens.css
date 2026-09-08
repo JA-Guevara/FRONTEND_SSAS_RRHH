@@ -1,0 +1,103 @@
+/* Única fuente de verdad visual del producto.
+   Ningún archivo fuera de shared/styles puede declarar :root ni colores literales. */
+:root {
+  /* Marca */
+  --brand-900: #0d4932;
+  --brand-800: #12583d;
+  --brand-700: #176b4b;
+  --brand-600: #1f8259;
+  --brand-500: #278c65;
+  --brand-100: #e6f1eb;
+  --brand-50: #f2f8f5;
+  --brand: var(--brand-700);
+  --brand-dark: var(--brand-900);
+  --accent: #d9f36f;
+  --accent-dark: #b9d64a;
+
+  /* Neutros */
+  --ink: #17211c;
+  --ink-2: #3d4a43;
+  --muted: #66716a;
+  --line: #dce2dc;
+  --line-strong: #c3cdc5;
+  --paper: #ffffff;
+  --surface: #f4f6f3;
+  --surface-2: #eef2ed;
+
+  /* Semánticos: un único valor por significado en todo el producto */
+  --success: #17b26a;
+  --success-bg: #effaf4;
+  --success-ink: #05603a;
+  --warning: #f79009;
+  --warning-bg: #fff8eb;
+  --warning-ink: #b54708;
+  --danger: #b42318;
+  --danger-bg: #fef3f2;
+  --danger-ink: #912018;
+  --info: #175cd3;
+  --info-bg: #eff4ff;
+  --info-ink: #1849a9;
+  --neutral-dot: #98a2b3;
+
+  /* Tipografía: una sola familia de texto en todo el producto */
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+  --text-display: clamp(2.25rem, 4vw, 3.25rem);
+  --leading-tight: 1.2;
+  --leading-normal: 1.55;
+  --tracking-caps: 0.08em;
+
+  /* Espaciado, base 4px */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Formas */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-full: 999px;
+  --shadow-sm: 0 1px 2px rgba(23, 33, 28, 0.06);
+  --shadow-md: 0 6px 18px rgba(23, 33, 28, 0.08);
+  --shadow-lg: 0 20px 60px rgba(23, 33, 28, 0.09);
+  --shadow: var(--shadow-lg);
+  --focus-ring: 0 0 0 3px rgba(23, 107, 75, 0.18);
+
+  /* Controles: una sola altura por tamaño, en toda la aplicación */
+  --control-h-sm: 36px;
+  --control-h: 42px;
+  --control-h-lg: 48px;
+
+  /* Layout */
+  --page-max: 1200px;
+  --page-pad: clamp(1rem, 3vw, 2.5rem);
+  --sidebar-w: 264px;
+
+  /* Apilamiento: sin este orden los modales de una feature tapan los de otra */
+  --z-sticky: 10;
+  --z-dropdown: 100;
+  --z-backdrop: 1000;
+  --z-modal: 1010;
+  --z-toast: 1100;
+
+  color-scheme: light;
+  color: var(--ink);
+  background: var(--surface);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}

@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { components } from '../../../shared/api/schema'
+import { SESSION_EXPIRED_EVENT, tokenStorage } from '../../../shared/api/session'
 import { authApi } from '../api/authApi'
 import { AuthContext } from '../context/AuthContext'
 import type { LoginCredentials, Session, User } from '../context/AuthContext'
-import { tokenStorage } from '../storage/tokenStorage'
 
 type AuthUser = components['schemas']['UserSchema']
 let pendingRestore: Promise<{ session: Session; user: User }> | null = null
@@ -16,7 +16,10 @@ function normalizeUser(raw: AuthUser): User {
     email: raw.email,
     username: raw.username,
     roles: raw.roles ?? [],
-    realm: raw.empresa_id ? 'tenant' : 'platform',
+    permissions: raw.permissions ?? [],
+    modulos: raw.modulos ?? [],
+    realm: raw.empresa_id != null ? 'tenant' : 'platform',
+    empresaId: raw.empresa_id ?? null,
     is_active: raw.is_active,
     email_verified: raw.email_verified,
     must_change_password: raw.must_change_password,
@@ -24,11 +27,16 @@ function normalizeUser(raw: AuthUser): User {
 }
 
 function restoreStoredSession(session: Session) {
-  if (!pendingRestore) {
-    pendingRestore = authApi.refresh(session).then(async (renewed) => {
-      const user = normalizeUser(await authApi.getCurrentUser(renewed.access_token))
-      return { session: { ...renewed, realm: user.realm }, user }
-    }).finally(() => { pendingRestore = null })
+  if (pendingRestore === null) {
+    pendingRestore = authApi
+      .refresh(session)
+      .then(async (renewed) => {
+        const user = normalizeUser(await authApi.getCurrentUser(renewed.access_token))
+        return { session: { ...renewed, realm: user.realm }, user }
+      })
+      .finally(() => {
+        pendingRestore = null
+      })
   }
   return pendingRestore
 }
@@ -41,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true
     async function restoreSession() {
-      if (!session?.refresh_token || !session.realm) {
+      if (session?.refresh_token === undefined || session.realm === undefined) {
         tokenStorage.clear()
         if (active) setStatus('anonymous')
         return
@@ -64,8 +72,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     if (status === 'loading') void restoreSession()
-    return () => { active = false }
+    return () => {
+      active = false
+    }
   }, [session, status])
+
+  // El cliente HTTP avisa cuando el refresh token también caducó: se cierra la
+  // sesión sin recargar la página, para no perder el estado de la SPA.
+  useEffect(() => {
+    function handleExpired() {
+      setSession(null)
+      setUser(null)
+      setStatus('anonymous')
+    }
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, handleExpired)
+  }, [])
+
+  const refreshUser = useCallback(async () => {
+    const current = tokenStorage.get()
+    if (current === null) return
+    setUser(normalizeUser(await authApi.getCurrentUser(current.access_token)))
+  }, [])
 
   async function login(credentials: LoginCredentials) {
     const newSession = await authApi.login(credentials)
@@ -79,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function logout() {
     try {
-      if (session?.refresh_token) await authApi.logout(session)
+      if (session?.refresh_token !== undefined) await authApi.logout(session)
     } finally {
       tokenStorage.clear()
       setSession(null)
@@ -89,13 +117,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{
-      accessToken: session?.access_token ?? null,
-      login,
-      logout,
-      status,
-      user,
-    }}>
+    <AuthContext.Provider
+      value={{
+        accessToken: session?.access_token ?? null,
+        login,
+        logout,
+        refreshUser,
+        status,
+        user,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )
