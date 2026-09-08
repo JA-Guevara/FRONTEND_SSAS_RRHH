@@ -1,4 +1,4 @@
-# Estado operativo del frontend SSAS RRHH
+# Estado operativo del frontend SSAS RRHH 
 
 > Documento de lectura obligatoria para cualquier agente antes de modificar el frontend.
 > Última auditoría documental: 2026-09-07.
