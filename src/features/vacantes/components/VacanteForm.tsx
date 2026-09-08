@@ -56,6 +56,7 @@ const empty: FormState = {
 }
 
 function toForm(v: Vacante): FormState {
+  const cierre = v.fecha_cierre ? new Date(v.fecha_cierre) : null
   return {
     titulo: v.titulo,
     cargo_id: String(v.cargo_id),
@@ -69,7 +70,9 @@ function toForm(v: Vacante): FormState {
     modalidad: v.modalidad as ModalidadVacante,
     ubicacion: v.ubicacion ?? '',
     experiencia_min: v.experiencia_min == null ? '' : String(v.experiencia_min),
-    fecha_cierre: v.fecha_cierre ? v.fecha_cierre.slice(0, 10) : '',
+    fecha_cierre: cierre
+      ? `${cierre.getFullYear()}-${String(cierre.getMonth() + 1).padStart(2, '0')}-${String(cierre.getDate()).padStart(2, '0')}`
+      : '',
   }
 }
 
@@ -151,7 +154,7 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
       e.experiencia_min = 'Debe ser 0 o más'
     }
     if (!form.fecha_cierre) e.fecha_cierre = 'La fecha de cierre es obligatoria'
-    else if (new Date(form.fecha_cierre) <= new Date()) e.fecha_cierre = 'Debe ser una fecha futura'
+    else if (new Date(`${form.fecha_cierre}T23:59:59`) <= new Date()) e.fecha_cierre = 'Debe ser una fecha futura'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -203,7 +206,7 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
         modalidad: form.modalidad,
         ubicacion: form.ubicacion.trim() || null,
         experiencia_min: form.experiencia_min === '' ? 0 : Number(form.experiencia_min),
-        fecha_cierre: `${form.fecha_cierre}T23:59:59`,
+        fecha_cierre: new Date(`${form.fecha_cierre}T23:59:59`).toISOString(),
         habilidades: habilidadesRequeridas.map((h) => ({
           habilidad_id: h.habilidad_id,
           nivel_requerido: h.nivel_requerido,
