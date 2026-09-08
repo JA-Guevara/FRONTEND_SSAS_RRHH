@@ -54,12 +54,12 @@ export function BitacoraPage() {
         {status === 'loading' && <p>Cargando eventos…</p>}
         {status === 'error' && <p className="form-error">No se pudo consultar la bitácora.</p>}
         {status === 'success' && (
-          <div className="table-wrap"><table className="audit-table"><thead><tr><th>Fecha</th><th>Actor</th><th>Módulo</th><th>Acción</th><th>Nivel</th><th /></tr></thead><tbody>
+          <div className="table-wrap"><table className="audit-table"><thead><tr><th>Fecha</th><th>Actor</th><th>Módulo</th><th>Acción</th><th>Nivel</th><th>IP origen</th><th /></tr></thead><tbody>
             {entries.map((entry) => (
               <tr key={entry.id}>
-                <td>{formatter.format(new Date(entry.created_at))}</td><td>{entry.actor_label ?? entry.user_id ?? 'Sistema'}</td><td>{entry.module}</td><td>{entry.action}</td><td>{entry.level}</td>
+                <td>{formatter.format(new Date(entry.created_at))}</td><td>{entry.actor_label ?? entry.user_id ?? 'Sistema'}</td><td>{entry.module}</td><td>{entry.action}</td><td>{entry.level}</td><td><code>{entry.source_ip ?? 'No disponible'}</code></td>
                 <td><button className="detail-button" onClick={() => setExpanded(expanded === entry.id ? null : entry.id)} type="button">{expanded === entry.id ? 'Ocultar' : 'Detalle'}</button></td>
-                {expanded === entry.id && <td className="audit-detail" colSpan={6}><div><strong>Descripción</strong><p>{entry.description}</p></div><div><strong>Datos</strong><pre>{JSON.stringify({ anteriores: entry.previous_data, nuevos: entry.new_data }, null, 2)}</pre></div><small>IP: {entry.source_ip ?? 'No disponible'} · Registro: {entry.record_id ?? 'N/A'}</small></td>}
+                {expanded === entry.id && <td className="audit-detail" colSpan={7}><div><strong>Descripción</strong><p>{entry.description}</p></div><div><strong>Datos</strong><pre>{JSON.stringify({ anteriores: entry.previous_data, nuevos: entry.new_data }, null, 2)}</pre></div><small>IP: {entry.source_ip ?? 'No disponible'} · Registro: {entry.record_id ?? 'N/A'}</small></td>}
               </tr>
             ))}
           </tbody></table>{entries.length === 0 && <div className="empty-table">No existen eventos para los filtros seleccionados.</div>}</div>
