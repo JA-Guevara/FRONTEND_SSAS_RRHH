@@ -24,7 +24,6 @@ export function TableroPage() {
     setLoading(true)
     setError('')
     try {
-<<<<<<< HEAD
       const [ets, posts, selectedVacante] = await Promise.all([
         getEtapas(company?.id),
         getPostulaciones(id, company?.id),
@@ -38,23 +37,6 @@ export function TableroPage() {
       })))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo cargar el tablero')
-=======
-      const [ets, posts] = await Promise.all([
-        getEtapas(),
-        getPostulaciones(id),
-      ])
-      setEtapas(ets)
-      setPostulaciones(posts)
-
-      if (id) {
-        try {
-          const v = await getVacante(id)
-          setVacante(v)
-        } catch {
-          // ignore
-        }
-      }
->>>>>>> 2d47e47 (mejoras en sprint 1)
     } finally {
       setLoading(false)
     }

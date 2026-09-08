@@ -20,7 +20,6 @@ type Props = {
 
 export function PostulanteDetalleModal({ postulante, etapas, empresaId, onClose, onUpdated }: Props) {
   const [showRechazoModal, setShowRechazoModal] = useState(false)
-<<<<<<< HEAD
   const [notas, setNotas] = useState<NotaPostulante[]>([])
   const [nuevaNota, setNuevaNota] = useState('')
   const [puntaje, setPuntaje] = useState<number | ''>('')
@@ -37,10 +36,6 @@ export function PostulanteDetalleModal({ postulante, etapas, empresaId, onClose,
       .catch((err: Error) => { if (active) setError(err.message) })
     return () => { active = false }
   }, [empresaId, postulante])
-=======
-  const [editingScore, setEditingScore] = useState(false)
-  const [nuevoPuntaje, setNuevoPuntaje] = useState<number>(Number(postulante?.puntaje_manual ?? 70))
->>>>>>> 2d47e47 (mejoras en sprint 1)
 
   if (!postulante) return null
   const etapaActual = etapas.find((etapa) => etapa.id === postulante.etapa_id)
@@ -52,13 +47,7 @@ export function PostulanteDetalleModal({ postulante, etapas, empresaId, onClose,
     setSaving(true)
     setError('')
     try {
-<<<<<<< HEAD
       await actualizarPuntajePostulante(postulante!.id, puntaje, empresaId)
-=======
-      const actualizado = await agregarNotaPostulante(p.id, nuevaNota.trim())
-      setCurrentPostulante(actualizado)
-      setNuevaNota('')
->>>>>>> 2d47e47 (mejoras en sprint 1)
       await onUpdated()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar el puntaje')
@@ -144,27 +133,10 @@ export function PostulanteDetalleModal({ postulante, etapas, empresaId, onClose,
               <div className="tb-detail-section">
                 <h4>Perfil profesional</h4>
                 <div className="tb-info-list">
-<<<<<<< HEAD
                   <div className="tb-info-row"><span className="tb-info-label">Experiencia:</span><span className="tb-info-val">{postulante.experiencia_anios} años</span></div>
                   <div className="tb-info-row"><span className="tb-info-label">Nivel educativo:</span><span className="tb-info-val">{postulante.educacion || 'No disponible'}</span></div>
                   <div className="tb-info-row"><span className="tb-info-label">Seguimiento:</span><span className="tb-info-val">{postulante.codigo_seguimiento}</span></div>
                   {postulante.linkedin && <div className="tb-info-row"><span className="tb-info-label">LinkedIn:</span><a className="tb-info-val link" href={postulante.linkedin} target="_blank" rel="noreferrer">Ver perfil</a></div>}
-=======
-                  <div className="tb-info-row">
-                    <span className="tb-info-label">Años de experiencia:</span>
-                    <span className="tb-info-val"><strong>{p.experiencia_anios} años</strong></span>
-                  </div>
-                  <div className="tb-info-row">
-                    <span className="tb-info-label">Formación académica:</span>
-                    <span className="tb-info-val">{p.educacion}</span>
-                  </div>
-                  <div className="tb-info-row">
-                    <span className="tb-info-label">Expectativa salarial:</span>
-                    <span className="tb-info-val text-brand">
-                      A convenir
-                    </span>
-                  </div>
->>>>>>> 2d47e47 (mejoras en sprint 1)
                 </div>
               </div>
             </div>
@@ -176,25 +148,9 @@ export function PostulanteDetalleModal({ postulante, etapas, empresaId, onClose,
                 <button type="button" className="tb-btn tb-btn-primary" disabled={saving || !nuevaNota.trim()} onClick={() => void agregarNota()}>{saving ? 'Guardando...' : 'Agregar nota'}</button>
               </div>
               <div className="tb-notes-timeline">
-<<<<<<< HEAD
                 {notas.length === 0 ? <p className="tb-empty-notes">No hay notas registradas.</p> : notas.map((nota) => (
                   <div key={nota.id} className="tb-note-item"><div className="tb-note-header"><span className="tb-note-author">{nota.autor}</span><span className="tb-note-date">{new Date(nota.created_at).toLocaleString('es-BO')}</span></div><p className="tb-note-text">{nota.contenido}</p></div>
                 ))}
-=======
-                {p.notas.length === 0 ? (
-                  <p className="tb-empty-notes">Aún no hay notas registradas para este candidato.</p>
-                ) : (
-                  p.notas.map((nota) => (
-                    <div key={nota.id} className="tb-note-item">
-                      <div className="tb-note-header">
-                        <span className="tb-note-author">{nota.autor}</span>
-                        <span className="tb-note-date">{nota.created_at}</span>
-                      </div>
-                        <p className="tb-note-text">{nota.contenido}</p>
-                    </div>
-                  ))
-                )}
->>>>>>> 2d47e47 (mejoras en sprint 1)
               </div>
             </div>
           </div>

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { apiDownload, apiRequest } from '../../../shared/api/httpClient'
 import type { components } from '../../../shared/api/schema'
 
@@ -16,23 +15,11 @@ export type PostulanteDetalle = {
   vacante_titulo: string
   etapa_id: string
   etapa: string
-=======
-import { apiRequest, buildQuery, downloadFile } from '../../../shared/api/httpClient'
-import type { components } from '../../../shared/api/schema'
-
-export type Etapa = components['schemas']['EtapaResponse']
-export type Motivo = components['schemas']['MotivoResponse']
-export type NotaPostulante = components['schemas']['NotaResponse'] & { texto: string; fecha: string }
-export type EstadoPostulacion = 'ACTIVA' | 'CONTRATADO' | 'RECHAZADO'
-export type PostulanteDetalle = components['schemas']['TableroItem'] & {
-  vacante_titulo: string
-  etapa_id: string
->>>>>>> 2d47e47 (mejoras en sprint 1)
   nombre_postulante: string
+  email: string
   telefono: string
   ciudad: string
   documento_identidad: string
-<<<<<<< HEAD
   fecha_postulacion: string
   experiencia_anios: number
   educacion: string
@@ -151,66 +138,4 @@ export async function descargarCV(postulanteId: string, empresaId?: string) {
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
-=======
-  experiencia_anios: number
-  educacion: string
-  resumen_profesional: string
-  cv_nombre_archivo: string
-  cv_contenido_texto: string
-  notas: NotaPostulante[]
-  fecha_rechazo: string | null
-  notas_rechazo: string | null
-}
-export type TarjetaPostulacion = PostulanteDetalle
-
-export const MOTIVOS_RECHAZO = ['No cumple con los requisitos técnicos', 'Expectativa salarial fuera del presupuesto', 'Experiencia laboral insuficiente', 'No superó la evaluación', 'Otro motivo'] as const
-
-function itemToDetail(item: components['schemas']['TableroItem']): PostulanteDetalle {
-  return { ...item, vacante_titulo: '', etapa_id: item.etapa_id, nombre_postulante: item.postulante, telefono: '', ciudad: '', documento_identidad: '', experiencia_anios: 0, educacion: '', resumen_profesional: '', cv_nombre_archivo: 'CV', cv_contenido_texto: '', notas: [], fecha_rechazo: null, notas_rechazo: null }
-}
-
-export function getEtapas() {
-  return apiRequest<Etapa[]>('/api/v1/etapas-reclutamiento')
-}
-
-export function getMotivos() {
-  return apiRequest<Motivo[]>('/api/v1/motivos-rechazo')
-}
-
-export async function getPostulaciones(vacanteId?: string) {
-  const items = await apiRequest<components['schemas']['TableroItem'][]>(`/api/v1/postulaciones${buildQuery({ empresa_id: undefined })}`)
-  return items.filter((item) => vacanteId === undefined || item.vacante_id === vacanteId).map(itemToDetail)
-}
-
-export async function getPostulante(id: string) {
-  const raw = await apiRequest<components['schemas']['PostulanteResponse']>(`/api/v1/postulantes/${id}`)
-  const items = await getPostulaciones()
-  const item = items.find((candidate) => candidate.postulante_id === raw.id)
-  if (item === undefined) throw new Error('Postulación no encontrada')
-  return { ...item, email: raw.email, telefono: raw.telefono, ciudad: raw.ciudad, documento_identidad: raw.ci, experiencia_anios: raw.anios_experiencia, educacion: raw.nivel_educativo, cv_nombre_archivo: raw.cv_url ?? 'CV' }
-}
-
-export function moverPostulacion(id: string, etapa_id: string) {
-  return apiRequest<components['schemas']['TableroItem']>(`/api/v1/postulaciones/${id}/etapa`, { method: 'PATCH', body: { etapa_id } })
-}
-
-export async function rechazarPostulante(id: string, data: { motivo_rechazo: string }) {
-  await apiRequest<components['schemas']['TableroItem']>(`/api/v1/postulaciones/${id}/rechazar`, { method: 'PATCH', body: { motivo_rechazo_id: data.motivo_rechazo } })
-  return getPostulante(id)
-}
-
-export async function agregarNotaPostulante(id: string, texto: string) {
-  if (!texto.trim()) throw new Error('La nota no puede estar vacía.')
-  await apiRequest<components['schemas']['NotaResponse']>(`/api/v1/postulaciones/${id}/notas`, { method: 'POST', body: { contenido: texto.trim() } })
-  return getPostulante(id)
-}
-
-export async function actualizarPuntajePostulante(id: string, puntaje: number) {
-  await apiRequest<components['schemas']['TableroItem']>(`/api/v1/postulaciones/${id}/puntaje`, { method: 'PATCH', body: { puntaje } })
-  return getPostulante(id)
-}
-
-export async function descargarCV(postulante: PostulanteDetalle) {
-  await downloadFile(`/api/v1/postulantes/${postulante.postulante_id}/cv`, `CV_${postulante.nombre_postulante.replace(/\s+/g, '_')}`)
->>>>>>> 2d47e47 (mejoras en sprint 1)
 }

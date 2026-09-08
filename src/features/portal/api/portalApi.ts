@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import type { components } from '../../../shared/api/schema'
 
 export type EmpresaPublica = {
@@ -21,18 +20,23 @@ export type VacantePublica = components['schemas']['VacantePublicaResponse'] & {
   salario_min: string | null
   salario_max: string | null
 }
-=======
-import { apiRequest } from '../../../shared/api/httpClient'
-import type { components } from '../../../shared/api/schema'
 
-export type NivelEducativo = 'SECUNDARIA' | 'TECNICO' | 'LICENCIATURA' | 'MAESTRIA' | 'DOCTORADO'
-export const NIVELES_EDUCATIVOS: NivelEducativo[] = ['SECUNDARIA', 'TECNICO', 'LICENCIATURA', 'MAESTRIA', 'DOCTORADO']
->>>>>>> 2d47e47 (mejoras en sprint 1)
+export type NivelEducativo =
+  | 'SECUNDARIA'
+  | 'TECNICO'
+  | 'LICENCIATURA'
+  | 'MAESTRIA'
+  | 'DOCTORADO'
 
-export type VacantePublica = components['schemas']['VacantePublicaResponse']
-export type EmpresaPublica = { nombre_comercial: string; ciudad: string | null }
+export const NIVELES_EDUCATIVOS: NivelEducativo[] = [
+  'SECUNDARIA',
+  'TECNICO',
+  'LICENCIATURA',
+  'MAESTRIA',
+  'DOCTORADO',
+]
 
-type PublicApplication = {
+export type PostulacionFormData = {
   nombres: string
   apellidos: string
   ci: string
@@ -45,7 +49,6 @@ type PublicApplication = {
   cv: File | null
 }
 
-<<<<<<< HEAD
 type ApiErrorPayload = {
   detail?: string | { msg?: string }[]
 }
@@ -126,40 +129,4 @@ export async function enviarPostulacion(vacanteId: string, data: PostulacionForm
     '/api/v1/publico/postulaciones',
     { method: 'POST', body: formData },
   )
-=======
-const publicPath = (slug: string) => `/api/v1/publico/${encodeURIComponent(slug)}/vacantes`
-
-export async function getVacantesPublicas(slug: string): Promise<VacantePublica[]> {
-  return apiRequest<VacantePublica[]>(publicPath(slug), { skipAuth: true })
-}
-
-export async function getVacantePublica(slug: string, id: string): Promise<VacantePublica> {
-  return apiRequest<VacantePublica>(`${publicPath(slug)}/${encodeURIComponent(id)}`, { skipAuth: true })
-}
-
-export async function getEmpresaPublica(slug: string): Promise<EmpresaPublica> {
-  const vacantes = await getVacantesPublicas(slug)
-  return { nombre_comercial: vacantes[0]?.empresa_nombre ?? slug, ciudad: null }
-}
-
-export async function enviarPostulacion(vacante: VacantePublica, data: PublicApplication) {
-  if (data.cv === null) throw new Error('El CV es obligatorio')
-  const formData = new FormData()
-  formData.append('vacante_id', vacante.id)
-  formData.append('nombres', data.nombres)
-  formData.append('apellidos', data.apellidos)
-  formData.append('ci', data.ci)
-  formData.append('email', data.email)
-  formData.append('telefono', data.telefono)
-  formData.append('ciudad', data.ciudad)
-  formData.append('nivel_educativo', data.nivel_educativo)
-  formData.append('anios_experiencia', data.anios_experiencia)
-  formData.append('linkedin', data.linkedin)
-  formData.append('cv', data.cv)
-  return apiRequest<components['schemas']['PostulacionPublicaResponse']>('/api/v1/publico/postulaciones', {
-    method: 'POST',
-    formData,
-    skipAuth: true,
-  })
->>>>>>> 2d47e47 (mejoras en sprint 1)
 }

@@ -49,7 +49,7 @@ export function PostulacionForm({ vacante, onBack }: Props) {
     if (!validate()) return
     setSaving(true)
     try {
-      const res = await enviarPostulacion(vacante, form)
+      const res = await enviarPostulacion(vacante.id, form)
       setCodigo(res.codigo_seguimiento)
       setForm(empty)
     } catch (err) {

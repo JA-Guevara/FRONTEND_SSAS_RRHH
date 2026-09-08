@@ -15,10 +15,7 @@ type Props = {
   onClose: () => void
   onSuccess: () => Promise<void> | void
   onEditar?: (id: string) => void
-<<<<<<< HEAD
   empresaId?: string
-=======
->>>>>>> 2d47e47 (mejoras en sprint 1)
 }
 
 export function ConfirmarAccionVacanteModal({

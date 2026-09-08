@@ -232,11 +232,7 @@ export function VacantesListPage() {
               className="vac-select"
               value={departamentoFilter}
               onChange={(e) => {
-<<<<<<< HEAD
                 const val = e.target.value
-=======
-                const val = e.target.value === 'TODOS' ? 'TODOS' : e.target.value
->>>>>>> 2d47e47 (mejoras en sprint 1)
                 setDepartamentoFilter(val)
                 setPage(1)
               }}
