@@ -17,16 +17,38 @@ export function Modal({ title, onClose, children, footer, size = 'md' }: ModalPr
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
 
+  // `onClose` suele llegar como función anónima, así que su identidad cambia en cada
+  // render. Se guarda en una referencia para que los efectos de abajo NO dependan de
+  // ella: si dependieran, cada pulsación de tecla volvería a ejecutarlos y el foco
+  // saltaría al primer campo, haciendo imposible escribir más de un carácter.
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
+
+  // Solo al montar y desmontar: foco inicial, bloqueo del desplazamiento y
+  // devolución del foco al elemento que abrió el diálogo.
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null
-    const dialog = dialogRef.current
-    dialog?.querySelector<HTMLElement>(FOCUSABLE)?.focus()
+    dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus()
 
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      previouslyFocused?.focus()
+    }
+  }, [])
+
+  // Escape para cerrar y tabulación circular dentro del diálogo.
+  useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        onClose()
+        onCloseRef.current()
         return
       }
+      const dialog = dialogRef.current
       if (event.key !== 'Tab' || dialog === null) return
       const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE))
       if (focusable.length === 0) return
@@ -42,14 +64,8 @@ export function Modal({ title, onClose, children, footer, size = 'md' }: ModalPr
     }
 
     document.addEventListener('keydown', handleKeyDown)
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = previousOverflow
-      previouslyFocused?.focus()
-    }
-  }, [onClose])
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   return (
     <div
