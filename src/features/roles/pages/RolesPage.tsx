@@ -5,7 +5,19 @@ import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
 import { Alert, Badge, Button, ConfirmDialog, Field, PageHeader, Panel } from '../../../shared/components'
 
 type Role = components['schemas']['RoleSchema']
-type Permission = components['schemas']['PermissionSchema']
+type Permission = components['schemas']['PermisoSchema']
+
+/** Convierte un código de recurso/operación (ej. "postulaciones_publicas") en texto legible. */
+function humanizar(texto: string): string {
+  return texto
+    .toLowerCase()
+    .replace(/[_\-]/g, ' ')
+    .replace(/\b\w/g, (caracter) => caracter.toUpperCase())
+}
+
+function nombrePermiso(p: Permission): string {
+  return `${humanizar(p.operacion)} ${humanizar(p.recurso)}`
+}
 
 export function RolesPage() {
   const { company } = useCompanyScope()
@@ -112,7 +124,7 @@ export function RolesPage() {
   const groupedPermissions = useMemo(() => {
     const groups: Record<string, Permission[]> = {}
     for (const p of permissions) {
-      const groupKey = p.resource ? p.resource.toUpperCase() : 'GENERAL'
+      const groupKey = p.modulo ? p.modulo.toUpperCase() : 'GENERAL'
       if (!groups[groupKey]) groups[groupKey] = []
       groups[groupKey].push(p)
     }
@@ -393,10 +405,10 @@ export function RolesPage() {
                             />
                             <div>
                               <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.85rem' }}>
-                                {p.name}
+                                {nombrePermiso(p)}
                               </div>
                               <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.1rem' }}>
-                                {p.description || `${p.resource}:${p.action}`}
+                                {p.descripcion || p.codigo}
                               </div>
                             </div>
                           </label>

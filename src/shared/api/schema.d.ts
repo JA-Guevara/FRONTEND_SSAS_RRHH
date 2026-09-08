@@ -564,6 +564,50 @@ export interface paths {
         patch: operations["restore_empresa_api_v1_empresas__empresa_id__restaurar_patch"];
         trace?: never;
     };
+    "/api/v1/parametros-legales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar parámetros legales
+         * @description Lista los periodos de parámetros legales de la empresa autorizada, ordenados del más reciente al más antiguo; solo lectura. Permisos: `empresa:ver` o `platform:empresas:ver`.
+         */
+        get: operations["listar_parametros_api_v1_parametros_legales_get"];
+        put?: never;
+        /**
+         * Registrar periodo de parámetros legales
+         * @description Crea un periodo de vigencia con los parámetros legales (AFP, aporte solidario, RC-IVA, aguinaldo, prima). Valida rango y evita solapamientos con otros periodos. Requiere `empresa:editar` o `platform:empresas:editar`. Queda registrado en la bitácora.
+         */
+        post: operations["crear_parametros_api_v1_parametros_legales_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parametros-legales/{periodo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Actualizar periodo de parámetros legales
+         * @description Actualiza los parámetros o la vigencia de un periodo de la empresa autorizada, manteniendo el historial. Valida solapamientos contra los demás periodos. Requiere `empresa:editar` o `platform:empresas:editar`.
+         */
+        put: operations["actualizar_parametros_api_v1_parametros_legales__periodo_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/publico/postulaciones": {
         parameters: {
             query?: never;
@@ -1374,6 +1418,23 @@ export interface components {
              */
             modulos: string[];
         };
+        /** ActualizarParametroLegalRequest */
+        ActualizarParametroLegalRequest: {
+            /** Vigencia Desde */
+            vigencia_desde?: string | null;
+            /** Vigencia Hasta */
+            vigencia_hasta?: string | null;
+            /** Afp */
+            afp?: number | string | null;
+            /** Aporte Solidario */
+            aporte_solidario?: number | string | null;
+            /** Rc Iva */
+            rc_iva?: number | string | null;
+            /** Aguinaldo */
+            aguinaldo?: number | string | null;
+            /** Prima */
+            prima?: number | string | null;
+        };
         /** ActualizarUsuarioRequest */
         ActualizarUsuarioRequest: {
             /** Nombre */
@@ -2175,6 +2236,68 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** ParametroLegalRequest */
+        ParametroLegalRequest: {
+            /**
+             * Vigencia Desde
+             * Format: date
+             */
+            vigencia_desde: string;
+            /**
+             * Vigencia Hasta
+             * Format: date
+             */
+            vigencia_hasta: string;
+            /** Afp */
+            afp?: number | string | null;
+            /** Aporte Solidario */
+            aporte_solidario?: number | string | null;
+            /** Rc Iva */
+            rc_iva?: number | string | null;
+            /** Aguinaldo */
+            aguinaldo?: number | string | null;
+            /** Prima */
+            prima?: number | string | null;
+        };
+        /** ParametroLegalResponse */
+        ParametroLegalResponse: {
+            /** Id */
+            id: string;
+            /** Empresa Id */
+            empresa_id: string;
+            /**
+             * Vigencia Desde
+             * Format: date
+             */
+            vigencia_desde: string;
+            /**
+             * Vigencia Hasta
+             * Format: date
+             */
+            vigencia_hasta: string;
+            /** Afp */
+            afp: string | null;
+            /** Aporte Solidario */
+            aporte_solidario: string | null;
+            /** Rc Iva */
+            rc_iva: string | null;
+            /** Aguinaldo */
+            aguinaldo: string | null;
+            /** Prima */
+            prima: string | null;
+            /** Vigente */
+            vigente: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** PermisoSchema */
         PermisoSchema: {
@@ -4622,6 +4745,191 @@ export interface operations {
                 content?: never;
             };
             /** @description La empresa no está eliminada. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description El servicio o una dependencia externa no está disponible. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listar_parametros_api_v1_parametros_legales_get: {
+        parameters: {
+            query: {
+                empresa_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParametroLegalResponse"][];
+                };
+            };
+            /** @description Token de acceso ausente, inválido o vencido. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no tiene el permiso requerido, intenta operar fuera de su empresa o debe cambiar primero su contraseña. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description El servicio o una dependencia externa no está disponible. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    crear_parametros_api_v1_parametros_legales_post: {
+        parameters: {
+            query: {
+                empresa_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParametroLegalRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParametroLegalResponse"];
+                };
+            };
+            /** @description Token de acceso ausente, inválido o vencido. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no tiene el permiso requerido, intenta operar fuera de su empresa o debe cambiar primero su contraseña. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El periodo se solapa con otro ya registrado. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rango de fechas o porcentajes fuera de lo permitido. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El servicio o una dependencia externa no está disponible. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    actualizar_parametros_api_v1_parametros_legales__periodo_id__put: {
+        parameters: {
+            query: {
+                empresa_id: string;
+            };
+            header?: never;
+            path: {
+                periodo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarParametroLegalRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParametroLegalResponse"];
+                };
+            };
+            /** @description Token de acceso ausente, inválido o vencido. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no tiene el permiso requerido, intenta operar fuera de su empresa o debe cambiar primero su contraseña. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Periodo no encontrado. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El periodo se solapa con otro ya registrado. */
             409: {
                 headers: {
                     [name: string]: unknown;

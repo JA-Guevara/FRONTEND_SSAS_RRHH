@@ -5,7 +5,7 @@ type Role = components['schemas']['RoleSchema']
 
 export const rolesApi = {
   list: (empresaId?: string) => apiRequest<Role[]>(`/api/v1/roles${empresaId ? `?empresa_id=${encodeURIComponent(empresaId)}` : ''}`),
-  permisos: () => apiRequest<components['schemas']['PermissionSchema'][]>('/api/v1/permisos'),
+  permisos: () => apiRequest<components['schemas']['PermisoSchema'][]>('/api/v1/permisos'),
   create: (data: components['schemas']['CreateRoleRequest']) =>
     apiRequest<Role>('/api/v1/roles', { method: 'POST', body: data }),
   update: (id: string, data: components['schemas']['UpdateRoleRequest']) =>
