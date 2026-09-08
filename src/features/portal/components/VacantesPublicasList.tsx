@@ -2,13 +2,18 @@ import type { VacantePublica } from '../api/portalApi'
 
 type Props = {
   vacantes: VacantePublica[]
-  onSelect: (id: number) => void
+  onSelect: (id: string) => void
 }
 
 export function VacantesPublicasList({ vacantes, onSelect }: Props) {
   return (
     <>
       <h1>Vacantes abiertas</h1>
+      {vacantes.length === 0 && (
+        <article className="po-card">
+          <p className="po-sub">No hay vacantes publicadas por el momento.</p>
+        </article>
+      )}
       {vacantes.map((v) => (
         <article key={v.id} className="po-card">
           <div className="po-row">

@@ -32,8 +32,8 @@ export function PortalPublicoPage() {
       .catch((err: Error) => setError(err.message))
   }, [slug])
 
-  async function abrirDetalle(id: number) {
-    const item = await getVacantePublica(id)
+  async function abrirDetalle(id: string) {
+    const item = await getVacantePublica(slug, id)
     setVacante(item)
     setVista('detalle')
   }

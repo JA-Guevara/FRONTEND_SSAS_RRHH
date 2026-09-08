@@ -1,21 +1,24 @@
+import type { components } from '../../../shared/api/schema'
+
 export type EmpresaPublica = {
   slug: string
   nombre_comercial: string
   ciudad: string
 }
 
-export type VacantePublica = {
-  id: number
+export type VacantePublica = components['schemas']['VacantePublicaResponse'] & {
+  id: string
+  empresa_nombre: string
   titulo: string
   descripcion: string
-  requisitos: string
-  beneficios: string
+  requisitos: string | null
+  beneficios: string | null
   modalidad: string
-  ubicacion: string
+  ubicacion: string | null
   fecha_cierre: string
   mostrar_salario: boolean
-  salario_min: number | null
-  salario_max: number | null
+  salario_min: string | null
+  salario_max: string | null
 }
 
 export type NivelEducativo =
@@ -46,71 +49,84 @@ export type PostulacionFormData = {
   cv: File | null
 }
 
-const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms))
-
-const EMPRESAS: Record<string, EmpresaPublica> = {
-  'textiles-del-oriente': {
-    slug: 'textiles-del-oriente',
-    nombre_comercial: 'Textiles del Oriente',
-    ciudad: 'Santa Cruz de la Sierra',
-  },
+type ApiErrorPayload = {
+  detail?: string | { msg?: string }[]
 }
 
-const VACANTES: VacantePublica[] = [
-  {
-    id: 3,
-    titulo: 'Desarrollador Backend Semi Senior',
-    descripcion: 'Desarrollo de APIs y servicios internos.',
-    requisitos: 'Licenciatura en Sistemas o afín.',
-    beneficios: 'Seguro de salud, horario flexible',
-    modalidad: 'HIBRIDO',
-    ubicacion: 'Santa Cruz',
-    fecha_cierre: '2026-09-10',
-    mostrar_salario: true,
-    salario_min: 5500,
-    salario_max: 8500,
-  },
-  {
-    id: 4,
-    titulo: 'Auxiliar Contable',
-    descripcion: 'Apoyo en registros contables y conciliaciones.',
-    requisitos: 'Estudiante o egresado de Contaduría.',
-    beneficios: 'Capacitación interna',
-    modalidad: 'PRESENCIAL',
-    ubicacion: 'Santa Cruz',
-    fecha_cierre: '2026-09-15',
-    mostrar_salario: false,
-    salario_min: null,
-    salario_max: null,
-  },
-]
+const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+
+function getApiUrl(path: string) {
+  return `${API_URL}${path}`
+}
+
+async function readApiError(response: Response) {
+  const data = await response.json().catch(() => null) as ApiErrorPayload | null
+  const detail = data?.detail
+
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    const message = detail
+      .map((item) => item.msg)
+      .filter(Boolean)
+      .join('. ')
+    if (message) return message
+  }
+
+  return 'No se pudo completar la solicitud'
+}
+
+async function publicRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(getApiUrl(path), {
+    headers: { Accept: 'application/json', ...init?.headers },
+    ...init,
+  })
+
+  if (!response.ok) {
+    throw new Error(await readApiError(response))
+  }
+
+  return response.json() as Promise<T>
+}
+
+export async function getVacantesPublicas(slug: string) {
+  return publicRequest<VacantePublica[]>(
+    `/api/v1/publico/${encodeURIComponent(slug)}/vacantes`,
+  )
+}
 
 export async function getEmpresaPublica(slug: string) {
-  await delay()
-  const empresa = EMPRESAS[slug]
-  if (!empresa) throw new Error('Empresa no encontrada')
-  return empresa
-}
+  const vacantes = await getVacantesPublicas(slug)
+  const firstVacante = vacantes[0]
 
-export async function getVacantesPublicas(_slug: string) {
-  await delay()
-  return [...VACANTES]
-}
-
-export async function getVacantePublica(id: number) {
-  await delay()
-  const vacante = VACANTES.find((v) => v.id === id)
-  if (!vacante) throw new Error('Vacante no encontrada')
-  return vacante
-}
-
-export async function enviarPostulacion(_vacanteId: number, data: PostulacionFormData) {
-  await delay(700)
-  if (data.cv && data.cv.size > 5 * 1024 * 1024) {
-    const error = new Error('El CV no puede superar 5 MB') as Error & { fields?: Record<string, string> }
-    error.fields = { cv: 'Máximo 5 MB' }
-    throw error
+  return {
+    slug,
+    nombre_comercial: firstVacante?.empresa_nombre ?? slug,
+    ciudad: firstVacante?.ubicacion ?? '',
   }
-  const codigo = `TX-${Math.random().toString(36).slice(2, 7).toUpperCase()}`
-  return { codigo_seguimiento: codigo }
+}
+
+export async function getVacantePublica(slug: string, id: string) {
+  return publicRequest<VacantePublica>(
+    `/api/v1/publico/${encodeURIComponent(slug)}/vacantes/${encodeURIComponent(id)}`,
+  )
+}
+
+export async function enviarPostulacion(vacanteId: string, data: PostulacionFormData) {
+  const formData = new FormData()
+  formData.set('vacante_id', vacanteId)
+  formData.set('nombres', data.nombres)
+  formData.set('apellidos', data.apellidos)
+  formData.set('ci', data.ci)
+  formData.set('email', data.email)
+  formData.set('telefono', data.telefono)
+  formData.set('ciudad', data.ciudad)
+  formData.set('nivel_educativo', data.nivel_educativo)
+  formData.set('anios_experiencia', String(Number(data.anios_experiencia || 0)))
+  formData.set('linkedin', data.linkedin)
+  if (data.cv) formData.set('cv', data.cv)
+
+  return publicRequest<components['schemas']['PostulacionPublicaResponse']>(
+    '/api/v1/publico/postulaciones',
+    { method: 'POST', body: formData },
+  )
 }
