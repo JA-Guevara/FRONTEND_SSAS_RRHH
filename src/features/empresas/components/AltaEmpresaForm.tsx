@@ -6,10 +6,13 @@ export function AltaEmpresaForm({ onCreated }: { onCreated: () => void }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const form = new FormData(event.currentTarget)
+    const formElement = event.currentTarget
+    const form = new FormData(formElement)
     try {
-      await empresasApi.provision({
+      const result = await empresasApi.provision({
         empresa: {
+          color_primario: '#2563eb',
+          portal_publico_activo: true,
           razon_social: String(form.get('razon_social')),
           nombre_comercial: String(form.get('nombre_comercial')),
           slug: String(form.get('slug')),
@@ -27,8 +30,10 @@ export function AltaEmpresaForm({ onCreated }: { onCreated: () => void }) {
           password: String(form.get('admin_password')),
         },
       })
-      event.currentTarget.reset()
-      setMessage('Empresa y administrador creados correctamente.')
+      formElement.reset()
+      setMessage(result.verification_email_sent
+        ? 'Empresa y administrador creados correctamente. Correo de verificacion enviado.'
+        : 'Empresa y administrador creados. No se pudo enviar el correo de verificacion.')
       onCreated()
     } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo crear la empresa') }
   }

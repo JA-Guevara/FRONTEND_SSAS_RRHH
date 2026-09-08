@@ -133,7 +133,7 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
       }
       if (vacante) await actualizarVacante(vacante.id, payload, empresaId)
       else {
-        await crearVacante(payload, empresaId)
+        await crearVacante({ ...payload, habilidades: [] }, empresaId)
         setForm(empty)
       }
       setOk(vacante ? 'Vacante actualizada' : 'Vacante guardada como borrador')

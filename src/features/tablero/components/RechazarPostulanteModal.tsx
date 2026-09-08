@@ -23,6 +23,8 @@ export function RechazarPostulanteModal({ postulante, empresaId, onClose, onSucc
     if (!postulante) return
     let active = true
     setError('')
+    setMotivoId('')
+    setMotivos([])
     void getMotivosRechazo(empresaId)
       .then((items) => { if (active) setMotivos(items.filter((item) => item.activo)) })
       .catch((err: Error) => { if (active) setError(err.message) })

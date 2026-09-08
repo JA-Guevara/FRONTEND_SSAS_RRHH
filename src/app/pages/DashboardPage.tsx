@@ -2,24 +2,29 @@ import { useEffect, useState } from 'react'
 import { getDashboardResumen } from '../../features/dashboard/api/dashboardApi'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import type { components } from '../../shared/api/schema'
+import { useCompanyScope } from '../context/CompanyScopeContext'
 
 type Dashboard = components['schemas']['ResumenDashboardResponse']
 
 export function DashboardPage() {
   const { user } = useAuth()
-  const isPlatform = user?.realm === 'platform'
+  const { company } = useCompanyScope()
+  const companyId = user?.realm === 'platform' ? company?.id : undefined
+  const isPlatform = user?.realm === 'platform' && !companyId
   const [data, setData] = useState<Dashboard | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
     let active = true
-    void getDashboardResumen().then((result) => {
+    setData(null)
+    setError('')
+    void getDashboardResumen(companyId).then((result) => {
       if (active) setData(result)
     }).catch((cause: unknown) => {
       if (active) setError(cause instanceof Error ? cause.message : 'No se pudo cargar el resumen.')
     })
     return () => { active = false }
-  }, [])
+  }, [companyId])
 
   const empresa = data?.empresa
   const plataforma = data?.plataforma

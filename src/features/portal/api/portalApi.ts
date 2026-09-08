@@ -95,13 +95,13 @@ export async function getVacantesPublicas(slug: string) {
 }
 
 export async function getEmpresaPublica(slug: string) {
-  const vacantes = await getVacantesPublicas(slug)
-  const firstVacante = vacantes[0]
-
+  const empresa = await publicRequest<{ slug: string; nombre_comercial: string }>(
+    `/api/v1/publico/${encodeURIComponent(slug)}`,
+  )
   return {
-    slug,
-    nombre_comercial: firstVacante?.empresa_nombre ?? slug,
-    ciudad: firstVacante?.ubicacion ?? '',
+    slug: empresa.slug,
+    nombre_comercial: empresa.nombre_comercial,
+    ciudad: '',
   }
 }
 

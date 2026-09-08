@@ -1,4 +1,4 @@
-import { apiRequest } from '../../../shared/api/httpClient'
+import { apiRequest, buildQuery } from '../../../shared/api/httpClient'
 import type { components } from '../../../shared/api/schema'
 
 type CreateUser = components['schemas']['CrearUsuarioRequest']
@@ -14,8 +14,8 @@ export const usuariosApi = {
     return apiRequest<components['schemas']['UsuarioPageResponse']>(`/api/v1/usuarios?${query}`)
   },
   create: (data: CreateUser) => apiRequest<User>('/api/v1/usuarios', { method: 'POST', body: data }),
-  update: (id: string, data: UpdateUser) => apiRequest<User>(`/api/v1/usuarios/${id}`, { method: 'PATCH', body: data }),
-  activate: (id: string) => apiRequest<User>(`/api/v1/usuarios/${id}/activar`, { method: 'PATCH' }),
-  deactivate: (id: string) => apiRequest<User>(`/api/v1/usuarios/${id}/desactivar`, { method: 'PATCH' }),
-  unlock: (id: string) => apiRequest<User>(`/api/v1/usuarios/${id}/desbloquear`, { method: 'PATCH' }),
+  update: (id: string, data: UpdateUser, empresaId?: string) => apiRequest<User>(`/api/v1/usuarios/${id}${buildQuery({ empresa_id: empresaId })}`, { method: 'PATCH', body: data }),
+  activate: (id: string, empresaId?: string) => apiRequest<User>(`/api/v1/usuarios/${id}/activar${buildQuery({ empresa_id: empresaId })}`, { method: 'PATCH' }),
+  deactivate: (id: string, empresaId?: string) => apiRequest<User>(`/api/v1/usuarios/${id}/desactivar${buildQuery({ empresa_id: empresaId })}`, { method: 'PATCH' }),
+  unlock: (id: string, empresaId?: string) => apiRequest<User>(`/api/v1/usuarios/${id}/desbloquear${buildQuery({ empresa_id: empresaId })}`, { method: 'PATCH' }),
 }

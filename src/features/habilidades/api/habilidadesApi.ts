@@ -8,10 +8,10 @@ export function listarHabilidades(empresaId?: string) {
   return apiRequest<Habilidad[]>(`/api/v1/habilidades${buildQuery({ empresa_id: empresaId })}`)
 }
 
-export function crearHabilidad(data: HabilidadRequest) {
-  return apiRequest<Habilidad>('/api/v1/habilidades', { method: 'POST', body: data })
+export function crearHabilidad(data: HabilidadRequest, empresaId?: string) {
+  return apiRequest<Habilidad>(`/api/v1/habilidades${buildQuery({ empresa_id: empresaId })}`, { method: 'POST', body: data })
 }
 
-export function actualizarHabilidad(id: string, data: Partial<HabilidadRequest>) {
-  return apiRequest<Habilidad>(`/api/v1/habilidades/${id}`, { method: 'PUT', body: data })
+export function actualizarHabilidad(id: string, data: Partial<HabilidadRequest>, empresaId?: string) {
+  return apiRequest<Habilidad>(`/api/v1/habilidades/${id}${buildQuery({ empresa_id: empresaId })}`, { method: 'PUT', body: data })
 }

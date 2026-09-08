@@ -58,8 +58,8 @@ export function ListadoUsuariosPage() {
 
   async function toggle(user: User) {
     try {
-      if (user.is_active) await usuariosApi.deactivate(user.id)
-      else await usuariosApi.activate(user.id)
+      if (user.is_active) await usuariosApi.deactivate(user.id, company?.id)
+      else await usuariosApi.activate(user.id, company?.id)
       await load()
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'No se pudo cambiar el estado')

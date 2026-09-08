@@ -34,20 +34,21 @@ export function RolesPage() {
   async function savePermissions() {
     if (selectedRole === null) return
     try {
-      const updated = await rolesApi.assignPermissions(selectedRole.id, [...selectedPermissions])
+      const updated = await rolesApi.assignPermissions(selectedRole.id, [...selectedPermissions], company?.id)
       setRoles((current) => current.map((role) => role.id === updated.id ? updated : role))
       setSelectedRole(updated)
       setMessage('Permisos actualizados correctamente.')
     } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudieron actualizar los permisos') }
   }
-  useEffect(() => { void load() }, [company?.id])
+  useEffect(() => { setSelectedRole(null); setSelectedPermissions(new Set()); void load() }, [company?.id])
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const form = new FormData(event.currentTarget)
+    const formElement = event.currentTarget
+    const form = new FormData(formElement)
     try {
-      await rolesApi.create({ name: String(form.get('name')), codigo: String(form.get('codigo')).toUpperCase(), description: String(form.get('description') || '') || null })
-      event.currentTarget.reset()
+      await rolesApi.create({ name: String(form.get('name')), codigo: String(form.get('codigo')).toUpperCase(), description: String(form.get('description') || '') || null }, company?.id)
+      formElement.reset()
       setMessage('Rol creado correctamente.')
       await load()
     } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo crear el rol') }
@@ -55,7 +56,7 @@ export function RolesPage() {
 
   async function remove(role: Role) {
     if (!window.confirm(`¿Eliminar el rol ${role.name}?`)) return
-    try { await rolesApi.remove(role.id); await load() } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo eliminar') }
+    try { await rolesApi.remove(role.id, company?.id); await load() } catch (error) { setMessage(error instanceof Error ? error.message : 'No se pudo eliminar') }
   }
 
   return (

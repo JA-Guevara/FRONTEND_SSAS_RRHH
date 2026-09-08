@@ -15,7 +15,7 @@ import '../portal.css'
 type Vista = 'lista' | 'detalle' | 'form'
 
 export function PortalPublicoPage() {
-  const { slug = 'textiles-del-oriente' } = useParams()
+  const { slug = '' } = useParams()
   const [empresa, setEmpresa] = useState<EmpresaPublica | null>(null)
   const [vacantes, setVacantes] = useState<VacantePublica[]>([])
   const [vacante, setVacante] = useState<VacantePublica | null>(null)
@@ -23,19 +23,35 @@ export function PortalPublicoPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    let active = true
     setError('')
+    setEmpresa(null)
+    setVacantes([])
+    setVacante(null)
+    setVista('lista')
+    if (!slug) {
+      setError('Empresa no encontrada')
+      return
+    }
     void Promise.all([getEmpresaPublica(slug), getVacantesPublicas(slug)])
       .then(([emp, list]) => {
+        if (!active) return
         setEmpresa(emp)
         setVacantes(list)
       })
-      .catch((err: Error) => setError(err.message))
+      .catch((err: Error) => { if (active) setError(err.message) })
+    return () => { active = false }
   }, [slug])
 
   async function abrirDetalle(id: string) {
-    const item = await getVacantePublica(slug, id)
-    setVacante(item)
-    setVista('detalle')
+    setError('')
+    try {
+      const item = await getVacantePublica(slug, id)
+      setVacante(item)
+      setVista('detalle')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo consultar la vacante')
+    }
   }
 
   return (

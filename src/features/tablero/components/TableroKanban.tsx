@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { moverPostulacion, type Etapa, type PostulanteDetalle } from '../api/tableroApi'
 import { PostulanteDetalleModal } from './PostulanteDetalleModal'
+import { RechazarPostulanteModal } from './RechazarPostulanteModal'
 
 type Props = {
   etapas: Etapa[]
@@ -18,9 +19,14 @@ export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: P
   const [overEtapa, setOverEtapa] = useState<string | null>(null)
   const [selectedPostulante, setSelectedPostulante] = useState<PostulanteDetalle | null>(null)
   const [error, setError] = useState('')
+  const [rechazo, setRechazo] = useState<PostulanteDetalle | null>(null)
 
   async function mover(id: string, etapaId: string) {
     setError('')
+    if (etapas.find((etapa) => etapa.id === etapaId)?.es_rechazado) {
+      setRechazo(postulaciones.find((item) => item.id === id) ?? null)
+      return
+    }
     try {
       await moverPostulacion(id, etapaId, empresaId)
       await onChanged()
@@ -103,6 +109,12 @@ export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: P
           setSelectedPostulante(null)
           await onChanged()
         }}
+      />
+      <RechazarPostulanteModal
+        postulante={rechazo}
+        empresaId={empresaId}
+        onClose={() => setRechazo(null)}
+        onSuccess={async () => { setRechazo(null); await onChanged() }}
       />
     </>
   )

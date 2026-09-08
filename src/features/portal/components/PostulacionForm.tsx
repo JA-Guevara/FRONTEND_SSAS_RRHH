@@ -30,13 +30,17 @@ export function PostulacionForm({ vacante, onBack }: Props) {
     const e: Record<string, string> = {}
     if (!form.nombres.trim()) e.nombres = 'Obligatorio'
     if (!form.apellidos.trim()) e.apellidos = 'Obligatorio'
+    if (!form.ci.trim()) e.ci = 'Obligatorio'
+    if (!form.telefono.trim()) e.telefono = 'Obligatorio'
+    if (!form.ciudad.trim()) e.ciudad = 'Obligatorio'
+    if (!form.nivel_educativo) e.nivel_educativo = 'Obligatorio'
     if (!form.email.trim()) e.email = 'Obligatorio'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Email inválido'
     if (!form.cv) e.cv = 'El CV es obligatorio'
     else if (form.cv.size > 5 * 1024 * 1024) e.cv = 'Máximo 5 MB'
-    else if (!/\.(pdf|docx?)$/i.test(form.cv.name)) e.cv = 'Solo PDF o DOCX'
-    if (form.anios_experiencia && (Number.isNaN(Number(form.anios_experiencia)) || Number(form.anios_experiencia) < 0)) {
-      e.anios_experiencia = 'Debe ser 0 o más'
+    else if (!/\.(pdf|docx)$/i.test(form.cv.name)) e.cv = 'Solo PDF o DOCX'
+    if (form.anios_experiencia && (!Number.isInteger(Number(form.anios_experiencia)) || Number(form.anios_experiencia) < 0)) {
+      e.anios_experiencia = 'Debe ser un entero de 0 o más'
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -89,8 +93,9 @@ export function PostulacionForm({ vacante, onBack }: Props) {
           {errors.apellidos && <div className="po-error">{errors.apellidos}</div>}
         </div>
         <div>
-          <label className="po-label">CI</label>
+          <label className="po-label">CI <i>*</i></label>
           <input className="po-input" value={form.ci} onChange={(e) => setForm({ ...form, ci: e.target.value })} />
+          {errors.ci && <div className="po-error">{errors.ci}</div>}
         </div>
         <div>
           <label className="po-label">Email <i>*</i></label>
@@ -98,19 +103,22 @@ export function PostulacionForm({ vacante, onBack }: Props) {
           {errors.email && <div className="po-error">{errors.email}</div>}
         </div>
         <div>
-          <label className="po-label">Teléfono</label>
+          <label className="po-label">Teléfono <i>*</i></label>
           <input className="po-input" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
+          {errors.telefono && <div className="po-error">{errors.telefono}</div>}
         </div>
         <div>
-          <label className="po-label">Ciudad</label>
+          <label className="po-label">Ciudad <i>*</i></label>
           <input className="po-input" value={form.ciudad} onChange={(e) => setForm({ ...form, ciudad: e.target.value })} />
+          {errors.ciudad && <div className="po-error">{errors.ciudad}</div>}
         </div>
         <div>
-          <label className="po-label">Nivel educativo</label>
+          <label className="po-label">Nivel educativo <i>*</i></label>
           <select className="po-select" value={form.nivel_educativo} onChange={(e) => setForm({ ...form, nivel_educativo: e.target.value as NivelEducativo | '' })}>
             <option value="">Seleccionar</option>
             {NIVELES_EDUCATIVOS.map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
+          {errors.nivel_educativo && <div className="po-error">{errors.nivel_educativo}</div>}
         </div>
         <div>
           <label className="po-label">Años de experiencia</label>
@@ -124,7 +132,7 @@ export function PostulacionForm({ vacante, onBack }: Props) {
       <label className="po-label">CV <i>*</i> <small>PDF/DOCX · máx 5 MB</small></label>
       <input
         type="file"
-        accept=".pdf,.doc,.docx"
+        accept=".pdf,.docx"
         onChange={(e) => setForm({ ...form, cv: e.target.files?.[0] ?? null })}
       />
       {errors.cv && <div className="po-error">{errors.cv}</div>}

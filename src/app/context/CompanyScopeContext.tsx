@@ -28,18 +28,20 @@ export function CompanyScopeProvider({ children }: { children: ReactNode }) {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() =>
     sessionStorage.getItem(STORAGE_KEY),
   )
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
 
   const esPlataforma = status === 'authenticated' && user?.realm === 'platform'
 
   useEffect(() => {
+    if (status === 'loading') return
     if (status !== 'authenticated' || user?.realm !== 'platform') {
       sessionStorage.removeItem(STORAGE_KEY)
       setCompany(null)
       setCompanies([])
       setSelectedCompanyId(null)
+      setLoading(false)
     }
   }, [status, user?.realm])
 
@@ -58,6 +60,7 @@ export function CompanyScopeProvider({ children }: { children: ReactNode }) {
         const stored = sessionStorage.getItem(STORAGE_KEY)
         const selected = page.items.find((item) => item.id === stored) ?? null
         setCompany(selected)
+        setSelectedCompanyId(selected?.id ?? null)
         if (selected === null && stored !== null) sessionStorage.removeItem(STORAGE_KEY)
       })
       .catch((cause: unknown) => {
