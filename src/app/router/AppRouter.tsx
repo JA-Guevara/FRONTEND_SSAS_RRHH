@@ -19,6 +19,7 @@ import { VacanteFormPage } from '../../features/vacantes/pages/VacanteFormPage'
 import { VacantesListPage } from '../../features/vacantes/pages/VacantesListPage'
 import { HabilidadesPage } from '../../features/habilidades/pages/HabilidadesPage'
 import { PostulantesPage } from '../../features/postulantes/pages/PostulantesPage'
+import { MiPerfilPage } from '../../features/perfil/pages/MiPerfilPage'
 import { FullPageStatus } from '../../shared/components'
 import { RequireAccess } from '../guards/RequireAccess'
 import { RequireRealm } from '../guards/RequireRealm'
@@ -84,6 +85,7 @@ export function AppRouter() {
       <Route element={<ProtectedArea />}>
         <Route index element={<DashboardPage />} />
         <Route path="cambiar-clave" element={<ChangePasswordPage />} />
+        <Route path="perfil" element={<MiPerfilPage />} />
 
         <Route path="empresas" element={plataforma(<AltaEmpresaPage />, ['platform:empresas:ver'])} />
         <Route

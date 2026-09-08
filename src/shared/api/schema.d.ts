@@ -948,6 +948,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usuarios/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar mi perfil
+         * @description Devuelve la información completa del usuario autenticado dentro de su alcance. Complementa a `/auth/me` (identidad) con los datos editables del perfil.
+         */
+        get: operations["obtener_mi_perfil_api_v1_usuarios_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Actualizar mi perfil
+         * @description Actualiza solo la información básica del usuario autenticado (nombre, apellido, teléfono). No permite cambiar correo, usuario, roles ni estado: son privilegios administrativos. La operación queda registrada en bitácora.
+         */
+        patch: operations["actualizar_mi_perfil_api_v1_usuarios_me_patch"];
+        trace?: never;
+    };
     "/api/v1/usuarios/{usuario_id}": {
         parameters: {
             query?: never;
@@ -1325,6 +1349,15 @@ export interface components {
             responsable_id?: string | null;
             /** Activo */
             activo?: boolean | null;
+        };
+        /** ActualizarMiPerfilRequest */
+        ActualizarMiPerfilRequest: {
+            /** Nombre */
+            nombre?: string | null;
+            /** Apellido */
+            apellido?: string | null;
+            /** Telefono */
+            telefono?: string | null;
         };
         /**
          * ActualizarModulosRequest
@@ -5702,6 +5735,101 @@ export interface operations {
             };
             /** @description El correo o nombre de usuario ya está registrado. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description El servicio o una dependencia externa no está disponible. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    obtener_mi_perfil_api_v1_usuarios_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioResponse"];
+                };
+            };
+            /** @description Token de acceso ausente, inválido o vencido. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no tiene el permiso requerido, intenta operar fuera de su empresa o debe cambiar primero su contraseña. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El servicio o una dependencia externa no está disponible. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    actualizar_mi_perfil_api_v1_usuarios_me_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarMiPerfilRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioResponse"];
+                };
+            };
+            /** @description Token de acceso ausente, inválido o vencido. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no tiene el permiso requerido, intenta operar fuera de su empresa o debe cambiar primero su contraseña. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
