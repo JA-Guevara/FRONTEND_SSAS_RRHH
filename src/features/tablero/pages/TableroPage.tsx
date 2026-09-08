@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { Can, useAccess } from '../../../app/access/AccessProvider'
 import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
+import { Alert, Button, EmptyState, LoadingBlock, PageHeader } from '../../../shared/components'
 import { getVacante, type Vacante } from '../../vacantes/api/vacantesApi'
 import {
   getEtapas,
@@ -9,82 +11,110 @@ import {
   type PostulanteDetalle,
 } from '../api/tableroApi'
 import { TableroKanban } from '../components/TableroKanban'
-import '../tablero.css'
+import { PERM_VACANTES_EDITAR, PERM_VER } from '../utils/tableroUi'
 
 export function TableroPage() {
   const { id } = useParams()
   const { company } = useCompanyScope()
+  const { can } = useAccess()
   const [vacante, setVacante] = useState<Vacante | null>(null)
   const [etapas, setEtapas] = useState<Etapa[]>([])
   const [postulaciones, setPostulaciones] = useState<PostulanteDetalle[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  const load = useCallback(async () => {
+  const cargar = useCallback(async () => {
     setLoading(true)
-    setError('')
+    setError(null)
     try {
-      const [ets, posts, selectedVacante] = await Promise.all([
+      const [etapasCargadas, postulacionesCargadas, vacanteSeleccionada] = await Promise.all([
         getEtapas(company?.id),
         getPostulaciones(id, company?.id),
         id ? getVacante(id, company?.id) : Promise.resolve(null),
       ])
-      setEtapas(ets.sort((a, b) => a.orden - b.orden))
-      setVacante(selectedVacante)
-      setPostulaciones(posts.map((post) => ({
-        ...post,
-        vacante_titulo: selectedVacante?.titulo ?? '',
-      })))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo cargar el tablero')
+      setEtapas([...etapasCargadas].sort((a, b) => a.orden - b.orden))
+      setVacante(vacanteSeleccionada)
+      setPostulaciones(
+        postulacionesCargadas.map((postulacion) => ({
+          ...postulacion,
+          vacante_titulo: vacanteSeleccionada?.titulo ?? '',
+        })),
+      )
+    } catch (cause) {
+      // Un fallo de carga no se muestra como «tablero vacío»: son cosas distintas.
+      setEtapas([])
+      setPostulaciones([])
+      setError(cause instanceof Error ? cause.message : 'No se pudo cargar el tablero.')
     } finally {
       setLoading(false)
     }
   }, [company?.id, id])
 
   useEffect(() => {
-    void load()
-  }, [load])
+    void cargar()
+  }, [cargar])
+
+  const totalPostulantes = postulaciones.length
+  const descripcion =
+    vacante !== null
+      ? `${vacante.cantidad_vacantes} ${vacante.cantidad_vacantes === 1 ? 'puesto' : 'puestos'} · Modalidad ${vacante.modalidad} · ${totalPostulantes} ${totalPostulantes === 1 ? 'postulante' : 'postulantes'}`
+      : 'Candidatos organizados según las etapas de reclutamiento configuradas.'
 
   return (
-    <div className="tb-page">
-      <div className="tb-top-nav">
-        <Link to="/vacantes" className="tb-back-link">‹ Volver a Vacantes</Link>
-      </div>
-
-      <div className="tb-header-row">
-        <div>
-          <div className="tb-eyebrow">Reclutamiento & Selección · Sprint 1</div>
-          <h1>{vacante ? `Tablero: ${vacante.titulo}` : 'Tablero Kanban de Postulaciones'}</h1>
-          <p className="tb-sub">
-            {vacante
-              ? `Vacantes: ${vacante.cantidad_vacantes} · Modalidad: ${vacante.modalidad} · Total postulantes: ${postulaciones.length}`
-              : 'Gestión de candidatos según las etapas de reclutamiento.'}
-          </p>
-        </div>
-
-        {vacante?.estado === 'BORRADOR' && (
-          <div className="tb-vacante-actions">
-            <Link to={`/vacantes/${vacante.id}/editar`} className="tb-btn tb-btn-secondary">
-              Editar vacante
+    <section className="page-stack">
+      <PageHeader
+        eyebrow="Reclutamiento y selección"
+        title={vacante !== null ? `Tablero: ${vacante.titulo}` : 'Tablero de selección'}
+        description={descripcion}
+        actions={
+          <>
+            <Link className="button button-ghost" to="/vacantes">
+              Volver a vacantes
             </Link>
-          </div>
-        )}
-      </div>
+            {vacante !== null && vacante.estado === 'BORRADOR' && (
+              <Can permisos={PERM_VACANTES_EDITAR}>
+                <Link className="button button-secondary" to={`/vacantes/${vacante.id}/editar`}>
+                  Editar vacante
+                </Link>
+              </Can>
+            )}
+          </>
+        }
+      />
 
-      {error && <div className="vac-bad" role="alert">{error}</div>}
+      {!can(...PERM_VER) && (
+        <Alert tone="info" title="Permisos insuficientes">
+          Tu rol no incluye el permiso para consultar postulaciones. El tablero puede aparecer
+          vacío.
+        </Alert>
+      )}
+
+      {error !== null && (
+        <>
+          <Alert tone="error">{error}</Alert>
+          <div className="form-actions-start">
+            <Button variant="secondary" onClick={() => void cargar()}>
+              Reintentar
+            </Button>
+          </div>
+        </>
+      )}
+
       {loading ? (
-        <div className="tb-loading"><div className="tb-spinner" /><p>Cargando postulaciones...</p></div>
-      ) : !error && etapas.length === 0 ? (
-        <div className="tb-loading"><p>No existen etapas de reclutamiento configuradas.</p></div>
+        <LoadingBlock message="Cargando postulaciones…" />
+      ) : error !== null ? null : etapas.length === 0 ? (
+        <EmptyState
+          title="Sin etapas de reclutamiento"
+          message="No hay etapas configuradas para esta empresa. Configura las etapas antes de usar el tablero."
+        />
       ) : (
         <TableroKanban
           etapas={etapas}
           postulaciones={postulaciones}
           empresaId={company?.id}
-          onChanged={load}
+          onChanged={cargar}
         />
       )}
-    </div>
+    </section>
   )
 }

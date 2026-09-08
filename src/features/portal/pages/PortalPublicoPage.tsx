@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import { Alert, Button, LoadingBlock } from '../../../shared/components'
 import { VacantesPublicasList } from '../components/VacantesPublicasList'
 import { VacantePublicaDetalle } from '../components/VacantePublicaDetalle'
 import { PostulacionForm } from '../components/PostulacionForm'
@@ -12,283 +13,287 @@ import {
   type EmpresaPublica,
   type VacantePublica,
 } from '../api/portalApi'
-import '../portal.css'
-
-type Vista = 'lista' | 'detalle' | 'form' | 'seguimiento'
 
 type CargaError = {
   message: string
   notFound: boolean
 }
 
+function leerError(causa: unknown, respaldo: string): CargaError {
+  if (causa instanceof PortalApiError) {
+    return { message: causa.message, notFound: causa.isNotFound }
+  }
+  return { message: respaldo, notFound: false }
+}
+
 export function PortalPublicoPage() {
   const { slug = '', vacanteId } = useParams()
+  const { pathname } = useLocation()
   const [empresa, setEmpresa] = useState<EmpresaPublica | null>(null)
   const [vacantes, setVacantes] = useState<VacantePublica[]>([])
   const [vacante, setVacante] = useState<VacantePublica | null>(null)
-  const [vista, setVista] = useState<Vista>(vacanteId ? 'detalle' : 'lista')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<CargaError | null>(null)
-  const [attempt, setAttempt] = useState(0)
+  const [postulando, setPostulando] = useState(false)
+  const [loadingEmpresa, setLoadingEmpresa] = useState(true)
+  const [loadingVacantes, setLoadingVacantes] = useState(true)
+  const [loadingVacante, setLoadingVacante] = useState(false)
+  const [errorEmpresa, setErrorEmpresa] = useState<CargaError | null>(null)
+  const [errorVacantes, setErrorVacantes] = useState<string | null>(null)
+  const [errorVacante, setErrorVacante] = useState<string | null>(null)
+  const [intento, setIntento] = useState(0)
 
-  const cargar = useCallback(() => {
-    if (!slug) {
-      setError({ message: 'El enlace no incluye el identificador de la empresa.', notFound: true })
-      setLoading(false)
-      return
-    }
-    setError(null)
-    setLoading(true)
+  // Las dos familias de rutas públicas conviven: los enlaces se quedan en la
+  // que el candidato abrió, para no romper el enlace que le compartieron.
+  const basePath = pathname.startsWith('/publico/') ? `/publico/${slug}` : `/empleos/${slug}`
+  const seguimientoHref = `${basePath}/seguimiento`
+  const enSeguimiento = pathname.endsWith('/seguimiento')
+  const enDetalle = vacanteId !== undefined
+  const nombreEmpresa = empresa === null ? '' : empresa.nombre_comercial || empresa.nombre
+  const inicial = nombreEmpresa.charAt(0).toUpperCase()
+  const descripcionEmpresa = empresa?.descripcion?.trim() ?? ''
 
-    Promise.all([getEmpresaPublica(slug), getVacantesPublicas(slug)])
-      .then(([emp, list]) => {
-        setEmpresa(emp)
-        setVacantes(list)
-        if (vacanteId) {
-          getVacantePublica(slug, vacanteId)
-            .then((v) => {
-              setVacante(v)
-              setVista('detalle')
-            })
-            .catch(() => setVista('lista'))
-        }
-      })
-      .catch((cause: unknown) => {
-        setEmpresa(null)
-        setVacantes([])
-        if (cause instanceof PortalApiError) {
-          setError({ message: cause.message, notFound: cause.isNotFound })
-        } else {
-          setError({
-            message: 'No se pudo cargar el portal. Inténtalo de nuevo.',
-            notFound: false,
-          })
-        }
-      })
-      .finally(() => setLoading(false))
-  }, [slug, vacanteId])
+  const reintentar = useCallback(() => setIntento((valor) => valor + 1), [])
 
   useEffect(() => {
-    cargar()
-  }, [cargar, attempt])
-
-  async function abrirDetalle(id: string) {
-    if (!slug) return
-    try {
-      const item = await getVacantePublica(slug, id)
-      setVacante(item)
-      setVista('detalle')
-    } catch (cause) {
-      const message =
-        cause instanceof Error ? cause.message : 'No se pudo cargar el detalle'
-      setError({ message, notFound: cause instanceof PortalApiError && cause.isNotFound })
+    if (slug === '') {
+      setEmpresa(null)
+      setErrorEmpresa({
+        message: 'El enlace no incluye el identificador de la empresa.',
+        notFound: true,
+      })
+      setLoadingEmpresa(false)
+      setLoadingVacantes(false)
+      return
     }
-  }
 
-  const primaryColor = empresa?.color_primario || '#176b4b'
-  const companyName = empresa ? (empresa.nombre_comercial || empresa.nombre) : ''
+    let vigente = true
+    setLoadingEmpresa(true)
+    setErrorEmpresa(null)
+
+    getEmpresaPublica(slug)
+      .then((datos) => {
+        if (!vigente) return
+        setEmpresa(datos)
+      })
+      .catch((causa: unknown) => {
+        if (!vigente) return
+        setEmpresa(null)
+        setErrorEmpresa(leerError(causa, 'No se pudo cargar el sitio de empleo.'))
+      })
+      .finally(() => {
+        if (vigente) setLoadingEmpresa(false)
+      })
+
+    return () => {
+      vigente = false
+    }
+  }, [slug, intento])
+
+  useEffect(() => {
+    if (slug === '') return
+
+    let vigente = true
+    setLoadingVacantes(true)
+    setErrorVacantes(null)
+
+    getVacantesPublicas(slug)
+      .then((lista) => {
+        if (!vigente) return
+        setVacantes(lista)
+      })
+      .catch((causa: unknown) => {
+        if (!vigente) return
+        setVacantes([])
+        setErrorVacantes(leerError(causa, 'No se pudieron cargar las vacantes.').message)
+      })
+      .finally(() => {
+        if (vigente) setLoadingVacantes(false)
+      })
+
+    return () => {
+      vigente = false
+    }
+  }, [slug, intento])
+
+  useEffect(() => {
+    if (slug === '' || vacanteId === undefined) {
+      setVacante(null)
+      setErrorVacante(null)
+      setLoadingVacante(false)
+      return
+    }
+
+    let vigente = true
+    setPostulando(false)
+    setLoadingVacante(true)
+    setErrorVacante(null)
+
+    getVacantePublica(slug, vacanteId)
+      .then((datos) => {
+        if (!vigente) return
+        setVacante(datos)
+      })
+      .catch((causa: unknown) => {
+        if (!vigente) return
+        setVacante(null)
+        setErrorVacante(leerError(causa, 'No se pudo cargar esta vacante.').message)
+      })
+      .finally(() => {
+        if (vigente) setLoadingVacante(false)
+      })
+
+    return () => {
+      vigente = false
+    }
+  }, [slug, vacanteId, intento])
+
+  // Una aplicación de una sola página solo puede corregir el título ya en el
+  // navegador: el HTML que sirve el servidor sigue siendo el mismo para todas
+  // las rutas.
+  useEffect(() => {
+    if (nombreEmpresa === '') return
+    const anterior = document.title
+    document.title =
+      vacante !== null && enDetalle
+        ? `${vacante.titulo} · Empleos en ${nombreEmpresa}`
+        : `Empleos en ${nombreEmpresa}`
+    return () => {
+      document.title = anterior
+    }
+  }, [nombreEmpresa, vacante, enDetalle])
 
   return (
-    <div
-      className="po-page"
-      style={{
-        minHeight: '100vh',
-        background: '#f8fafc',
-        fontFamily: 'Inter, system-ui, sans-serif',
-      }}
-    >
-      <div className="po-wrap" style={{ maxWidth: 880, margin: '0 auto', padding: '2rem 1rem' }}>
-        {loading && <p style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>Cargando portal de empleo...</p>}
+    <div className="public-page">
+      <div className="public-wrap">
+        {loadingEmpresa && <LoadingBlock message="Cargando el sitio de empleo…" />}
 
-        {!loading && error !== null && (
-          <div
-            style={{
-              background: '#ffffff',
-              border: `1px solid ${error.notFound ? '#e2e8f0' : '#fecaca'}`,
-              borderRadius: '0.75rem',
-              padding: '2rem 1.5rem',
-              textAlign: 'center',
-              color: error.notFound ? '#475569' : '#991b1b',
-            }}
-          >
-            <h3 style={{ margin: '0 0 0.5rem' }}>{error.notFound ? 'Portal no encontrado' : 'No se pudo cargar el portal'}</h3>
-            <p style={{ margin: '0 0 1rem', fontSize: '0.9rem' }}>
-              {error.notFound
-                ? 'El enlace que seguiste apunta a una empresa que no existe o que no tiene portal público activo.'
-                : error.message}
-            </p>
-            <button
-              type="button"
-              onClick={() => setAttempt((value) => value + 1)}
-              style={{
-                background: primaryColor,
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '0.5rem',
-                padding: '0.55rem 1.25rem',
-                fontSize: '0.9rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
+        {!loadingEmpresa && errorEmpresa !== null && (
+          <div className="form-stack">
+            <Alert
+              tone={errorEmpresa.notFound ? 'info' : 'error'}
+              title={
+                errorEmpresa.notFound
+                  ? 'No encontramos este sitio de empleo'
+                  : 'No pudimos cargar el sitio de empleo'
+              }
             >
-              Reintentar
-            </button>
+              {errorEmpresa.notFound
+                ? 'El enlace que seguiste apunta a una empresa que no existe o que cerró su sitio de empleo.'
+                : errorEmpresa.message}
+            </Alert>
+            <div className="form-actions-start">
+              <Button variant="secondary" onClick={reintentar}>
+                Reintentar
+              </Button>
+            </div>
           </div>
         )}
 
-        {!loading && error === null && empresa !== null && (
+        {!loadingEmpresa && errorEmpresa === null && empresa !== null && (
           <>
-            {/* Encabezado Institucional de la Empresa */}
-            <div
-              className="po-brand"
-              style={{
-                background: '#ffffff',
-                border: '1px solid #e2e8f0',
-                borderRadius: '0.75rem',
-                padding: '1.25rem 1.5rem',
-                marginBottom: '1.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1.25rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-              }}
-            >
-              {empresa.logo_url ? (
-                <img
-                  src={empresa.logo_url}
-                  alt={companyName}
-                  style={{
-                    width: 56,
-                    height: 56,
-                    objectFit: 'contain',
-                    borderRadius: '0.5rem',
-                    border: '1px solid #e2e8f0',
-                  }}
-                  onError={(e) => {
-                    ;(e.target as HTMLElement).style.display = 'none'
-                  }}
-                />
-              ) : (
-                <div
-                  className="po-mark"
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '0.5rem',
-                    background: primaryColor,
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.5rem',
-                    fontWeight: 800,
-                    flexShrink: 0,
-                  }}
-                >
-                  {companyName.charAt(0)}
-                </div>
-              )}
-
-              <div style={{ flex: 1 }}>
-                <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.4rem', color: '#0f172a', fontWeight: 800 }}>
-                  {companyName}
-                </h2>
-                <div style={{ fontSize: '0.875rem', color: '#64748b' }}>
-                  Oportunidades laborales activas
-                </div>
-                {empresa.descripcion && (
-                  <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', color: '#475569', lineHeight: 1.4 }}>
-                    {empresa.descripcion}
-                  </p>
-                )}
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-                <span
-                  style={{
-                    background: '#f0fdf4',
-                    color: '#166534',
-                    border: '1px solid #bbf7d0',
-                    borderRadius: '1rem',
-                    padding: '0.25rem 0.75rem',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                  }}
-                >
-                  {vacantes.length} vacantes abiertas
+            <header className="public-header">
+              <div className="public-brand">
+                <span className="brand-mark brand-mark-small" aria-hidden="true">
+                  {inicial}
                 </span>
-                <button
-                  type="button"
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: primaryColor,
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    textDecoration: 'underline',
-                  }}
-                  onClick={() => setVista(vista === 'seguimiento' ? 'lista' : 'seguimiento')}
-                >
-                  {vista === 'seguimiento' ? '← Ver vacantes' : '🔍 Consultar mi postulación'}
-                </button>
+                <div>
+                  <strong>{nombreEmpresa}</strong>
+                  <span className="text-muted">Trabaja con nosotros</span>
+                </div>
               </div>
-            </div>
+              <nav className="public-nav" aria-label="Secciones del sitio de empleo">
+                <Link to={basePath} aria-current={!enSeguimiento ? 'page' : undefined}>
+                  Vacantes
+                </Link>
+                <Link to={seguimientoHref} aria-current={enSeguimiento ? 'page' : undefined}>
+                  Consultar mi postulación
+                </Link>
+              </nav>
+            </header>
 
-            {/* Estado Inactivo */}
-            {empresa.portal_publico_activo === false && (
-              <div
-                style={{
-                  background: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  borderRadius: '0.5rem',
-                  padding: '1.5rem',
-                  textAlign: 'center',
-                  color: '#991b1b',
-                }}
-              >
-                <h3 style={{ margin: '0 0 0.5rem' }}>Portal Temporalmente Pausado</h3>
-                <p style={{ margin: 0, fontSize: '0.9rem' }}>
-                  Esta empresa no está recibiendo postulaciones en este momento.
-                </p>
-              </div>
-            )}
-
-            {empresa.portal_publico_activo !== false && (
+            {empresa.portal_publico_activo === false ? (
+              <Alert tone="info" title="Sitio de empleo en pausa">
+                {nombreEmpresa} no está recibiendo postulaciones en este momento. Vuelve a
+                intentarlo más adelante.
+              </Alert>
+            ) : enSeguimiento ? (
+              <SeguimientoPostulacion volverHref={basePath} />
+            ) : enDetalle ? (
               <>
-                {vista === 'lista' && (
-                  <VacantesPublicasList
-                    vacantes={vacantes}
-                    onSelect={(id) => void abrirDetalle(id)}
-                  />
-                )}
+                {loadingVacante && <LoadingBlock message="Cargando la vacante…" />}
 
-                {vista === 'detalle' && vacante && (
-                  <VacantePublicaDetalle
-                    vacante={vacante}
-                    onBack={() => setVista('lista')}
-                    onPostular={() => setVista('form')}
-                  />
-                )}
-
-                {vista === 'form' && vacante && (
-                  <PostulacionForm vacante={vacante} onBack={() => setVista('detalle')} />
-                )}
-
-                {vista === 'seguimiento' && (
-                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '0.75rem', padding: '1.5rem' }}>
-                    <button
-                      type="button"
-                      onClick={() => setVista('lista')}
-                      style={{ background: 'transparent', border: 'none', color: primaryColor, cursor: 'pointer', marginBottom: '1rem', fontWeight: 600 }}
-                    >
-                      ← Volver a vacantes
-                    </button>
-                    <SeguimientoPostulacion />
+                {!loadingVacante && errorVacante !== null && (
+                  <div className="form-stack">
+                    <Alert tone="error" title="No pudimos abrir esta vacante">
+                      {errorVacante}
+                    </Alert>
+                    <div className="form-actions-start">
+                      <Button variant="secondary" onClick={reintentar}>
+                        Reintentar
+                      </Button>
+                      <Link to={basePath} className="button button-ghost">
+                        Ver todas las vacantes
+                      </Link>
+                    </div>
                   </div>
                 )}
+
+                {!loadingVacante &&
+                  errorVacante === null &&
+                  vacante !== null &&
+                  (postulando ? (
+                    <PostulacionForm
+                      vacante={vacante}
+                      empresaNombre={nombreEmpresa}
+                      seguimientoHref={seguimientoHref}
+                      onBack={() => setPostulando(false)}
+                    />
+                  ) : (
+                    <VacantePublicaDetalle
+                      vacante={vacante}
+                      volverHref={basePath}
+                      onPostular={() => setPostulando(true)}
+                    />
+                  ))}
+              </>
+            ) : (
+              <>
+                <section className="public-hero">
+                  <h1>Trabaja en {nombreEmpresa}</h1>
+                  <p>
+                    {descripcionEmpresa !== ''
+                      ? descripcionEmpresa
+                      : `Mira las vacantes abiertas de ${nombreEmpresa}, postúlate en línea y sigue el avance de tu candidatura con el código que te damos al terminar.`}
+                  </p>
+                  {!loadingVacantes && errorVacantes === null && (
+                    <p className="badge-list">
+                      <span className="chip">
+                        {vacantes.length}{' '}
+                        {vacantes.length === 1 ? 'vacante abierta' : 'vacantes abiertas'}
+                      </span>
+                    </p>
+                  )}
+                </section>
+
+                <VacantesPublicasList
+                  vacantes={vacantes}
+                  basePath={basePath}
+                  loading={loadingVacantes}
+                  error={errorVacantes}
+                  onRetry={reintentar}
+                />
               </>
             )}
+
+            <footer className="public-footer">
+              <p>
+                Sitio de empleo de {nombreEmpresa}. Cada postulación la revisa su equipo de
+                selección.
+              </p>
+              <p>
+                Tus datos se usan solo para este proceso. Si necesitas corregirlos o eliminarlos,
+                escribe a la empresa.
+              </p>
+            </footer>
           </>
         )}
       </div>

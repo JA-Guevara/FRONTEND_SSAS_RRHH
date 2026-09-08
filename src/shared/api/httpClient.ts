@@ -2,7 +2,7 @@ import { notifySessionExpired, tokenStorage } from './session'
 import type { StoredSession } from './session'
 
 const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
-const DEFAULT_TIMEOUT_MS = 20_000
+const DEFAULT_TIMEOUT_MS = 30_000
 const REFRESH_PATH = '/api/v1/auth/refresh'
 
 export class ApiError extends Error {
@@ -164,7 +164,14 @@ async function performRequest(
 ): Promise<Response> {
   const { body, formData, headers, method, signal, timeoutMs = DEFAULT_TIMEOUT_MS } = options
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+  // Se marca quién abortó: sin esto, un tiempo de espera agotado se informaba como
+  // «no se pudo contactar con el servidor», que manda a diagnosticar la red cuando
+  // el problema era la espera.
+  let vencioPorEspera = false
+  const timeout = setTimeout(() => {
+    vencioPorEspera = true
+    controller.abort()
+  }, timeoutMs)
   signal?.addEventListener('abort', () => controller.abort())
 
   try {
@@ -182,6 +189,22 @@ async function performRequest(
       },
       body: formData ?? (body !== undefined ? JSON.stringify(body) : undefined),
     })
+  } catch (error) {
+    // `AbortError` se comprueba por nombre y no por `instanceof DOMException`:
+    // no todos los entornos lo implementan con esa clase.
+    const abortada = error instanceof Error && error.name === 'AbortError'
+    if (abortada && vencioPorEspera) {
+      throw new ApiError(
+        `El servidor no respondió en ${Math.round(timeoutMs / 1000)} segundos. ` +
+          'La operación puede haberse completado igualmente: vuelve a consultar antes de reintentar.',
+        408,
+      )
+    }
+    if (abortada) throw new ApiError('La solicitud fue cancelada.', 0)
+    throw new ApiError(
+      'No se pudo contactar con el servidor. Revisa tu conexión y que la dirección de la API sea correcta.',
+      0,
+    )
   } finally {
     clearTimeout(timeout)
   }
@@ -195,15 +218,8 @@ export async function apiRequest<T = unknown>(
   const session = tokenStorage.get()
   let token = skipAuth ? null : (accessToken ?? session?.access_token ?? null)
 
-  let response: Response
-  try {
-    response = await performRequest(path, options, token)
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new ApiError('La solicitud tardó demasiado y fue cancelada.', 408)
-    }
-    throw new ApiError('No se pudo contactar con el servidor.', 0)
-  }
+  // `performRequest` ya traduce los fallos de transporte a ApiError.
+  let response = await performRequest(path, options, token)
 
   // 401 con sesión almacenada: se intenta renovar una vez y se repite la petición.
   if (response.status === 401 && !skipAuth && accessToken === undefined && session !== null) {

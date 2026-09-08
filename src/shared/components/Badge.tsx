@@ -22,6 +22,11 @@ const ESTADO_TONE: Record<string, BadgeTone> = {
   OFERTA: 'brand',
   CONTRATADO: 'success',
   DESCARTADO: 'danger',
+  // El backend usa el femenino para el estado de la postulación.
+  CONTRATADA: 'success',
+  DESCARTADA: 'danger',
+  PRESELECCIONADA: 'info',
+  RECHAZADA: 'danger',
 }
 
 export function EstadoBadge({ estado }: { estado: string }) {

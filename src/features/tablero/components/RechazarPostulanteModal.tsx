@@ -1,4 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
+import { Alert, ConfirmDialog, Field, LoadingBlock } from '../../../shared/components'
 import {
   getMotivosRechazo,
   rechazarPostulante,
@@ -7,87 +8,117 @@ import {
 } from '../api/tableroApi'
 
 type Props = {
-  postulante: PostulanteDetalle | null
+  postulante: PostulanteDetalle
   empresaId?: string
   onClose: () => void
   onSuccess: () => Promise<void> | void
 }
 
+/** Confirmación de una acción destructiva: el mismo diálogo que el resto del
+ *  producto, con el motivo obligatorio dentro. */
 export function RechazarPostulanteModal({ postulante, empresaId, onClose, onSuccess }: Props) {
   const [motivoId, setMotivoId] = useState('')
   const [motivos, setMotivos] = useState<MotivoRechazo[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [cargando, setCargando] = useState(true)
+  const [errorMotivos, setErrorMotivos] = useState<string | null>(null)
+  const [errorMotivoCampo, setErrorMotivoCampo] = useState<string | null>(null)
+  const [enviando, setEnviando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!postulante) return
-    let active = true
-    setError('')
-    void getMotivosRechazo(empresaId)
-      .then((items) => { if (active) setMotivos(items.filter((item) => item.activo)) })
-      .catch((err: Error) => { if (active) setError(err.message) })
-    return () => { active = false }
-  }, [empresaId, postulante])
+    let activo = true
+    setCargando(true)
+    setErrorMotivos(null)
+    getMotivosRechazo(empresaId)
+      .then((items) => {
+        if (activo) setMotivos(items.filter((item) => item.activo))
+      })
+      .catch((cause: unknown) => {
+        if (!activo) return
+        // Un fallo de carga no puede parecer «no hay motivos configurados».
+        setMotivos([])
+        setErrorMotivos(
+          cause instanceof Error ? cause.message : 'No se pudieron cargar los motivos de rechazo.',
+        )
+      })
+      .finally(() => {
+        if (activo) setCargando(false)
+      })
+    return () => {
+      activo = false
+    }
+  }, [empresaId])
 
-  if (!postulante) return null
-
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (!motivoId) {
-      setError('Selecciona un motivo de rechazo.')
+  async function confirmar() {
+    if (motivoId === '') {
+      // Sin lista de motivos el aviso va al diálogo: el campo no está en pantalla.
+      if (motivos.length === 0) {
+        setError('No hay ningún motivo de rechazo disponible, así que no se puede descartar.')
+      } else {
+        setErrorMotivoCampo('Selecciona un motivo de rechazo.')
+      }
       return
     }
-    setLoading(true)
-    setError('')
+    setErrorMotivoCampo(null)
+    setEnviando(true)
+    setError(null)
     try {
-      await rechazarPostulante(postulante!.id, motivoId, empresaId)
+      await rechazarPostulante(postulante.id, motivoId, empresaId)
       await onSuccess()
       onClose()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo rechazar la postulación')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo rechazar la postulación.')
     } finally {
-      setLoading(false)
+      setEnviando(false)
     }
   }
 
   return (
-    <div className="tb-modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
-      <div className="tb-modal-card" onClick={(event) => event.stopPropagation()}>
-        <div className="tb-modal-header danger">
-          <div>
-            <h3>Rechazar postulación</h3>
-            <span className="tb-modal-sub">Candidato: <strong>{postulante.nombre_postulante}</strong></span>
-          </div>
-          <button className="tb-modal-close" onClick={onClose} type="button" aria-label="Cerrar">×</button>
-        </div>
+    <ConfirmDialog
+      title="Rechazar postulación"
+      tone="danger"
+      confirmLabel="Confirmar rechazo"
+      loading={enviando}
+      error={error}
+      onCancel={onClose}
+      onConfirm={() => void confirmar()}
+      message={
+        <div className="form-stack">
+          <p>
+            Vas a descartar la postulación de <strong>{postulante.nombre_postulante}</strong>. Se
+            registrará el motivo que elijas y el candidato quedará marcado como descartado.
+          </p>
 
-        <form onSubmit={handleSubmit}>
-          <div className="tb-modal-body">
-            <p className="tb-modal-warning-text">Esta acción descartará la postulación y registrará el motivo seleccionado.</p>
-            <div className="tb-form-group">
-              <label className="tb-label" htmlFor="motivo-select">Motivo de rechazo</label>
+          {cargando ? (
+            <LoadingBlock message="Cargando motivos de rechazo…" />
+          ) : errorMotivos !== null ? (
+            <Alert tone="error">{errorMotivos}</Alert>
+          ) : motivos.length === 0 ? (
+            <Alert tone="info">
+              No hay motivos de rechazo configurados. Configura al menos uno antes de descartar
+              candidatos.
+            </Alert>
+          ) : (
+            <Field label="Motivo de rechazo" error={errorMotivoCampo}>
               <select
-                id="motivo-select"
-                className="tb-select"
                 value={motivoId}
-                onChange={(event) => setMotivoId(event.target.value)}
+                onChange={(evento) => {
+                  setMotivoId(evento.target.value)
+                  setErrorMotivoCampo(null)
+                }}
                 required
               >
-                <option value="">Seleccionar motivo</option>
-                {motivos.map((motivo) => <option key={motivo.id} value={motivo.id}>{motivo.nombre}</option>)}
+                <option value="">Selecciona un motivo</option>
+                {motivos.map((motivo) => (
+                  <option key={motivo.id} value={motivo.id}>
+                    {motivo.nombre}
+                  </option>
+                ))}
               </select>
-            </div>
-            {motivos.length === 0 && !error && <p>No existen motivos de rechazo configurados.</p>}
-            {error && <div className="tb-error-msg">{error}</div>}
-          </div>
-          <div className="tb-modal-footer">
-            <button type="button" className="tb-btn tb-btn-ghost" onClick={onClose} disabled={loading}>Cancelar</button>
-            <button type="submit" className="tb-btn tb-btn-danger" disabled={loading || !motivoId}>
-              {loading ? 'Rechazando...' : 'Confirmar rechazo'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            </Field>
+          )}
+        </div>
+      }
+    />
   )
 }

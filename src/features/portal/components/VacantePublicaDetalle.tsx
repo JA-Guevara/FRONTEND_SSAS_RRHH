@@ -1,101 +1,113 @@
+import { Link } from 'react-router-dom'
+import { Badge, Button } from '../../../shared/components'
 import type { VacantePublica } from '../api/portalApi'
+import { enPalabras, etiquetaModalidad, formatearFecha, formatearSalario } from '../utils/formato'
 
 type Props = {
   vacante: VacantePublica
-  onBack: () => void
+  /** Ruta del listado, para volver sin perder el sitio. */
+  volverHref: string
   onPostular: () => void
 }
 
-export function VacantePublicaDetalle({ vacante, onBack, onPostular }: Props) {
+export function VacantePublicaDetalle({ vacante, volverHref, onPostular }: Props) {
+  const salario = vacante.mostrar_salario
+    ? formatearSalario(vacante.salario_min, vacante.salario_max)
+    : null
+  const cierre = formatearFecha(vacante.fecha_cierre)
+  const publicacion = formatearFecha(vacante.fecha_publicacion)
+
   return (
-    <article className="po-card">
-      <button className="po-link" type="button" onClick={onBack} style={{ marginBottom: '1rem', cursor: 'pointer' }}>
-        ← Volver al listado de vacantes
-      </button>
+    <article className="panel">
+      <p>
+        <Link to={volverHref}>Volver a todas las vacantes</Link>
+      </p>
 
-      <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0.5rem 0' }}>{vacante.titulo}</h1>
+      <h1>{vacante.titulo}</h1>
 
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.25rem', color: '#64748b', fontSize: '0.9rem' }}>
-        <span>🏢 {vacante.departamento_nombre || 'General'}</span>
-        <span>💼 {vacante.cargo_nombre || 'Puesto'}</span>
-        <span>📍 {vacante.modalidad} · {vacante.ubicacion || 'Bolivia'}</span>
-        <span>⏳ Cierre: {vacante.fecha_cierre ? vacante.fecha_cierre.slice(0, 10) : 'Abierta'}</span>
-      </div>
+      <p className="public-job-meta">
+        <span>{vacante.ubicacion ?? 'Ubicación por confirmar'}</span>
+        <span>{etiquetaModalidad(vacante.modalidad)}</span>
+        {vacante.departamento_nombre != null && <span>Área: {vacante.departamento_nombre}</span>}
+        <span>{cierre !== null ? `Puedes postular hasta el ${cierre}` : 'Sin fecha de cierre'}</span>
+      </p>
 
-      {vacante.mostrar_salario && (vacante.salario_min != null || vacante.salario_max != null) && (
-        <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', padding: '0.5rem 0.85rem', borderRadius: '0.375rem', fontWeight: 600, marginBottom: '1rem' }}>
-          💰 Rango Salarial: Bs. {vacante.salario_min ?? '0'} - {vacante.salario_max ?? '—'}
-        </div>
-      )}
-
-      <div style={{ marginBottom: '1.25rem' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.35rem' }}>Descripción del puesto</h3>
-        <p style={{ whiteSpace: 'pre-line', color: '#334155', lineHeight: 1.6, margin: 0 }}>
-          {vacante.descripcion}
+      {salario !== null && (
+        <p className="badge-list">
+          <span className="chip">Salario {salario}</span>
         </p>
+      )}
+
+      <h2>De qué trata el puesto</h2>
+      <p className="public-prose">{vacante.descripcion}</p>
+
+      {vacante.requisitos != null && vacante.requisitos.trim() !== '' && (
+        <>
+          <h2>Qué necesitas para postular</h2>
+          <p className="public-prose">{vacante.requisitos}</p>
+        </>
+      )}
+
+      {vacante.habilidades.length > 0 && (
+        <>
+          <h2>Habilidades que buscamos</h2>
+          <p className="badge-list">
+            {vacante.habilidades.map((habilidad) =>
+              habilidad.es_obligatorio ? (
+                <Badge key={habilidad.habilidad_id} tone="brand">
+                  {habilidad.nombre} · nivel {enPalabras(habilidad.nivel_requerido)} · obligatoria
+                </Badge>
+              ) : (
+                <span key={habilidad.habilidad_id} className="chip">
+                  {habilidad.nombre} · nivel {enPalabras(habilidad.nivel_requerido)}
+                </span>
+              ),
+            )}
+          </p>
+        </>
+      )}
+
+      {vacante.beneficios != null && vacante.beneficios.trim() !== '' && (
+        <>
+          <h2>Qué ofrecemos</h2>
+          <p className="public-prose">{vacante.beneficios}</p>
+        </>
+      )}
+
+      <h2>Datos del puesto</h2>
+      <div className="info-list">
+        <div className="info-row">
+          <span className="info-label">Cargo</span>
+          <span className="info-value">{vacante.cargo_nombre ?? 'Sin especificar'}</span>
+        </div>
+        <div className="info-row">
+          <span className="info-label">Puestos disponibles</span>
+          <span className="info-value">{vacante.cantidad_vacantes}</span>
+        </div>
+        <div className="info-row">
+          <span className="info-label">Experiencia mínima</span>
+          <span className="info-value">
+            {vacante.experiencia_min > 0
+              ? `${vacante.experiencia_min} ${vacante.experiencia_min === 1 ? 'año' : 'años'}`
+              : 'No se pide experiencia previa'}
+          </span>
+        </div>
+        {salario !== null && (
+          <div className="info-row">
+            <span className="info-label">Salario</span>
+            <span className="info-value">{salario}</span>
+          </div>
+        )}
+        {publicacion !== null && (
+          <div className="info-row">
+            <span className="info-label">Publicada el</span>
+            <span className="info-value">{publicacion}</span>
+          </div>
+        )}
       </div>
 
-      {vacante.requisitos && (
-        <div style={{ marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.35rem' }}>Requisitos</h3>
-          <p style={{ whiteSpace: 'pre-line', color: '#334155', lineHeight: 1.6, margin: 0 }}>
-            {vacante.requisitos}
-          </p>
-        </div>
-      )}
-
-      {/* Habilidades Requeridas */}
-      {vacante.habilidades && vacante.habilidades.length > 0 && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.5rem' }}>Habilidades requeridas</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {vacante.habilidades.map((h) => (
-              <div
-                key={h.habilidad_id}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  background: '#f1f5f9',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '1rem',
-                  padding: '0.25rem 0.75rem',
-                  fontSize: '0.85rem',
-                }}
-              >
-                <span style={{ fontWeight: 600, color: '#0f172a' }}>{h.nombre}</span>
-                <span style={{ fontSize: '0.75rem', color: '#475569', background: '#e2e8f0', borderRadius: '0.5rem', padding: '0.05rem 0.35rem' }}>
-                  {h.nivel_requerido}
-                </span>
-                {h.es_obligatorio && (
-                  <span style={{ fontSize: '0.7rem', color: '#b91c1c', fontWeight: 700 }}>
-                    (Obligatoria)
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {vacante.beneficios && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.35rem' }}>Beneficios</h3>
-          <p style={{ whiteSpace: 'pre-line', color: '#334155', lineHeight: 1.6, margin: 0 }}>
-            {vacante.beneficios}
-          </p>
-        </div>
-      )}
-
-      <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.25rem' }}>
-        <button
-          className="po-btn"
-          type="button"
-          onClick={onPostular}
-          style={{ width: '100%', maxWidth: 300, cursor: 'pointer', padding: '0.75rem 1.5rem', fontSize: '1rem', fontWeight: 700 }}
-        >
-          Postularme a esta vacante
-        </button>
+      <div className="form-actions-start">
+        <Button onClick={onPostular}>Postularme a esta vacante</Button>
       </div>
     </article>
   )

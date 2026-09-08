@@ -1,5 +1,8 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
+import { Can, useAccess } from '../../../app/access/AccessProvider'
+import { Alert, Button, EstadoBadge } from '../../../shared/components'
 import { moverPostulacion, type Etapa, type PostulanteDetalle } from '../api/tableroApi'
+import { estadoCanonico, formatFecha, PERM_GESTIONAR } from '../utils/tableroUi'
 import { PostulanteDetalleModal } from './PostulanteDetalleModal'
 
 type Props = {
@@ -9,101 +12,149 @@ type Props = {
   onChanged: () => Promise<void>
 }
 
-function formatFecha(iso: string) {
-  return new Date(iso).toLocaleDateString('es-BO')
-}
-
 export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: Props) {
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [overEtapa, setOverEtapa] = useState<string | null>(null)
-  const [selectedPostulante, setSelectedPostulante] = useState<PostulanteDetalle | null>(null)
-  const [error, setError] = useState('')
+  const { can } = useAccess()
+  const puedeGestionar = can(...PERM_GESTIONAR)
+  const [arrastrandoId, setArrastrandoId] = useState<string | null>(null)
+  const [columnaActiva, setColumnaActiva] = useState<string | null>(null)
+  const [seleccionado, setSeleccionado] = useState<PostulanteDetalle | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  async function mover(id: string, etapaId: string) {
-    setError('')
+  async function mover(postulacionId: string, etapaId: string) {
+    setError(null)
     try {
-      await moverPostulacion(id, etapaId, empresaId)
+      await moverPostulacion(postulacionId, etapaId, empresaId)
       await onChanged()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo cambiar la etapa')
+    } catch (cause) {
+      // Nunca se traga: si la etapa no cambió, el usuario tiene que enterarse.
+      setError(cause instanceof Error ? cause.message : 'No se pudo cambiar la etapa.')
     }
   }
 
   return (
     <>
-      {error && <div className="vac-bad" role="alert">{error}</div>}
-      <div className="tb-board">
+      {error !== null && <Alert tone="error">{error}</Alert>}
+
+      <div className="board">
         {etapas.map((etapa) => {
-          const cards = postulaciones.filter((postulacion) => postulacion.etapa_id === etapa.id)
+          const tarjetas = postulaciones.filter((postulacion) => postulacion.etapa_id === etapa.id)
           return (
             <section
               key={etapa.id}
-              className={`tb-col ${overEtapa === etapa.id ? 'over' : ''}`}
-              onDragOver={(event) => { event.preventDefault(); setOverEtapa(etapa.id) }}
-              onDragLeave={() => setOverEtapa(null)}
-              onDrop={(event) => {
-                event.preventDefault()
-                const postulacionId = event.dataTransfer.getData('text/plain') || draggingId
-                setOverEtapa(null)
-                setDraggingId(null)
-                if (postulacionId) void mover(postulacionId, etapa.id)
+              className="board-column"
+              data-recibiendo={columnaActiva === etapa.id ? 'true' : undefined}
+              onDragOver={(evento) => {
+                if (!puedeGestionar) return
+                // Sin este preventDefault el navegador no acepta la suelta.
+                evento.preventDefault()
+                setColumnaActiva(etapa.id)
+              }}
+              onDragLeave={(evento) => {
+                // Salir hacia un hijo de la columna no cuenta como salir de la columna.
+                const destino = evento.relatedTarget
+                if (destino instanceof Node && evento.currentTarget.contains(destino)) return
+                setColumnaActiva(null)
+              }}
+              onDrop={(evento) => {
+                evento.preventDefault()
+                const postulacionId = evento.dataTransfer.getData('text/plain') || arrastrandoId
+                setColumnaActiva(null)
+                setArrastrandoId(null)
+                if (!puedeGestionar || postulacionId === null || postulacionId === '') return
+                // Soltar la tarjeta en su propia columna no es un cambio de etapa.
+                const soltada = postulaciones.find(
+                  (postulacion) => postulacion.id === postulacionId,
+                )
+                if (soltada !== undefined && soltada.etapa_id === etapa.id) return
+                void mover(postulacionId, etapa.id)
               }}
             >
-              <h4><span>{etapa.nombre}</span><span className="tb-count">{cards.length}</span></h4>
-              <div className="tb-cards-list">
-                {cards.map((card) => (
-                  <article
-                    key={card.id}
-                    className={`tb-card ${card.estado === 'DESCARTADA' ? 'rejected' : ''}`}
-                    draggable
-                    onDragStart={(event) => {
-                      setDraggingId(card.id)
-                      event.dataTransfer.setData('text/plain', card.id)
-                    }}
-                    onClick={() => setSelectedPostulante(card)}
-                  >
-                    <div className="tb-card-top">
-                      <b>{card.nombre_postulante}</b>
-                      {card.estado === 'DESCARTADA' && <span className="tb-card-pill danger">Descartado</span>}
-                    </div>
-                    <small className="tb-card-date">
-                      {formatFecha(card.fecha_postulacion)}{card.ciudad ? ` · ${card.ciudad}` : ''}
-                    </small>
-                    <div className="tb-card-meta">
-                      <span className="tb-card-score">
-                        {card.puntaje_manual == null ? 'Sin puntaje' : `${card.puntaje_manual}/100`}
-                      </span>
-                    </div>
-                    <div className="tb-moves" onClick={(event) => event.stopPropagation()}>
-                      {etapas.filter((item) => item.id !== etapa.id).map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => void mover(card.id, item.id)}
-                          title={`Mover a ${item.nombre}`}
-                        >
-                          → {item.nombre}
-                        </button>
-                      ))}
-                    </div>
-                  </article>
-                ))}
+              <div className="board-column-header">
+                <h3>{etapa.nombre}</h3>
+                <span className="board-column-count">
+                  {tarjetas.length} {tarjetas.length === 1 ? 'candidato' : 'candidatos'}
+                </span>
               </div>
+
+              {tarjetas.length === 0 ? (
+                <p className="board-empty">Sin candidatos en esta etapa.</p>
+              ) : (
+                <div className="board-cards">
+                  {tarjetas.map((tarjeta) => (
+                    <Fragment key={tarjeta.id}>
+                      {/* Es un <button> para que la ficha se abra también con el teclado. */}
+                      <button
+                        type="button"
+                        className="board-card"
+                        draggable={puedeGestionar}
+                        data-arrastrando={arrastrandoId === tarjeta.id ? 'true' : undefined}
+                        onDragStart={(evento) => {
+                          setArrastrandoId(tarjeta.id)
+                          evento.dataTransfer.setData('text/plain', tarjeta.id)
+                        }}
+                        onDragEnd={() => {
+                          setArrastrandoId(null)
+                          setColumnaActiva(null)
+                        }}
+                        onClick={() => setSeleccionado(tarjeta)}
+                      >
+                        <span className="board-card-top">
+                          <strong>{tarjeta.nombre_postulante}</strong>
+                          <EstadoBadge estado={estadoCanonico(tarjeta.estado)} />
+                        </span>
+                        <span className="board-card-meta">
+                          <span>{formatFecha(tarjeta.fecha_postulacion)}</span>
+                          {tarjeta.ciudad !== '' && <span>{tarjeta.ciudad}</span>}
+                          <span>
+                            {tarjeta.puntaje_manual == null
+                              ? 'Sin puntaje'
+                              : `Puntaje ${tarjeta.puntaje_manual}/100`}
+                          </span>
+                        </span>
+                      </button>
+
+                      {/* Alternativa por teclado al arrastrar y soltar: nunca se retira. */}
+                      <Can permisos={PERM_GESTIONAR}>
+                        <div
+                          className="board-card-actions"
+                          role="group"
+                          aria-label={`Cambiar de etapa a ${tarjeta.nombre_postulante}`}
+                        >
+                          {etapas
+                            .filter((destino) => destino.id !== etapa.id)
+                            .map((destino) => (
+                              <Button
+                                key={destino.id}
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => void mover(tarjeta.id, destino.id)}
+                              >
+                                Mover a {destino.nombre}
+                              </Button>
+                            ))}
+                        </div>
+                      </Can>
+                    </Fragment>
+                  ))}
+                </div>
+              )}
             </section>
           )
         })}
       </div>
 
-      <PostulanteDetalleModal
-        postulante={selectedPostulante}
-        etapas={etapas}
-        empresaId={empresaId}
-        onClose={() => setSelectedPostulante(null)}
-        onUpdated={async () => {
-          setSelectedPostulante(null)
-          await onChanged()
-        }}
-      />
+      {seleccionado !== null && (
+        <PostulanteDetalleModal
+          postulante={seleccionado}
+          etapas={etapas}
+          empresaId={empresaId}
+          onClose={() => setSeleccionado(null)}
+          onUpdated={async () => {
+            setSeleccionado(null)
+            await onChanged()
+          }}
+        />
+      )}
     </>
   )
 }

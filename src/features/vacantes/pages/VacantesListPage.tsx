@@ -1,246 +1,403 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Can } from '../../../app/access/AccessProvider'
+import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
+import { ApiError } from '../../../shared/api/httpClient'
 import {
+  Alert,
+  Badge,
+  Button,
+  ConfirmDialog,
+  DataTable,
+  EmptyState,
+  EstadoBadge,
+  Field,
+  PageHeader,
+  Pagination,
+  Panel,
+} from '../../../shared/components'
+import type { Column } from '../../../shared/components'
+import {
+  cerrarVacante,
+  eliminarVacante,
   getVacantes,
+  pausarVacante,
+  publicarVacante,
+  reanudarVacante,
   type EstadoVacante,
   type PaginatedVacantes,
   type VacanteListItem,
 } from '../api/vacantesApi'
-import {
-  ConfirmarAccionVacanteModal,
-  type AccionVacante,
-} from '../components/ConfirmarAccionVacanteModal'
-import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
-import '../vacantes.css'
+
+/** Acciones del ciclo de vida de una vacante que exigen confirmación. */
+type AccionVacante = 'publicar' | 'pausar' | 'reanudar' | 'cerrar' | 'eliminar'
+
+type AccionPendiente = { vacante: VacanteListItem; tipo: AccionVacante }
+
+const PERM_CREAR = ['vacantes:crear', 'platform:vacantes:gestionar']
+const PERM_EDITAR = ['vacantes:editar', 'platform:vacantes:gestionar']
+const PERM_PUBLICAR = ['vacantes:publicar', 'platform:vacantes:gestionar']
+const PERM_ELIMINAR = ['vacantes:eliminar', 'platform:vacantes:gestionar']
+const PERM_TABLERO = ['postulaciones:ver', 'platform:postulaciones:ver']
+
+const TITULO_ACCION: Record<AccionVacante, string> = {
+  publicar: 'Publicar vacante',
+  pausar: 'Pausar vacante',
+  reanudar: 'Reanudar vacante',
+  cerrar: 'Cerrar vacante',
+  eliminar: 'Eliminar vacante',
+}
+
+const DETALLE_ACCION: Record<AccionVacante, string> = {
+  publicar: 'Pasará a estar activa y visible para los postulantes en el portal público.',
+  pausar: 'Dejará de aparecer temporalmente en el portal público. Podrás reanudarla cuando quieras.',
+  reanudar: 'Volverá a estar visible para los postulantes en el portal público.',
+  cerrar: 'Se cierra la recepción de postulaciones para esta vacante.',
+  eliminar: 'La vacante deja de existir en el sistema. Esta acción no se puede deshacer.',
+}
+
+const ETIQUETA_CONFIRMAR: Record<AccionVacante, string> = {
+  publicar: 'Publicar',
+  pausar: 'Pausar',
+  reanudar: 'Reanudar',
+  cerrar: 'Cerrar',
+  eliminar: 'Eliminar',
+}
+
+const MENSAJE_EXITO: Record<AccionVacante, string> = {
+  publicar: 'Vacante publicada. Ya está visible para recibir postulaciones.',
+  pausar: 'Vacante pausada. Ya no aparece en el portal público.',
+  reanudar: 'Vacante reanudada. Vuelve a estar visible en el portal público.',
+  cerrar: 'Vacante cerrada correctamente.',
+  eliminar: 'Vacante eliminada correctamente.',
+}
+
+/** Cerrar y eliminar no se pueden deshacer; pausar sí, con «Reanudar». */
+const ACCION_IRREVERSIBLE: AccionVacante[] = ['cerrar', 'eliminar']
+
+const SIN_DATOS: PaginatedVacantes = {
+  items: [],
+  departamentos: [],
+  total: 0,
+  all_total: 0,
+  counts: { BORRADOR: 0, PUBLICADA: 0, PAUSADA: 0, CERRADA: 0, CANCELADA: 0 },
+  page: 1,
+  per_page: 10,
+  total_pages: 1,
+}
+
+/** Las tarjetas de métrica cuentan sobre todas las vacantes del alcance, nunca
+ *  sobre la página visible ya filtrada: `all_total` y `counts` llegan sin filtrar. */
+const METRICAS: { estado: EstadoVacante | 'TODAS'; etiqueta: string }[] = [
+  { estado: 'TODAS', etiqueta: 'Total de vacantes' },
+  { estado: 'PUBLICADA', etiqueta: 'Publicadas' },
+  { estado: 'BORRADOR', etiqueta: 'Borradores' },
+  { estado: 'PAUSADA', etiqueta: 'Pausadas' },
+  { estado: 'CERRADA', etiqueta: 'Cerradas' },
+]
 
 export function VacantesListPage() {
   const navigate = useNavigate()
   const { company } = useCompanyScope()
 
-  // Filtros
   const [busqueda, setBusqueda] = useState('')
-  const [estadoFilter, setEstadoFilter] = useState<EstadoVacante | 'TODAS'>('TODAS')
-  const [departamentoFilter, setDepartamentoFilter] = useState<string | 'TODOS'>('TODOS')
+  const [estadoFiltro, setEstadoFiltro] = useState<EstadoVacante | 'TODAS'>('TODAS')
+  const [departamentoFiltro, setDepartamentoFiltro] = useState<string>('TODOS')
   const [page, setPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
 
-  // Datos
-  const [data, setData] = useState<PaginatedVacantes>({
-    items: [],
-    departamentos: [],
-    total: 0,
-    all_total: 0,
-    counts: { BORRADOR: 0, PUBLICADA: 0, PAUSADA: 0, CERRADA: 0, CANCELADA: 0 },
-    page: 1,
-    per_page: 10,
-    total_pages: 1,
-  })
+  const [data, setData] = useState<PaginatedVacantes>(SIN_DATOS)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [mensajeExito, setMensajeExito] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [mensaje, setMensaje] = useState<string | null>(null)
 
-  // Modal de acción (T1-14)
-  const [selectedVacante, setSelectedVacante] = useState<VacanteListItem | null>(null)
-  const [selectedAccion, setSelectedAccion] = useState<AccionVacante | null>(null)
+  const [accion, setAccion] = useState<AccionPendiente | null>(null)
+  const [ejecutando, setEjecutando] = useState(false)
+  const [errorAccion, setErrorAccion] = useState<string | null>(null)
+  const [errorPublicacion, setErrorPublicacion] = useState<string | null>(null)
 
-  const loadVacantes = useCallback(async () => {
+  const cargar = useCallback(async () => {
     setLoading(true)
-    setError('')
+    setError(null)
     try {
-      const res = await getVacantes({
+      const resultado = await getVacantes({
         busqueda: busqueda.trim() || undefined,
-        estado: estadoFilter,
-        departamento_id: departamentoFilter,
+        estado: estadoFiltro,
+        departamento_id: departamentoFiltro,
         page,
         per_page: perPage,
         empresa_id: company?.id,
       })
-      setData(res)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudieron cargar las vacantes')
+      setData(resultado)
+    } catch (cause) {
+      // Un fallo nunca se muestra como «no hay vacantes»: son cosas distintas.
+      setData(SIN_DATOS)
+      setError(cause instanceof Error ? cause.message : 'No se pudieron cargar las vacantes.')
     } finally {
       setLoading(false)
     }
-  }, [busqueda, company?.id, estadoFilter, departamentoFilter, page, perPage])
+  }, [busqueda, company?.id, departamentoFiltro, estadoFiltro, page, perPage])
 
   useEffect(() => {
-    void loadVacantes()
-  }, [loadVacantes])
+    void cargar()
+  }, [cargar])
 
-  function handleResetFilters() {
+  function limpiarFiltros() {
     setBusqueda('')
-    setEstadoFilter('TODAS')
-    setDepartamentoFilter('TODOS')
+    setEstadoFiltro('TODAS')
+    setDepartamentoFiltro('TODOS')
     setPage(1)
   }
 
-  function handleOpenAction(vacante: VacanteListItem, accion: AccionVacante) {
-    setSelectedVacante(vacante)
-    setSelectedAccion(accion)
+  function abrirAccion(vacante: VacanteListItem, tipo: AccionVacante) {
+    setErrorAccion(null)
+    setErrorPublicacion(null)
+    setAccion({ vacante, tipo })
   }
 
-  function handleActionSuccess(accion: AccionVacante) {
-    const mensajes: Record<AccionVacante, string> = {
-      publicar: 'Vacante publicada exitosamente. Ahora está visible para recibir postulaciones.',
-      pausar: 'Vacante pausada. Ya no está visible en el portal público.',
-      reanudar: 'Vacante reanudada exitosamente. Vuelve a estar visible en el portal público.',
-      cerrar: 'Vacante cerrada correctamente.',
-      eliminar: 'Vacante eliminada exitosamente.',
-    }
-    setMensajeExito(mensajes[accion])
-    setTimeout(() => setMensajeExito(null), 5000)
-    void loadVacantes()
+  function cerrarAccion() {
+    setAccion(null)
+    setErrorAccion(null)
+    setErrorPublicacion(null)
   }
 
-  const estadoBadgeConfig: Record<EstadoVacante, { label: string; className: string }> = {
-    BORRADOR: { label: 'Borrador', className: 'vac-badge-draft' },
-    PUBLICADA: { label: 'Publicada', className: 'vac-badge-active' },
-    PAUSADA: { label: 'Pausada', className: 'vac-badge-paused' },
-    CERRADA: { label: 'Cerrada', className: 'vac-badge-closed' },
-    CANCELADA: { label: 'Cancelada', className: 'vac-badge-closed' },
+  async function confirmarAccion() {
+    if (accion === null) return
+    setEjecutando(true)
+    setErrorAccion(null)
+    setErrorPublicacion(null)
+    try {
+      const { vacante, tipo } = accion
+      const alcance = company?.id
+      if (tipo === 'publicar') await publicarVacante(vacante.id, alcance)
+      if (tipo === 'pausar') await pausarVacante(vacante.id, alcance)
+      if (tipo === 'reanudar') await reanudarVacante(vacante.id, alcance)
+      if (tipo === 'cerrar') await cerrarVacante(vacante.id, alcance)
+      if (tipo === 'eliminar') await eliminarVacante(vacante.id, alcance)
+      setAccion(null)
+      setMensaje(MENSAJE_EXITO[tipo])
+      window.setTimeout(() => setMensaje(null), 5000)
+      await cargar()
+    } catch (cause) {
+      // El 422 se explica aparte: la vacante no cumple los requisitos y se
+      // resuelve completando sus datos, no reintentando la misma acción.
+      if (cause instanceof ApiError && cause.status === 422) {
+        setErrorPublicacion(
+          cause.message || 'La vacante no cumple los requisitos para completar esta acción.',
+        )
+      } else {
+        setErrorAccion(cause instanceof Error ? cause.message : 'No se pudo completar la acción.')
+      }
+    } finally {
+      setEjecutando(false)
+    }
   }
 
-  const formatSalario = (v: VacanteListItem) => {
-    if (!v.mostrar_salario || (v.salario_min == null && v.salario_max == null)) {
-      return <span className="vac-salario-hidden">No publicado</span>
+  function salario(vacante: VacanteListItem) {
+    if (!vacante.mostrar_salario || (vacante.salario_min == null && vacante.salario_max == null)) {
+      return <span className="text-muted">No publicado</span>
     }
-    if (v.salario_min != null && v.salario_max != null) {
-      return `Bs. ${v.salario_min.toLocaleString()} - ${v.salario_max.toLocaleString()}`
+    if (vacante.salario_min != null && vacante.salario_max != null) {
+      return `Bs. ${vacante.salario_min.toLocaleString('es-BO')} – ${vacante.salario_max.toLocaleString('es-BO')}`
     }
-    if (v.salario_min != null) return `Desde Bs. ${v.salario_min.toLocaleString()}`
-    return `Hasta Bs. ${v.salario_max?.toLocaleString()}`
+    if (vacante.salario_min != null) return `Desde Bs. ${vacante.salario_min.toLocaleString('es-BO')}`
+    return `Hasta Bs. ${vacante.salario_max?.toLocaleString('es-BO')}`
   }
+
+  const columnas: Column<VacanteListItem>[] = [
+    {
+      key: 'vacante',
+      header: 'Vacante y cargo',
+      render: (vacante) => (
+        <>
+          <strong>{vacante.titulo}</strong>
+          <small>{vacante.cargo_nombre}</small>
+        </>
+      ),
+    },
+    {
+      key: 'departamento',
+      header: 'Departamento',
+      render: (vacante) => <Badge tone="neutral">{vacante.departamento_nombre}</Badge>,
+    },
+    {
+      key: 'modalidad',
+      header: 'Modalidad y ciudad',
+      render: (vacante) => (
+        <>
+          <span className="chip">{vacante.modalidad}</span>
+          <small>{vacante.ubicacion || 'Sin especificar'}</small>
+        </>
+      ),
+    },
+    { key: 'salario', header: 'Rango salarial', render: (vacante) => salario(vacante) },
+    {
+      key: 'cierre',
+      header: 'Cierre y puestos',
+      render: (vacante) => (
+        <>
+          <span>{vacante.fecha_cierre ? vacante.fecha_cierre.slice(0, 10) : '—'}</span>
+          <small>
+            {vacante.cantidad_vacantes} {vacante.cantidad_vacantes === 1 ? 'puesto' : 'puestos'}
+          </small>
+        </>
+      ),
+    },
+    {
+      key: 'estado',
+      header: 'Estado',
+      render: (vacante) => <EstadoBadge estado={vacante.estado} />,
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      align: 'right',
+      render: (vacante) => (
+        <div className="row-actions">
+          <Can permisos={PERM_TABLERO}>
+            <Link className="button button-ghost button-sm" to={`/vacantes/${vacante.id}/tablero`}>
+              Tablero
+              {vacante.postulantes_count != null ? ` (${vacante.postulantes_count})` : ''}
+            </Link>
+          </Can>
+
+          {(vacante.estado === 'BORRADOR' || vacante.estado === 'PAUSADA') && (
+            <Can permisos={PERM_EDITAR}>
+              <Link
+                className="button button-secondary button-sm"
+                to={`/vacantes/${vacante.id}/editar`}
+              >
+                Editar
+              </Link>
+            </Can>
+          )}
+
+          {vacante.estado === 'BORRADOR' && (
+            <Can permisos={PERM_PUBLICAR}>
+              <Button size="sm" onClick={() => abrirAccion(vacante, 'publicar')}>
+                Publicar
+              </Button>
+            </Can>
+          )}
+
+          {vacante.estado === 'PUBLICADA' && (
+            <Can permisos={PERM_PUBLICAR}>
+              <Button variant="secondary" size="sm" onClick={() => abrirAccion(vacante, 'pausar')}>
+                Pausar
+              </Button>
+            </Can>
+          )}
+
+          {vacante.estado === 'PAUSADA' && (
+            <Can permisos={PERM_PUBLICAR}>
+              <Button size="sm" onClick={() => abrirAccion(vacante, 'reanudar')}>
+                Reanudar
+              </Button>
+            </Can>
+          )}
+
+          {(vacante.estado === 'PUBLICADA' || vacante.estado === 'PAUSADA') && (
+            <Can permisos={PERM_PUBLICAR}>
+              <Button
+                variant="danger-outline"
+                size="sm"
+                onClick={() => abrirAccion(vacante, 'cerrar')}
+              >
+                Cerrar
+              </Button>
+            </Can>
+          )}
+
+          {(vacante.estado === 'BORRADOR' || vacante.estado === 'CANCELADA') && (
+            <Can permisos={PERM_ELIMINAR}>
+              <Button
+                variant="danger-outline"
+                size="sm"
+                onClick={() => abrirAccion(vacante, 'eliminar')}
+              >
+                Eliminar
+              </Button>
+            </Can>
+          )}
+        </div>
+      ),
+    },
+  ]
+
+  const hayFiltros =
+    busqueda.trim() !== '' || estadoFiltro !== 'TODAS' || departamentoFiltro !== 'TODOS'
+  const sinVacantes = !loading && error === null && data.all_total === 0
 
   return (
-    <div className="vac-page">
-      {/* Cabecera */}
-      <div className="vac-header-row">
-        <div>
-          <div className="vac-eyebrow">Reclutamiento & Selección · Sprint 1</div>
-          <h1>Gestión de Vacantes</h1>
-          <p className="vac-sub">
-            Publicación, filtros por departamento y estado, y seguimiento de postulaciones.
-          </p>
-        </div>
-        <Link to="/vacantes/nueva" className="vac-btn vac-btn-primary">
-          + Nueva vacante
-        </Link>
+    <section className="page-stack">
+      <PageHeader
+        eyebrow="Reclutamiento y selección"
+        title="Vacantes"
+        description="Publicación, filtros por departamento y estado, y seguimiento de postulaciones."
+        actions={
+          <Can permisos={PERM_CREAR}>
+            <Link className="button button-primary" to="/vacantes/nueva">
+              Nueva vacante
+            </Link>
+          </Can>
+        }
+      />
+
+      {mensaje !== null && <Alert tone="success">{mensaje}</Alert>}
+
+      <div className="card-grid">
+        {METRICAS.map((metrica) => (
+          <button
+            key={metrica.estado}
+            className="metric-card"
+            type="button"
+            aria-pressed={estadoFiltro === metrica.estado}
+            onClick={() => {
+              setEstadoFiltro(metrica.estado)
+              setPage(1)
+            }}
+          >
+            <span className="metric-label">{metrica.etiqueta}</span>
+            <span className="metric-value">
+              {metrica.estado === 'TODAS' ? data.all_total : data.counts[metrica.estado]}
+            </span>
+          </button>
+        ))}
       </div>
 
-      {mensajeExito && (
-        <div className="vac-notice" role="status">
-          <span>✓ {mensajeExito}</span>
-          <button type="button" onClick={() => setMensajeExito(null)} aria-label="Cerrar notificación">✕</button>
-        </div>
-      )}
-      {error && <div className="vac-bad" role="alert">{error}</div>}
-
-      {/* Tarjetas de métricas */}
-      <div className="vac-metrics-grid">
-        <div
-          className={`vac-metric-card ${estadoFilter === 'TODAS' ? 'selected' : ''}`}
-          onClick={() => { setEstadoFilter('TODAS'); setPage(1) }}
-        >
-          <span className="vac-metric-label">Total vacantes</span>
-          <span className="vac-metric-num">{data.all_total}</span>
-        </div>
-        <div
-          className={`vac-metric-card ${estadoFilter === 'PUBLICADA' ? 'selected' : ''}`}
-          onClick={() => { setEstadoFilter('PUBLICADA'); setPage(1) }}
-        >
-          <span className="vac-metric-label">Publicadas</span>
-          <span className="vac-metric-num text-success">
-            {data.counts.PUBLICADA}
-          </span>
-        </div>
-        <div
-          className={`vac-metric-card ${estadoFilter === 'BORRADOR' ? 'selected' : ''}`}
-          onClick={() => { setEstadoFilter('BORRADOR'); setPage(1) }}
-        >
-          <span className="vac-metric-label">Borradores</span>
-          <span className="vac-metric-num text-draft">
-            {data.counts.BORRADOR}
-          </span>
-        </div>
-        <div
-          className={`vac-metric-card ${estadoFilter === 'PAUSADA' ? 'selected' : ''}`}
-          onClick={() => { setEstadoFilter('PAUSADA'); setPage(1) }}
-        >
-          <span className="vac-metric-label">Pausadas</span>
-          <span className="vac-metric-num text-warning">
-            {data.counts.PAUSADA}
-          </span>
-        </div>
-        <div
-          className={`vac-metric-card ${estadoFilter === 'CERRADA' ? 'selected' : ''}`}
-          onClick={() => { setEstadoFilter('CERRADA'); setPage(1) }}
-        >
-          <span className="vac-metric-label">Cerradas</span>
-          <span className="vac-metric-num text-closed">
-            {data.counts.CERRADA}
-          </span>
-        </div>
-      </div>
-
-      {/* Barra de Filtros (T1-12) */}
-      <div className="vac-filters-panel">
-        <div className="vac-filters-grid">
-          <div className="vac-filter-item search">
-            <label className="vac-filter-label" htmlFor="search-input">Buscar vacante</label>
-            <div className="vac-search-input-wrap">
-              <span className="vac-search-icon">🔍</span>
-              <input
-                id="search-input"
-                className="vac-input"
-                type="text"
-                placeholder="Título, cargo, ubicación o descripción..."
-                value={busqueda}
-                onChange={(e) => {
-                  setBusqueda(e.target.value)
-                  setPage(1)
-                }}
-              />
-              {busqueda && (
-                <button
-                  type="button"
-                  className="vac-clear-search"
-                  onClick={() => { setBusqueda(''); setPage(1) }}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="vac-filter-item">
-            <label className="vac-filter-label" htmlFor="dept-select">Departamento</label>
+      <Panel title="Listado" count={`${data.total} vacante${data.total === 1 ? '' : 's'}`}>
+        <form className="filters" onSubmit={(evento) => evento.preventDefault()}>
+          <Field label="Buscar vacante">
+            <input
+              value={busqueda}
+              onChange={(evento) => {
+                setBusqueda(evento.target.value)
+                setPage(1)
+              }}
+              placeholder="Título, cargo, ubicación o descripción"
+            />
+          </Field>
+          <Field label="Departamento">
             <select
-              id="dept-select"
-              className="vac-select"
-              value={departamentoFilter}
-              onChange={(e) => {
-                const val = e.target.value
-                setDepartamentoFilter(val)
+              value={departamentoFiltro}
+              onChange={(evento) => {
+                setDepartamentoFiltro(evento.target.value)
                 setPage(1)
               }}
             >
               <option value="TODOS">Todos los departamentos</option>
-              {data.departamentos.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.nombre}
+              {data.departamentos.map((departamento) => (
+                <option key={departamento.id} value={departamento.id}>
+                  {departamento.nombre}
                 </option>
               ))}
             </select>
-          </div>
-
-          <div className="vac-filter-item">
-            <label className="vac-filter-label" htmlFor="status-select">Estado</label>
+          </Field>
+          <Field label="Estado">
             <select
-              id="status-select"
-              className="vac-select"
-              value={estadoFilter}
-              onChange={(e) => {
-                setEstadoFilter(e.target.value as EstadoVacante | 'TODAS')
+              value={estadoFiltro}
+              onChange={(evento) => {
+                setEstadoFiltro(evento.target.value as EstadoVacante | 'TODAS')
                 setPage(1)
               }}
             >
@@ -250,284 +407,121 @@ export function VacantesListPage() {
               <option value="PAUSADA">Pausada</option>
               <option value="CERRADA">Cerrada</option>
             </select>
-          </div>
-
-          <div className="vac-filter-item actions">
-            <button
-              type="button"
-              className="vac-btn-ghost vac-btn-clear"
-              onClick={handleResetFilters}
-            >
+          </Field>
+          <div className="filters-actions">
+            <Button variant="secondary" onClick={limpiarFiltros} disabled={!hayFiltros}>
               Limpiar filtros
-            </button>
+            </Button>
           </div>
-        </div>
-      </div>
+        </form>
 
-      {/* Tabla de Resultados */}
-      <div className="vac-table-card">
-        {loading ? (
-          <div className="vac-loading-state">
-            <div className="vac-spinner" />
-            <p>Cargando vacantes...</p>
-          </div>
-        ) : data.items.length === 0 ? (
-          <div className="vac-empty-state">
-            <div className="vac-empty-icon">📂</div>
-            <h3>No se encontraron vacantes</h3>
-            <p>
-              {busqueda || estadoFilter !== 'TODAS' || departamentoFilter !== 'TODOS'
-                ? 'No hay resultados que coincidan con los filtros aplicados.'
-                : 'Aún no has registrado ninguna vacante en el sistema.'}
-            </p>
-            {busqueda || estadoFilter !== 'TODAS' || departamentoFilter !== 'TODOS' ? (
-              <button type="button" className="vac-btn vac-btn-secondary" onClick={handleResetFilters}>
-                Restablecer filtros
-              </button>
-            ) : (
-              <Link to="/vacantes/nueva" className="vac-btn vac-btn-primary">
-                Crear primera vacante
-              </Link>
-            )}
-          </div>
+        {sinVacantes ? (
+          <EmptyState
+            title="Todavía no hay vacantes"
+            message="Registra la primera vacante para empezar a recibir postulaciones."
+            action={
+              <Can permisos={PERM_CREAR}>
+                <Link className="button button-primary" to="/vacantes/nueva">
+                  Crear la primera vacante
+                </Link>
+              </Can>
+            }
+          />
         ) : (
-          <div className="vac-table-wrap">
-            <table className="vac-table">
-              <thead>
-                <tr>
-                  <th>Vacante / Cargo</th>
-                  <th>Departamento</th>
-                  <th>Modalidad / Ciudad</th>
-                  <th>Rango Salarial</th>
-                  <th>Cierre & Vacantes</th>
-                  <th>Estado</th>
-                  <th style={{ textAlign: 'right' }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((vacante) => {
-                  const badge = estadoBadgeConfig[vacante.estado as EstadoVacante]
-                  return (
-                    <tr key={vacante.id}>
-                      <td>
-                        <div className="vac-item-title">
-                          <strong>{vacante.titulo}</strong>
-                          <small>{vacante.cargo_nombre}</small>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="vac-dept-badge">{vacante.departamento_nombre}</span>
-                      </td>
-                      <td>
-                        <div className="vac-mod-wrap">
-                          <span className="vac-mod-tag">{vacante.modalidad}</span>
-                          <small>{vacante.ubicacion || 'Sin especificar'}</small>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="vac-salario-text">{formatSalario(vacante)}</span>
-                      </td>
-                      <td>
-                        <div className="vac-cierre-wrap">
-                          <span>{vacante.fecha_cierre ? vacante.fecha_cierre.slice(0, 10) : '—'}</span>
-                          <small>{vacante.cantidad_vacantes} {vacante.cantidad_vacantes === 1 ? 'puesto' : 'puestos'}</small>
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`vac-badge ${badge.className}`}>
-                          <span className="vac-badge-dot" />
-                          {badge.label}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="vac-row-actions">
-                          {/* Botón Ver Tablero Kanban */}
-                          <Link
-                            to={`/vacantes/${vacante.id}/tablero`}
-                            className="vac-action-btn view"
-                            title="Ver tablero de postulaciones"
-                          >
-                            📋 Tablero
-                            <span className="vac-postulantes-pill">
-                              {vacante.postulantes_count ?? 'N/D'}
-                            </span>
-                          </Link>
+          <>
+            <DataTable
+              columns={columnas}
+              rows={data.items}
+              rowKey={(vacante) => vacante.id}
+              loading={loading}
+              error={error}
+              onRetry={() => void cargar()}
+              emptyMessage="No hay vacantes que coincidan con los filtros aplicados."
+              caption="Vacantes del alcance actual"
+            />
 
-                          {/* Acciones de ciclo de vida */}
-                          {(vacante.estado === 'BORRADOR' || vacante.estado === 'PAUSADA') && (
-                            <Link
-                              to={`/vacantes/${vacante.id}/editar`}
-                              className="vac-action-btn edit"
-                              title="Editar vacante"
-                            >
-                              ✏️ Editar
-                            </Link>
-                          )}
-
-                          {vacante.estado === 'BORRADOR' && (
-                            <>
-                              <button
-                                type="button"
-                                className="vac-action-btn publish"
-                                title="Publicar vacante"
-                                onClick={() => handleOpenAction(vacante, 'publicar')}
-                              >
-                                📢 Publicar
-                              </button>
-                              <button
-                                type="button"
-                                className="vac-action-btn close-vac"
-                                title="Eliminar vacante"
-                                onClick={() => handleOpenAction(vacante, 'eliminar')}
-                              >
-                                🗑️ Eliminar
-                              </button>
-                            </>
-                          )}
-
-                          {vacante.estado === 'PUBLICADA' && (
-                            <>
-                              <button
-                                type="button"
-                                className="vac-action-btn pause"
-                                title="Pausar vacante"
-                                onClick={() => handleOpenAction(vacante, 'pausar')}
-                              >
-                                ⏸️ Pausar
-                              </button>
-                              <button
-                                type="button"
-                                className="vac-action-btn close-vac"
-                                title="Cerrar vacante"
-                                onClick={() => handleOpenAction(vacante, 'cerrar')}
-                              >
-                                🔒 Cerrar
-                              </button>
-                            </>
-                          )}
-
-                          {vacante.estado === 'PAUSADA' && (
-                            <>
-                              <button
-                                type="button"
-                                className="vac-action-btn publish"
-                                title="Reanudar vacante"
-                                onClick={() => handleOpenAction(vacante, 'reanudar')}
-                              >
-                                ▶️ Reanudar
-                              </button>
-                              <button
-                                type="button"
-                                className="vac-action-btn close-vac"
-                                title="Cerrar vacante"
-                                onClick={() => handleOpenAction(vacante, 'cerrar')}
-                              >
-                                🔒 Cerrar
-                              </button>
-                            </>
-                          )}
-
-                          {vacante.estado === 'CANCELADA' && (
-                            <button
-                              type="button"
-                              className="vac-action-btn close-vac"
-                              title="Eliminar vacante"
-                              onClick={() => handleOpenAction(vacante, 'eliminar')}
-                            >
-                              🗑️ Eliminar
-                            </button>
-                          )}
-
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+            {!loading && error === null && data.total > 0 && (
+              <Pagination
+                page={data.page}
+                perPage={data.per_page}
+                total={data.total}
+                onPageChange={setPage}
+                onPerPageChange={(valor) => {
+                  setPerPage(valor)
+                  setPage(1)
+                }}
+              />
+            )}
+          </>
         )}
+      </Panel>
 
-        {/* Paginación (T1-12) */}
-        {!loading && data.total > 0 && (
-          <div className="vac-pagination-bar">
-            <div className="vac-pagination-info">
-              Mostrando{' '}
-              <strong>
-                {(data.page - 1) * data.per_page + 1} - {Math.min(data.page * data.per_page, data.total)}
-              </strong>{' '}
-              de <strong>{data.total}</strong> vacantes
-            </div>
-
-            <div className="vac-pagination-controls">
-              <label className="vac-perpage-label">
-                Por página:
-                <select
-                  value={perPage}
-                  onChange={(e) => {
-                    setPerPage(Number(e.target.value))
-                    setPage(1)
-                  }}
-                  className="vac-perpage-select"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </select>
-              </label>
-
-              <div className="vac-page-buttons">
-                <button
-                  type="button"
-                  className="vac-page-btn"
-                  disabled={data.page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  aria-label="Página anterior"
-                >
-                  ‹ Anterior
-                </button>
-
-                {Array.from({ length: data.total_pages }, (_, i) => i + 1).map((num) => (
-                  <button
-                    key={num}
-                    type="button"
-                    className={`vac-page-btn ${num === data.page ? 'active' : ''}`}
-                    onClick={() => setPage(num)}
-                  >
-                    {num}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  className="vac-page-btn"
-                  disabled={data.page >= data.total_pages}
-                  onClick={() => setPage((p) => Math.min(data.total_pages, p + 1))}
-                  aria-label="Página siguiente"
-                >
-                  Siguiente ›
-                </button>
+      {accion !== null && (
+        <ConfirmDialog
+          title={TITULO_ACCION[accion.tipo]}
+          message={
+            <>
+              <p>
+                <strong>{accion.vacante.titulo}</strong>
+              </p>
+              <p>{DETALLE_ACCION[accion.tipo]}</p>
+              <div className="info-list">
+                <div className="info-row">
+                  <span className="info-label">Cargo</span>
+                  <span className="info-value">{accion.vacante.cargo_nombre}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Departamento</span>
+                  <span className="info-value">{accion.vacante.departamento_nombre}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Modalidad</span>
+                  <span className="info-value">
+                    {accion.vacante.modalidad}
+                    {accion.vacante.ubicacion ? ` · ${accion.vacante.ubicacion}` : ''}
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Puestos</span>
+                  <span className="info-value">{accion.vacante.cantidad_vacantes}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Fecha de cierre</span>
+                  <span className="info-value">
+                    {accion.vacante.fecha_cierre ? accion.vacante.fecha_cierre.slice(0, 10) : '—'}
+                  </span>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Diálogo de Confirmación para Acciones (T1-14) */}
-      <ConfirmarAccionVacanteModal
-        vacante={selectedVacante}
-        accion={selectedAccion}
-        onClose={() => {
-          setSelectedVacante(null)
-          setSelectedAccion(null)
-        }}
-        onSuccess={() => {
-          if (selectedAccion) handleActionSuccess(selectedAccion)
-        }}
-        onEditar={(id) => navigate(`/vacantes/${id}/editar`)}
-        empresaId={company?.id}
-      />
-    </div>
+              {errorPublicacion !== null && (
+                <Alert tone="error" title="La vacante no cumple los requisitos">
+                  <span>{errorPublicacion}</span>
+                  <Can permisos={PERM_EDITAR}>
+                    <span>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          const id = accion.vacante.id
+                          cerrarAccion()
+                          navigate(`/vacantes/${id}/editar`)
+                        }}
+                      >
+                        Ir a editar la vacante
+                      </Button>
+                    </span>
+                  </Can>
+                </Alert>
+              )}
+            </>
+          }
+          confirmLabel={ETIQUETA_CONFIRMAR[accion.tipo]}
+          tone={ACCION_IRREVERSIBLE.includes(accion.tipo) ? 'danger' : 'primary'}
+          loading={ejecutando}
+          error={errorAccion}
+          onConfirm={() => void confirmarAccion()}
+          onCancel={cerrarAccion}
+        />
+      )}
+    </section>
   )
 }
