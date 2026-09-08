@@ -14,7 +14,8 @@ type Props = {
   accion: AccionVacante | null
   onClose: () => void
   onSuccess: () => Promise<void> | void
-  onEditar?: (id: number) => void
+  onEditar?: (id: string) => void
+  empresaId?: string
 }
 
 export function ConfirmarAccionVacanteModal({
@@ -23,6 +24,7 @@ export function ConfirmarAccionVacanteModal({
   onClose,
   onSuccess,
   onEditar,
+  empresaId,
 }: Props) {
   const [loading, setLoading] = useState(false)
   const [error422, setError422] = useState<string | null>(null)
@@ -40,14 +42,14 @@ export function ConfirmarAccionVacanteModal({
     },
     pausar: {
       titulo: 'Pausar vacante',
-      descripcion: `¿Estás seguro de pausar la vacante "${vacante.titulo}"? Se suspenderá la recepción de nuevas postulaciones temporalmente.`,
+      descripcion: `¿Deseas pausar la vacante "${vacante.titulo}"? Dejará de aparecer temporalmente en el portal público.`,
       btnTexto: 'Pausar vacante',
       btnClase: 'vac-btn-warning',
       icono: '⏸️',
     },
     cerrar: {
       titulo: 'Cerrar vacante',
-      descripcion: `¿Estás seguro de cerrar la vacante "${vacante.titulo}"? Se dará por concluido el proceso de recepción para esta vacante.`,
+      descripcion: `¿Deseas cerrar la vacante "${vacante.titulo}"? Se finalizará la recepción de postulaciones.`,
       btnTexto: 'Cerrar vacante',
       btnClase: 'vac-btn-danger',
       icono: '🔒',
@@ -61,13 +63,9 @@ export function ConfirmarAccionVacanteModal({
     setErrorGeneral(null)
 
     try {
-      if (accion === 'publicar') {
-        await publicarVacante(vacante.id)
-      } else if (accion === 'pausar') {
-        await pausarVacante(vacante.id)
-      } else if (accion === 'cerrar') {
-        await cerrarVacante(vacante.id)
-      }
+      if (accion === 'publicar') await publicarVacante(vacante.id, empresaId)
+      if (accion === 'pausar') await pausarVacante(vacante.id, empresaId)
+      if (accion === 'cerrar') await cerrarVacante(vacante.id, empresaId)
       await onSuccess()
       onClose()
     } catch (err: unknown) {

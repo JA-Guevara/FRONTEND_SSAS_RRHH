@@ -2,22 +2,25 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { VacanteForm } from '../components/VacanteForm'
 import { getCargosOpcion, getVacante, type CargoOpcion, type Vacante } from '../api/vacantesApi'
+import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
 import '../vacantes.css'
 
 export function VacanteFormPage() {
   const { id } = useParams()
+  const { company } = useCompanyScope()
   const [cargos, setCargos] = useState<CargoOpcion[]>([])
   const [vacante, setVacante] = useState<Vacante | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    void getCargosOpcion().then(setCargos)
+    setError('')
+    void getCargosOpcion(company?.id).then(setCargos).catch((err: Error) => setError(err.message))
     if (id) {
-      void getVacante(Number(id))
+      void getVacante(id, company?.id)
         .then(setVacante)
         .catch((err: Error) => setError(err.message))
     }
-  }, [id])
+  }, [company?.id, id])
 
   return (
     <div className="vac-page">
@@ -34,7 +37,7 @@ export function VacanteFormPage() {
       </p>
 
       {error && <div className="vac-bad">{error}</div>}
-      <VacanteForm cargos={cargos} vacante={vacante} />
+      <VacanteForm cargos={cargos} vacante={vacante} empresaId={company?.id} />
     </div>
   )
 }

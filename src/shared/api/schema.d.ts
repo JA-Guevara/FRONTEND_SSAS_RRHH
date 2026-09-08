@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Consultar mi perfil
-         * @description Devuelve la identidad autenticada, su empresa cuando corresponda, roles y estado de seguridad.
+         * @description Devuelve la identidad autenticada, su empresa cuando corresponda, roles, permisos efectivos, módulos habilitados y estado de seguridad. Es la fuente única que usa el cliente para construir el menú y decidir qué acciones muestra.
          */
         get: operations["current_user_api_v1_auth_me_get"];
         put?: never;
@@ -304,7 +304,11 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        /**
+         * Actualizar habilidad
+         * @description Actualiza una habilidad de la empresa autorizada.
+         */
+        put: operations["actualizar_habilidad_api_v1_habilidades__habilidad_id__put"];
         post?: never;
         /**
          * Eliminar Habilidad
@@ -359,6 +363,70 @@ export interface paths {
          * @description Elimina un cargo sin dependencias dentro de la empresa autorizada. Requiere `cargos:eliminar` o `platform:organizacion:gestionar`.
          */
         delete: operations["eliminar_cargo_api_v1_cargos__cargo_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboard/resumen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar resumen del dashboard
+         * @description Devuelve el resumen agregado de la pantalla de inicio. Un usuario de empresa (permiso `empresa:ver`) recibe los totales de su propia empresa; un administrador de plataforma (permiso `platform:empresas:ver`) recibe los totales globales. En ambos casos se incluyen las cinco últimas entradas de bitácora del alcance correspondiente.
+         */
+        get: operations["resumen_dashboard_api_v1_dashboard_resumen_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/modulos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Catálogo de módulos
+         * @description Catálogo global de módulos de la plataforma. Es información de producto, disponible para cualquier identidad autenticada.
+         */
+        get: operations["listar_modulos_api_v1_modulos_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empresas/{empresa_id}/modulos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Módulos de una empresa
+         * @description Catálogo con el estado de habilitación de cada módulo para la empresa indicada. Los módulos núcleo aparecen siempre habilitados.
+         */
+        get: operations["listar_modulos_de_empresa_api_v1_empresas__empresa_id__modulos_get"];
+        /**
+         * Habilitar módulos de una empresa
+         * @description Reemplaza el conjunto de módulos habilitados. Los módulos núcleo no se pueden deshabilitar. Operación exclusiva de administradores de la plataforma.
+         */
+        put: operations["actualizar_modulos_de_empresa_api_v1_empresas__empresa_id__modulos_put"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -529,7 +597,11 @@ export interface paths {
          */
         get: operations["listar_postulantes_api_v1_postulantes_get"];
         put?: never;
-        post?: never;
+        /**
+         * Registrar postulante manualmente
+         * @description Da de alta un postulante en el banco de talento de la empresa autorizada. El CV es opcional porque el registro suele venir de una feria o un referido.
+         */
+        post: operations["crear_postulante_api_v1_postulantes_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -548,6 +620,26 @@ export interface paths {
          * @description Obtiene un postulante sin salir de su empresa.
          */
         get: operations["obtener_postulante_api_v1_postulantes__postulante_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/postulantes/{postulante_id}/cv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Descargar CV del postulante
+         * @description Descarga el archivo de hoja de vida almacenado para un postulante de la empresa autorizada.
+         */
+        get: operations["descargar_cv_api_v1_postulantes__postulante_id__cv_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -676,6 +768,50 @@ export interface paths {
         patch: operations["rechazar_api_v1_postulaciones__postulacion_id__rechazar_patch"];
         trace?: never;
     };
+    "/api/v1/postulaciones/{postulacion_id}/puntaje": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Registrar puntaje de postulación
+         * @description Registra el puntaje manual (0 a 100) de una postulación de la empresa autorizada.
+         */
+        patch: operations["registrar_puntaje_api_v1_postulaciones__postulacion_id__puntaje_patch"];
+        trace?: never;
+    };
+    "/api/v1/postulaciones/{postulacion_id}/notas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar notas internas
+         * @description Lista las notas internas de una postulación de la empresa autorizada.
+         */
+        get: operations["listar_notas_api_v1_postulaciones__postulacion_id__notas_get"];
+        put?: never;
+        /**
+         * Agregar nota interna
+         * @description Agrega una nota interna a una postulación de la empresa autorizada.
+         */
+        post: operations["crear_nota_api_v1_postulaciones__postulacion_id__notas_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/roles": {
         parameters: {
             query?: never;
@@ -741,6 +877,26 @@ export interface paths {
          * @description Reemplaza el conjunto completo de permisos del rol. Los permisos deben existir y ser válidos para el alcance.
          */
         put: operations["assign_permissions_api_v1_roles__role_id__permissions_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/permisos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Catálogo de permisos asignables
+         * @description Permisos que el alcance actual puede asignar a un rol. Un administrador de empresa nunca ve los permisos `platform:*` ni los de módulos que su empresa no tiene habilitados.
+         */
+        get: operations["list_permisos_api_v1_permisos_get"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -972,6 +1128,46 @@ export interface paths {
         patch: operations["publicar_vacante_api_v1_vacantes__vacante_id__publicar_patch"];
         trace?: never;
     };
+    "/api/v1/vacantes/{vacante_id}/pausar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Pausar vacante
+         * @description Retira temporalmente del portal público una vacante publicada (PUBLICADA -> PAUSADA). Devuelve 409 si la vacante está en otro estado.
+         */
+        patch: operations["pausar_vacante_api_v1_vacantes__vacante_id__pausar_patch"];
+        trace?: never;
+    };
+    "/api/v1/vacantes/{vacante_id}/cerrar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Cerrar vacante
+         * @description Cierra el proceso de una vacante publicada o pausada (PUBLICADA|PAUSADA -> CERRADA). Devuelve 409 si la vacante está en otro estado.
+         */
+        patch: operations["cerrar_vacante_api_v1_vacantes__vacante_id__cerrar_patch"];
+        trace?: never;
+    };
     "/api/v1/publico/{empresa_slug}/vacantes": {
         parameters: {
             query?: never;
@@ -1055,6 +1251,21 @@ export interface components {
             descripcion?: string | null;
             /** Activo */
             activo?: boolean | null;
+        };
+        /**
+         * ActualizarModulosRequest
+         * @description Conjunto completo de módulos habilitados: lo que no venga queda deshabilitado.
+         */
+        ActualizarModulosRequest: {
+            /**
+             * Modulos
+             * @description Códigos de módulo habilitados para la empresa.
+             * @example [
+             *       "ORGANIZACION",
+             *       "RECLUTAMIENTO"
+             *     ]
+             */
+            modulos: string[];
         };
         /** ActualizarUsuarioRequest */
         ActualizarUsuarioRequest: {
@@ -1163,6 +1374,26 @@ export interface components {
              */
             created_at: string;
         };
+        /** BitacoraResumen */
+        BitacoraResumen: {
+            /** Id */
+            id: string;
+            /** Modulo */
+            modulo: string;
+            /** Accion */
+            accion: string;
+            /** Nivel */
+            nivel: string;
+            /** Descripcion */
+            descripcion: string;
+            /** Actor */
+            actor: string | null;
+            /**
+             * Fecha
+             * Format: date-time
+             */
+            fecha: string;
+        };
         /** Body_crear_postulacion_publica_api_v1_publico_postulaciones_post */
         Body_crear_postulacion_publica_api_v1_publico_postulaciones_post: {
             /** Vacante Id */
@@ -1269,6 +1500,47 @@ export interface components {
              * @default true
              */
             activo: boolean;
+        };
+        /**
+         * CrearPostulanteRequest
+         * @description Alta manual en el banco de talento: los mismos datos del portal, sin CV obligatorio.
+         */
+        CrearPostulanteRequest: {
+            /** Nombres */
+            nombres: string;
+            /** Apellidos */
+            apellidos: string;
+            /** Ci */
+            ci: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Telefono */
+            telefono: string;
+            /** Ciudad */
+            ciudad: string;
+            /**
+             * Nivel Educativo
+             * @enum {string}
+             */
+            nivel_educativo: "SECUNDARIA" | "TECNICO" | "LICENCIATURA" | "MAESTRIA" | "DOCTORADO";
+            /**
+             * Anios Experiencia
+             * @default 0
+             */
+            anios_experiencia: number;
+            /** Linkedin */
+            linkedin?: string | null;
+            /** Cv Url */
+            cv_url?: string | null;
+            /**
+             * Fuente
+             * @default OTRO
+             * @enum {string}
+             */
+            fuente: "PORTAL_WEB" | "APP_MOVIL" | "LINKEDIN" | "REFERIDO" | "FERIA" | "OTRO";
         };
         /** CrearUsuarioRequest */
         CrearUsuarioRequest: {
@@ -1597,6 +1869,48 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** ModuloEmpresaResponse */
+        ModuloEmpresaResponse: {
+            /** Id */
+            id: string;
+            /** Codigo */
+            codigo: string;
+            /** Nombre */
+            nombre: string;
+            /** Descripcion */
+            descripcion?: string | null;
+            /** Icono */
+            icono?: string | null;
+            /** Orden */
+            orden: number;
+            /** Es Core */
+            es_core: boolean;
+            /** Activo */
+            activo: boolean;
+            /** Habilitado */
+            habilitado: boolean;
+            /** Fecha Habilitacion */
+            fecha_habilitacion?: string | null;
+        };
+        /** ModuloResponse */
+        ModuloResponse: {
+            /** Id */
+            id: string;
+            /** Codigo */
+            codigo: string;
+            /** Nombre */
+            nombre: string;
+            /** Descripcion */
+            descripcion?: string | null;
+            /** Icono */
+            icono?: string | null;
+            /** Orden */
+            orden: number;
+            /** Es Core */
+            es_core: boolean;
+            /** Activo */
+            activo: boolean;
+        };
         /** MotivoResponse */
         MotivoResponse: {
             /** Id */
@@ -1607,6 +1921,44 @@ export interface components {
             descripcion: string | null;
             /** Activo */
             activo: boolean;
+        };
+        /** NotaRequest */
+        NotaRequest: {
+            /** Contenido */
+            contenido: string;
+        };
+        /** NotaResponse */
+        NotaResponse: {
+            /** Id */
+            id: string;
+            /** Postulacion Id */
+            postulacion_id: string;
+            /** Usuario Id */
+            usuario_id: string;
+            /** Autor */
+            autor: string;
+            /** Contenido */
+            contenido: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** PermisoSchema */
+        PermisoSchema: {
+            /** Id */
+            id: string;
+            /** Codigo */
+            codigo: string;
+            /** Modulo */
+            modulo: string;
+            /** Recurso */
+            recurso: string;
+            /** Operacion */
+            operacion: string;
+            /** Descripcion */
+            descripcion?: string | null;
         };
         /** PermissionSchema */
         PermissionSchema: {
@@ -1670,6 +2022,15 @@ export interface components {
         ProvisionEmpresaRequest: {
             empresa: components["schemas"]["EmpresaCreateData"];
             administrador: components["schemas"]["InitialAdminData"];
+            /**
+             * Modulos
+             * @description Códigos de módulo opcionales que la empresa tendrá habilitados. Si se omite, se habilitan todos los módulos contratables.
+             * @example [
+             *       "ORGANIZACION",
+             *       "RECLUTAMIENTO"
+             *     ]
+             */
+            modulos?: string[] | null;
         };
         /** ProvisionEmpresaResponse */
         ProvisionEmpresaResponse: {
@@ -1683,6 +2044,14 @@ export interface components {
             administrador_email: string;
             /** Verification Email Sent */
             verification_email_sent: boolean;
+        };
+        /** PuntajeRequest */
+        PuntajeRequest: {
+            /**
+             * Puntaje
+             * @description Puntaje manual de 0 a 100.
+             */
+            puntaje: number | string;
         };
         /** RechazarRequest */
         RechazarRequest: {
@@ -1710,6 +2079,54 @@ export interface components {
             token: string;
             /** New Password */
             new_password: string;
+        };
+        /** ResumenDashboardResponse */
+        ResumenDashboardResponse: {
+            /**
+             * Alcance
+             * @enum {string}
+             */
+            alcance: "EMPRESA" | "PLATAFORMA";
+            /** Empresa Id */
+            empresa_id?: string | null;
+            empresa?: components["schemas"]["ResumenEmpresa"] | null;
+            plataforma?: components["schemas"]["ResumenPlataforma"] | null;
+            /** Bitacora Reciente */
+            bitacora_reciente?: components["schemas"]["BitacoraResumen"][];
+        };
+        /** ResumenEmpresa */
+        ResumenEmpresa: {
+            /** Usuarios Activos */
+            usuarios_activos: number;
+            /** Usuarios Inactivos */
+            usuarios_inactivos: number;
+            /** Vacantes Por Estado */
+            vacantes_por_estado: {
+                [key: string]: number;
+            };
+            /** Postulaciones Por Etapa */
+            postulaciones_por_etapa: {
+                [key: string]: number;
+            };
+            /** Departamentos */
+            departamentos: number;
+            /** Cargos */
+            cargos: number;
+        };
+        /** ResumenPlataforma */
+        ResumenPlataforma: {
+            /** Empresas Activas */
+            empresas_activas: number;
+            /** Empresas Suspendidas */
+            empresas_suspendidas: number;
+            /** Empresas Eliminadas */
+            empresas_eliminadas: number;
+            /** Usuarios Totales */
+            usuarios_totales: number;
+            /** Vacantes Publicadas */
+            vacantes_publicadas: number;
+            /** Postulaciones Del Mes */
+            postulaciones_del_mes: number;
         };
         /** RoleSchema */
         RoleSchema: {
@@ -1769,6 +2186,8 @@ export interface components {
             estado: string;
             /** Motivo Rechazo */
             motivo_rechazo: string | null;
+            /** Puntaje Manual */
+            puntaje_manual: string | null;
             /** Codigo Seguimiento */
             codigo_seguimiento: string;
             /**
@@ -1822,6 +2241,16 @@ export interface components {
             username?: string | null;
             /** Roles */
             roles?: string[];
+            /**
+             * Permissions
+             * @description Permisos efectivos ya filtrados por los módulos habilitados de la empresa.
+             */
+            permissions?: string[];
+            /**
+             * Modulos
+             * @description Códigos de módulo disponibles para la empresa. Vacío para plataforma.
+             */
+            modulos?: string[];
             /** Is Active */
             is_active: boolean;
             /** Email Verified */
@@ -2872,6 +3301,57 @@ export interface operations {
             };
         };
     };
+    actualizar_habilidad_api_v1_habilidades__habilidad_id__put: {
+        parameters: {
+            query?: {
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path: {
+                habilidad_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HabilidadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HabilidadResponse"];
+                };
+            };
+            /** @description La habilidad no existe en la empresa autorizada. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ya existe otra habilidad con ese nombre en la empresa. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     eliminar_habilidad_api_v1_habilidades__habilidad_id__delete: {
         parameters: {
             query?: {
@@ -3137,6 +3617,175 @@ export interface operations {
             };
             /** @description El cargo tiene dependencias. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description El servicio o una dependencia externa no está disponible. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    resumen_dashboard_api_v1_dashboard_resumen_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumenDashboardResponse"];
+                };
+            };
+        };
+    };
+    listar_modulos_api_v1_modulos_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModuloResponse"][];
+                };
+            };
+            /** @description Token de acceso ausente, inválido o vencido. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no tiene el permiso requerido, intenta operar fuera de su empresa o debe cambiar primero su contraseña. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El servicio o una dependencia externa no está disponible. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listar_modulos_de_empresa_api_v1_empresas__empresa_id__modulos_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModuloEmpresaResponse"][];
+                };
+            };
+            /** @description Token de acceso ausente, inválido o vencido. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no tiene el permiso requerido, intenta operar fuera de su empresa o debe cambiar primero su contraseña. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description El servicio o una dependencia externa no está disponible. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    actualizar_modulos_de_empresa_api_v1_empresas__empresa_id__modulos_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                empresa_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarModulosRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModuloEmpresaResponse"][];
+                };
+            };
+            /** @description Token de acceso ausente, inválido o vencido. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no tiene el permiso requerido, intenta operar fuera de su empresa o debe cambiar primero su contraseña. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3759,6 +4408,48 @@ export interface operations {
             };
         };
     };
+    crear_postulante_api_v1_postulantes_post: {
+        parameters: {
+            query?: {
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearPostulanteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostulanteResponse"];
+                };
+            };
+            /** @description Ya existe un postulante con ese CI en la empresa. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     obtener_postulante_api_v1_postulantes__postulante_id__get: {
         parameters: {
             query?: {
@@ -3780,6 +4471,46 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PostulanteResponse"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    descargar_cv_api_v1_postulantes__postulante_id__cv_get: {
+        parameters: {
+            query?: {
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path: {
+                postulante_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Archivo de CV. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description El postulante no existe o no tiene un CV disponible. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -3980,6 +4711,134 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TableroItem"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    registrar_puntaje_api_v1_postulaciones__postulacion_id__puntaje_patch: {
+        parameters: {
+            query?: {
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path: {
+                postulacion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PuntajeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TableroItem"];
+                };
+            };
+            /** @description La postulación no existe en la empresa autorizada. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_notas_api_v1_postulaciones__postulacion_id__notas_get: {
+        parameters: {
+            query?: {
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path: {
+                postulacion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaResponse"][];
+                };
+            };
+            /** @description La postulación no existe en la empresa autorizada. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    crear_nota_api_v1_postulaciones__postulacion_id__notas_post: {
+        parameters: {
+            query?: {
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path: {
+                postulacion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotaRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotaResponse"];
+                };
+            };
+            /** @description La postulación no existe en la empresa autorizada. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -4360,6 +5219,47 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+            /** @description El servicio o una dependencia externa no está disponible. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    list_permisos_api_v1_permisos_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermisoSchema"][];
+                };
+            };
+            /** @description Token de acceso ausente, inválido o vencido. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El usuario no tiene el permiso requerido, intenta operar fuera de su empresa o debe cambiar primero su contraseña. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description El servicio o una dependencia externa no está disponible. */
             503: {
@@ -5198,6 +6098,88 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["VacanteResponse"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pausar_vacante_api_v1_vacantes__vacante_id__pausar_patch: {
+        parameters: {
+            query?: {
+                /** @description Identificador de empresa. Los administradores de plataforma pueden indicarlo para seleccionar el alcance; los usuarios empresariales quedan limitados a su propia empresa. */
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path: {
+                vacante_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacanteResponse"];
+                };
+            };
+            /** @description La vacante no está publicada. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cerrar_vacante_api_v1_vacantes__vacante_id__cerrar_patch: {
+        parameters: {
+            query?: {
+                /** @description Identificador de empresa. Los administradores de plataforma pueden indicarlo para seleccionar el alcance; los usuarios empresariales quedan limitados a su propia empresa. */
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path: {
+                vacante_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacanteResponse"];
+                };
+            };
+            /** @description La vacante no está publicada ni pausada. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

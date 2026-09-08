@@ -12,15 +12,17 @@ import {
   ConfirmarAccionVacanteModal,
   type AccionVacante,
 } from '../components/ConfirmarAccionVacanteModal'
+import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
 import '../vacantes.css'
 
 export function VacantesListPage() {
   const navigate = useNavigate()
+  const { company } = useCompanyScope()
 
   // Filtros
   const [busqueda, setBusqueda] = useState('')
   const [estadoFilter, setEstadoFilter] = useState<EstadoVacante | 'TODAS'>('TODAS')
-  const [departamentoFilter, setDepartamentoFilter] = useState<number | 'TODOS'>('TODOS')
+  const [departamentoFilter, setDepartamentoFilter] = useState<string | 'TODOS'>('TODOS')
   const [page, setPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
 
@@ -29,11 +31,14 @@ export function VacantesListPage() {
   const [data, setData] = useState<PaginatedVacantes>({
     items: [],
     total: 0,
+    all_total: 0,
+    counts: { BORRADOR: 0, PUBLICADA: 0, PAUSADA: 0, CERRADA: 0, CANCELADA: 0 },
     page: 1,
     per_page: 10,
     total_pages: 1,
   })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [mensajeExito, setMensajeExito] = useState<string | null>(null)
 
   // Modal de acción (T1-14)
@@ -42,15 +47,16 @@ export function VacantesListPage() {
 
   const loadDepartamentos = useCallback(async () => {
     try {
-      const deps = await getDepartamentosOpcion()
+      const deps = await getDepartamentosOpcion(company?.id)
       setDepartamentos(deps)
-    } catch {
-      // fallback silencioso
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudieron cargar los departamentos')
     }
-  }, [])
+  }, [company?.id])
 
   const loadVacantes = useCallback(async () => {
     setLoading(true)
+    setError('')
     try {
       const res = await getVacantes({
         busqueda: busqueda.trim() || undefined,
@@ -58,12 +64,15 @@ export function VacantesListPage() {
         departamento_id: departamentoFilter,
         page,
         per_page: perPage,
+        empresa_id: company?.id,
       })
       setData(res)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudieron cargar las vacantes')
     } finally {
       setLoading(false)
     }
-  }, [busqueda, estadoFilter, departamentoFilter, page, perPage])
+  }, [busqueda, company?.id, estadoFilter, departamentoFilter, page, perPage])
 
   useEffect(() => {
     void loadDepartamentos()
@@ -88,8 +97,8 @@ export function VacantesListPage() {
   function handleActionSuccess(accion: AccionVacante) {
     const mensajes: Record<AccionVacante, string> = {
       publicar: 'Vacante publicada exitosamente. Ahora está visible para recibir postulaciones.',
-      pausar: 'Vacante pausada. La recepción de postulaciones ha sido suspendida.',
-      cerrar: 'Vacante cerrada con éxito.',
+      pausar: 'Vacante pausada. Ya no está visible en el portal público.',
+      cerrar: 'Vacante cerrada correctamente.',
     }
     setMensajeExito(mensajes[accion])
     setTimeout(() => setMensajeExito(null), 5000)
@@ -101,6 +110,7 @@ export function VacantesListPage() {
     PUBLICADA: { label: 'Publicada', className: 'vac-badge-active' },
     PAUSADA: { label: 'Pausada', className: 'vac-badge-paused' },
     CERRADA: { label: 'Cerrada', className: 'vac-badge-closed' },
+    CANCELADA: { label: 'Cancelada', className: 'vac-badge-closed' },
   }
 
   const formatSalario = (v: VacanteListItem) => {
@@ -136,6 +146,7 @@ export function VacantesListPage() {
           <button type="button" onClick={() => setMensajeExito(null)} aria-label="Cerrar notificación">✕</button>
         </div>
       )}
+      {error && <div className="vac-bad" role="alert">{error}</div>}
 
       {/* Tarjetas de métricas */}
       <div className="vac-metrics-grid">
@@ -144,7 +155,7 @@ export function VacantesListPage() {
           onClick={() => { setEstadoFilter('TODAS'); setPage(1) }}
         >
           <span className="vac-metric-label">Total vacantes</span>
-          <span className="vac-metric-num">{data.total}</span>
+          <span className="vac-metric-num">{data.all_total}</span>
         </div>
         <div
           className={`vac-metric-card ${estadoFilter === 'PUBLICADA' ? 'selected' : ''}`}
@@ -152,7 +163,7 @@ export function VacantesListPage() {
         >
           <span className="vac-metric-label">Publicadas</span>
           <span className="vac-metric-num text-success">
-            {data.items.filter((i) => i.estado === 'PUBLICADA').length}
+            {data.counts.PUBLICADA}
           </span>
         </div>
         <div
@@ -161,7 +172,7 @@ export function VacantesListPage() {
         >
           <span className="vac-metric-label">Borradores</span>
           <span className="vac-metric-num text-draft">
-            {data.items.filter((i) => i.estado === 'BORRADOR').length}
+            {data.counts.BORRADOR}
           </span>
         </div>
         <div
@@ -170,7 +181,7 @@ export function VacantesListPage() {
         >
           <span className="vac-metric-label">Pausadas</span>
           <span className="vac-metric-num text-warning">
-            {data.items.filter((i) => i.estado === 'PAUSADA').length}
+            {data.counts.PAUSADA}
           </span>
         </div>
         <div
@@ -179,7 +190,7 @@ export function VacantesListPage() {
         >
           <span className="vac-metric-label">Cerradas</span>
           <span className="vac-metric-num text-closed">
-            {data.items.filter((i) => i.estado === 'CERRADA').length}
+            {data.counts.CERRADA}
           </span>
         </div>
       </div>
@@ -221,7 +232,7 @@ export function VacantesListPage() {
               className="vac-select"
               value={departamentoFilter}
               onChange={(e) => {
-                const val = e.target.value === 'TODOS' ? 'TODOS' : Number(e.target.value)
+                const val = e.target.value
                 setDepartamentoFilter(val)
                 setPage(1)
               }}
@@ -331,7 +342,7 @@ export function VacantesListPage() {
                       </td>
                       <td>
                         <div className="vac-cierre-wrap">
-                          <span>{vacante.fecha_cierre || '—'}</span>
+                          <span>{vacante.fecha_cierre ? vacante.fecha_cierre.slice(0, 10) : '—'}</span>
                           <small>{vacante.cantidad_vacantes} {vacante.cantidad_vacantes === 1 ? 'puesto' : 'puestos'}</small>
                         </div>
                       </td>
@@ -350,19 +361,20 @@ export function VacantesListPage() {
                             title="Ver tablero de postulaciones"
                           >
                             📋 Tablero
-                            {vacante.postulantes_count > 0 && (
-                              <span className="vac-postulantes-pill">{vacante.postulantes_count}</span>
-                            )}
+                            <span className="vac-postulantes-pill">
+                              {vacante.postulantes_count ?? 'N/D'}
+                            </span>
                           </Link>
 
-                          {/* Botón Editar */}
-                          <Link
-                            to={`/vacantes/${vacante.id}/editar`}
-                            className="vac-action-btn edit"
-                            title="Editar vacante"
-                          >
-                            ✏️ Editar
-                          </Link>
+                          {vacante.estado === 'BORRADOR' && (
+                            <Link
+                              to={`/vacantes/${vacante.id}/editar`}
+                              className="vac-action-btn edit"
+                              title="Editar vacante"
+                            >
+                              ✏️ Editar
+                            </Link>
+                          )}
 
                           {/* Acciones de ciclo de vida (T1-14) */}
                           {vacante.estado === 'BORRADOR' && (
@@ -398,25 +410,16 @@ export function VacantesListPage() {
                           )}
 
                           {vacante.estado === 'PAUSADA' && (
-                            <>
-                              <button
-                                type="button"
-                                className="vac-action-btn publish"
-                                title="Reanudar y publicar vacante"
-                                onClick={() => handleOpenAction(vacante, 'publicar')}
-                              >
-                                ▶️ Publicar
-                              </button>
-                              <button
-                                type="button"
-                                className="vac-action-btn close-vac"
-                                title="Cerrar vacante"
-                                onClick={() => handleOpenAction(vacante, 'cerrar')}
-                              >
-                                🔒 Cerrar
-                              </button>
-                            </>
+                            <button
+                              type="button"
+                              className="vac-action-btn close-vac"
+                              title="Cerrar vacante"
+                              onClick={() => handleOpenAction(vacante, 'cerrar')}
+                            >
+                              🔒 Cerrar
+                            </button>
                           )}
+
                         </div>
                       </td>
                     </tr>
@@ -505,6 +508,7 @@ export function VacantesListPage() {
           if (selectedAccion) handleActionSuccess(selectedAccion)
         }}
         onEditar={(id) => navigate(`/vacantes/${id}/editar`)}
+        empresaId={company?.id}
       />
     </div>
   )

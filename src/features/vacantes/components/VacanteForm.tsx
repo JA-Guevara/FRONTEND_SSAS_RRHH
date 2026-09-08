@@ -11,6 +11,7 @@ import {
 type Props = {
   cargos: CargoOpcion[]
   vacante?: Vacante | null
+  empresaId?: string
 }
 
 type FormState = {
@@ -59,11 +60,11 @@ function toForm(v: Vacante): FormState {
     modalidad: v.modalidad,
     ubicacion: v.ubicacion,
     experiencia_min: v.experiencia_min == null ? '' : String(v.experiencia_min),
-    fecha_cierre: v.fecha_cierre,
+    fecha_cierre: v.fecha_cierre ? v.fecha_cierre.slice(0, 10) : '',
   }
 }
 
-export function VacanteForm({ cargos, vacante }: Props) {
+export function VacanteForm({ cargos, vacante, empresaId }: Props) {
   const [form, setForm] = useState<FormState>(vacante ? toForm(vacante) : empty)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [ok, setOk] = useState('')
@@ -83,6 +84,9 @@ export function VacanteForm({ cargos, vacante }: Props) {
     const e: Record<string, string> = {}
     if (!form.titulo.trim()) e.titulo = 'El título es obligatorio'
     if (!form.cargo_id) e.cargo_id = 'Selecciona un cargo'
+    else if (!cargos.find((cargo) => cargo.id === form.cargo_id)?.departamento_id) {
+      e.cargo_id = 'El cargo seleccionado no tiene departamento asignado'
+    }
     if (!form.descripcion.trim()) e.descripcion = 'La descripción es obligatoria'
     const cantidad = Number(form.cantidad_vacantes)
     if (!form.cantidad_vacantes || Number.isNaN(cantidad) || cantidad < 1) {
@@ -109,24 +113,27 @@ export function VacanteForm({ cargos, vacante }: Props) {
     if (!validate()) return
     setSaving(true)
     try {
+      const cargo = cargos.find((item) => item.id === form.cargo_id)
+      if (!cargo?.departamento_id) return
       const payload = {
         titulo: form.titulo.trim(),
-        cargo_id: Number(form.cargo_id),
+        cargo_id: form.cargo_id,
+        departamento_id: cargo.departamento_id,
         descripcion: form.descripcion.trim(),
-        requisitos: form.requisitos.trim(),
-        beneficios: form.beneficios.trim(),
+        requisitos: form.requisitos.trim() || null,
+        beneficios: form.beneficios.trim() || null,
         cantidad_vacantes: Number(form.cantidad_vacantes),
         salario_min: form.salario_min === '' ? null : Number(form.salario_min),
         salario_max: form.salario_max === '' ? null : Number(form.salario_max),
         mostrar_salario: form.mostrar_salario,
         modalidad: form.modalidad,
-        ubicacion: form.ubicacion.trim(),
-        experiencia_min: form.experiencia_min === '' ? null : Number(form.experiencia_min),
-        fecha_cierre: form.fecha_cierre,
+        ubicacion: form.ubicacion.trim() || null,
+        experiencia_min: form.experiencia_min === '' ? 0 : Number(form.experiencia_min),
+        fecha_cierre: `${form.fecha_cierre}T23:59:59`,
       }
-      if (vacante) await actualizarVacante(vacante.id, payload)
+      if (vacante) await actualizarVacante(vacante.id, payload, empresaId)
       else {
-        await crearVacante(payload)
+        await crearVacante(payload, empresaId)
         setForm(empty)
       }
       setOk(vacante ? 'Vacante actualizada' : 'Vacante guardada como borrador')

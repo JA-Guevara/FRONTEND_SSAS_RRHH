@@ -72,3 +72,28 @@ export async function apiRequest<T = unknown>(
 
   return data as T
 }
+
+export async function apiDownload(path: string): Promise<{ blob: Blob; filename: string | null }> {
+  const token = tokenStorage.get()?.access_token ?? null
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: {
+      Accept: 'application/pdf,application/octet-stream',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  })
+
+  if (response.status === 401) {
+    tokenStorage.clear()
+    if (window.location.pathname !== '/login') window.location.href = '/login'
+    throw new ApiError('Sesión expirada', 401)
+  }
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null) as { detail?: string } | null
+    throw new ApiError(data?.detail ?? 'No se pudo descargar el archivo', response.status)
+  }
+
+  const disposition = response.headers.get('content-disposition')
+  const filename = disposition?.match(/filename\*?=(?:UTF-8''|\")?([^";]+)/i)?.[1] ?? null
+  return { blob: await response.blob(), filename: filename ? decodeURIComponent(filename) : null }
+}
