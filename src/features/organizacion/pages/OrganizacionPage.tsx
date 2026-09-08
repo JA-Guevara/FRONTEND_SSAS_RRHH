@@ -6,15 +6,16 @@ import { useCompanyScope } from '../../../app/context/CompanyScopeContext.tsx'
 import '../organizacion.css'
 
 export function OrganizacionPage() {
-  const { company } = useCompanyScope()
+  const { company, selectedCompanyId } = useCompanyScope()
+  const companyId = company?.id ?? selectedCompanyId ?? undefined
   const [departamentos, setDepartamentos] = useState<Departamento[]>([])
   const [cargos, setCargos] = useState<Cargo[]>([])
 
   const load = useCallback(async () => {
-    const [deps, cars] = await Promise.all([getDepartamentos(company?.id), getCargos(company?.id)])
+    const [deps, cars] = await Promise.all([getDepartamentos(companyId), getCargos(companyId)])
     setDepartamentos(deps)
     setCargos(cars)
-  }, [company?.id])
+  }, [companyId])
 
   useEffect(() => {
     void load()
@@ -26,8 +27,8 @@ export function OrganizacionPage() {
       <h1>Departamentos y cargos</h1>
       <p className="org-sub">Árbol de departamentos y CRUD de cargos según el modelo de datos.</p>
       <div className="org-grid">
-        <DepartamentosPanel departamentos={departamentos} onChanged={load} />
-        <CargosPanel cargos={cargos} departamentos={departamentos} onChanged={load} />
+        <DepartamentosPanel departamentos={departamentos} empresaId={companyId} onChanged={load} />
+        <CargosPanel cargos={cargos} departamentos={departamentos} empresaId={companyId} onChanged={load} />
       </div>
     </div>
   )

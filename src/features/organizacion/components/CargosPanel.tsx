@@ -2,9 +2,9 @@ import { useState, type FormEvent } from 'react'
 import type { Cargo, Departamento } from '../api/organizacionApi'
 import { actualizarCargo, crearCargo } from '../api/organizacionApi'
 
-type Props = { cargos: Cargo[]; departamentos: Departamento[]; onChanged: () => Promise<void> }
+type Props = { cargos: Cargo[]; departamentos: Departamento[]; empresaId?: string; onChanged: () => Promise<void> }
 
-export function CargosPanel({ cargos, departamentos, onChanged }: Props) {
+export function CargosPanel({ cargos, departamentos, empresaId, onChanged }: Props) {
   const [editing, setEditing] = useState<Cargo | null>(null)
   const [nombre, setNombre] = useState('')
   const [departamentoId, setDepartamentoId] = useState('')
@@ -45,10 +45,10 @@ export function CargosPanel({ cargos, departamentos, onChanged }: Props) {
     try {
       const payload = { nombre: nombre.trim(), departamento_id: departamentoId || null, descripcion: descripcion.trim() || null, activo }
       if (editing) {
-        await actualizarCargo(editing.id, payload)
+        await actualizarCargo(editing.id, payload, empresaId)
         setMessage('Cargo actualizado')
       } else {
-        await crearCargo(payload)
+        await crearCargo(payload, empresaId)
         setMessage('Cargo creado')
         reset()
       }

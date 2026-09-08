@@ -2,9 +2,9 @@ import { useState, type FormEvent } from 'react'
 import type { Departamento } from '../api/organizacionApi'
 import { actualizarDepartamento, crearDepartamento } from '../api/organizacionApi'
 
-type Props = { departamentos: Departamento[]; onChanged: () => Promise<void> }
+type Props = { departamentos: Departamento[]; empresaId?: string; onChanged: () => Promise<void> }
 
-export function DepartamentosPanel({ departamentos, onChanged }: Props) {
+export function DepartamentosPanel({ departamentos, empresaId, onChanged }: Props) {
   const [selected, setSelected] = useState<Departamento | null>(null)
   const [nombre, setNombre] = useState('')
   const [descripcion, setDescripcion] = useState('')
@@ -39,10 +39,10 @@ export function DepartamentosPanel({ departamentos, onChanged }: Props) {
     try {
       const payload = { nombre: nombre.trim(), descripcion: descripcion.trim() || null, activo: true }
       if (selected) {
-        await actualizarDepartamento(selected.id, payload)
+        await actualizarDepartamento(selected.id, payload, empresaId)
         setMessage('Departamento actualizado')
       } else {
-        await crearDepartamento(payload)
+        await crearDepartamento(payload, empresaId)
         setMessage('Departamento creado')
         startCreate()
       }
