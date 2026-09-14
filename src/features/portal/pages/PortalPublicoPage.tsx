@@ -14,7 +14,6 @@ import {
   type VacantePublica,
 } from '../api/portalApi'
 
-<<<<<<< HEAD
 type CargaError = {
   message: string
   notFound: boolean
@@ -26,10 +25,6 @@ function leerError(causa: unknown, respaldo: string): CargaError {
   }
   return { message: respaldo, notFound: false }
 }
-=======
-
-type Vista = 'lista' | 'detalle' | 'form'
->>>>>>> 7929c56 (feat: T2-11 agenda de entrevistas)
 
 export function PortalPublicoPage() {
   const { slug = '', vacanteId } = useParams()
