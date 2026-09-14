@@ -1,0 +1,122 @@
+.en-page {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #22332B;
+  background: #EEF4EC;
+  min-height: 100%;
+  padding: 24px;
+}
+
+.en-page h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: 34px;
+  margin: 0 0 6px;
+}
+
+.en-eyebrow {
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #6E8E7B;
+}
+
+.en-sub { color: #66766D; margin: 0 0 16px; }
+
+.en-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 16px;
+}
+
+.en-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(22,56,43,.08), 0 8px 24px rgba(22,56,43,.06);
+  padding: 16px 18px;
+}
+
+.en-card h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 22px;
+  margin: 0 0 12px;
+}
+
+.en-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #41544A;
+  margin: 10px 0 4px;
+}
+
+.en-label i { color: #B0483C; font-style: normal; }
+
+.en-input, .en-select {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #E1E9E0;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.en-input.error, .en-select.error { border-color: #B0483C; }
+.en-error { color: #B0483C; font-size: 12px; margin-top: 4px; }
+.en-ok { background: #DEF2E4; color: #17845A; padding: 8px 12px; border-radius: 8px; margin-top: 10px; }
+.en-bad { background: #FBE4E1; color: #B0483C; padding: 8px 12px; border-radius: 8px; margin-top: 10px; }
+
+.en-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 14px;
+}
+
+.en-btn {
+  background: #17845A;
+  color: #fff;
+  border: none;
+  border-radius: 11px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.en-btn.ghost {
+  background: transparent;
+  color: #66766D;
+  border: 1.5px solid #E1E9E0;
+}
+
+.en-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.en-table th {
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #7C8C82;
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid #E1E9E0;
+}
+.en-table td { padding: 10px 8px; border-bottom: 1px solid #EFF4EE; }
+.en-table button {
+  background: none;
+  border: none;
+  color: #17845A;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.en-chip {
+  display: inline-block;
+  background: #DEF2E4;
+  color: #17845A;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .en-grid, .en-form-grid { grid-template-columns: 1fr; }
+  .en-page h1 { font-size: 26px; }
+}

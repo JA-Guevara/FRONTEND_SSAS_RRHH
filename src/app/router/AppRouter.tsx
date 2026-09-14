@@ -20,6 +20,7 @@ import { VacantesListPage } from '../../features/vacantes/pages/VacantesListPage
 import { HabilidadesPage } from '../../features/habilidades/pages/HabilidadesPage'
 import { PostulantesPage } from '../../features/postulantes/pages/PostulantesPage'
 import { MiPerfilPage } from '../../features/perfil/pages/MiPerfilPage'
+import { EntrevistasPage } from '../../features/entrevistas/pages/EntrevistasPage'
 import { FullPageStatus } from '../../shared/components'
 import { RequireAccess } from '../guards/RequireAccess'
 import { RequireRealm } from '../guards/RequireRealm'
@@ -32,8 +33,6 @@ function ProtectedArea() {
   const location = useLocation()
   if (status === 'loading') return <FullPageStatus message="Comprobando tu sesión…" />
   if (status !== 'authenticated') return <Navigate to="/login" replace />
-  // Una contraseña provisional bloquea el resto de la aplicación: el backend
-  // devuelve 403 en todos los endpoints con permiso hasta que se cambie.
   if (user?.must_change_password === true && location.pathname !== '/cambiar-clave') {
     return <Navigate to="/cambiar-clave" replace />
   }
@@ -74,13 +73,14 @@ export function AppRouter() {
       <Route path="/recuperar-clave" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} />
       <Route path="/restablecer-clave" element={<GuestOnly><ResetPasswordPage /></GuestOnly>} />
 
-      {/* Portal público de empleo (rutas limpias /empleos/:slug y retrocompatibilidad /publico/:slug) */}
       <Route path="/empleos/:slug" element={<PortalPublicoPage />} />
       <Route path="/empleos/:slug/vacantes/:vacanteId" element={<PortalPublicoPage />} />
       <Route path="/empleos/:slug/seguimiento" element={<PortalPublicoPage />} />
       <Route path="/publico/:slug" element={<PortalPublicoPage />} />
       <Route path="/publico/:slug/vacantes/:vacanteId" element={<PortalPublicoPage />} />
       <Route path="/publico/:slug/seguimiento" element={<PortalPublicoPage />} />
+
+      <Route path="/entrevistas" element={<EntrevistasPage />} />
 
       <Route element={<ProtectedArea />}>
         <Route index element={<DashboardPage />} />
@@ -137,6 +137,10 @@ export function AppRouter() {
         <Route
           path="vacantes/:id/tablero"
           element={empresa(<TableroPage />, 'RECLUTAMIENTO', ['postulaciones:ver', 'platform:postulaciones:ver'])}
+        />
+        <Route
+          path="entrevistas"
+          element={empresa(<EntrevistasPage />, 'RECLUTAMIENTO', ['postulaciones:ver', 'platform:postulaciones:ver'])}
         />
 
         <Route path="*" element={<NotFoundPage />} />
