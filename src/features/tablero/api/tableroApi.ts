@@ -175,3 +175,22 @@ export async function descargarCV(postulanteId: string, empresaId?: string) {
   link.remove()
   URL.revokeObjectURL(url)
 }
+export type EventoHistorial = {
+  id: string
+  tipo: string
+  fecha: string
+  responsable: string
+  puntaje: number | null
+  recomendacion: string
+  observaciones: string
+}
+
+export async function getHistorialPostulante(id: string, empresaId?: string) {
+  try {
+    return await apiRequest<EventoHistorial[]>(
+      scopedPath(`/api/v1/postulaciones/${encodeURIComponent(id)}/entrevistas`, empresaId),
+    )
+  } catch {
+    return []
+  }
+}

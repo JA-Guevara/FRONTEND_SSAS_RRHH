@@ -21,6 +21,7 @@ import {
 import { estadoCanonico, formatFechaHora, PERM_GESTIONAR } from '../utils/tableroUi'
 import { RechazarPostulanteModal } from './RechazarPostulanteModal'
 import { ContratarPostulanteModal } from './ContratarPostulanteModal'
+import { HistorialPostulante } from './HistorialPostulante'
 import '../tablero-ia.css'
 
 type Props = {
@@ -288,6 +289,10 @@ export function PostulanteDetalleModal({
         </div>
 
         <div>
+          <HistorialPostulante
+          postulacionId={postulante.id}
+          empresaId={empresaId}
+        />
           <h3>Notas del equipo ({notas.length})</h3>
           <Can permisos={PERM_GESTIONAR}>
             <form className="form-stack" onSubmit={(evento) => void agregarNota(evento)}>
