@@ -34,6 +34,16 @@ export type PostulanteDetalle = {
   habilidades_faltantes: string[]
 }
 
+export type ContratarPayload = {
+  codigo: string
+  apellido_paterno: string
+  apellido_materno: string
+  ci_expedido: string
+  fecha_ingreso: string
+}
+
+export const CI_EXPEDIDOS = ['SC', 'LP', 'CB', 'OR', 'PT', 'TJ', 'CH', 'BE', 'PD'] as const
+
 function scopedPath(path: string, empresaId?: string) {
   return empresaId ? `${path}?empresa_id=${encodeURIComponent(empresaId)}` : path
 }
@@ -138,6 +148,17 @@ export function actualizarPuntajePostulante(id: string, puntaje: number, empresa
   return apiRequest<TableroItem>(
     scopedPath(`/api/v1/postulaciones/${encodeURIComponent(id)}/puntaje`, empresaId),
     { method: 'PATCH', body: { puntaje } },
+  )
+}
+
+export function contratarPostulante(
+  id: string,
+  data: ContratarPayload,
+  empresaId?: string,
+) {
+  return apiRequest(
+    scopedPath(`/api/v1/postulaciones/${encodeURIComponent(id)}/contratar`, empresaId),
+    { method: 'POST', body: data },
   )
 }
 

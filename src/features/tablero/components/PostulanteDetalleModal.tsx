@@ -20,6 +20,7 @@ import {
 } from '../api/tableroApi'
 import { estadoCanonico, formatFechaHora, PERM_GESTIONAR } from '../utils/tableroUi'
 import { RechazarPostulanteModal } from './RechazarPostulanteModal'
+import { ContratarPostulanteModal } from './ContratarPostulanteModal'
 import '../tablero-ia.css'
 
 type Props = {
@@ -42,6 +43,7 @@ export function PostulanteDetalleModal({
   onUpdated,
 }: Props) {
   const [rechazando, setRechazando] = useState(false)
+  const [contratando, setContratando] = useState(false)
   const [notas, setNotas] = useState<NotaPostulante[]>([])
   const [cargandoNotas, setCargandoNotas] = useState(true)
   const [errorNotas, setErrorNotas] = useState<string | null>(null)
@@ -145,6 +147,9 @@ export function PostulanteDetalleModal({
                 <Button variant="danger-outline" onClick={() => setRechazando(true)}>
                   Rechazar candidato
                 </Button>
+                <Button onClick={() => setContratando(true)}>
+                  Contratar
+                </Button>
               </Can>
             )}
             <Button variant="ghost" onClick={onClose}>
@@ -153,6 +158,7 @@ export function PostulanteDetalleModal({
           </>
         }
       >
+        {/* el resto del contenido que ya tenías no cambia */}
         <div className="badge-list" role="group" aria-label="Estado y etapa del candidato">
           <EstadoBadge estado={estadoCanonico(postulante.estado)} />
           <EstadoBadge estado={etapaActual?.nombre ?? postulante.etapa} />
@@ -160,7 +166,6 @@ export function PostulanteDetalleModal({
         {postulante.vacante_titulo !== '' && (
           <p className="text-muted">Vacante: {postulante.vacante_titulo}</p>
         )}
-
         {rechazado && (
           <Alert tone="error" title="Postulación descartada">
             Motivo: {postulante.motivo_rechazo ?? 'No disponible'}
@@ -233,9 +238,7 @@ export function PostulanteDetalleModal({
             <div className="info-list">
               <div className="info-row">
                 <span className="info-label">Correo</span>
-                <a className="info-value" href={`mailto:${postulante.email}`}>
-                  {postulante.email}
-                </a>
+                <a className="info-value" href={`mailto:${postulante.email}`}>{postulante.email}</a>
               </div>
               <div className="info-row">
                 <span className="info-label">Teléfono</span>
@@ -247,27 +250,21 @@ export function PostulanteDetalleModal({
               </div>
               <div className="info-row">
                 <span className="info-label">Documento</span>
-                <span className="info-value">
-                  {valorODefecto(postulante.documento_identidad)}
-                </span>
+                <span className="info-value">{valorODefecto(postulante.documento_identidad)}</span>
               </div>
               <div className="info-row">
                 <span className="info-label">Postuló el</span>
-                <span className="info-value">
-                  {formatFechaHora(postulante.fecha_postulacion)}
-                </span>
+                <span className="info-value">{formatFechaHora(postulante.fecha_postulacion)}</span>
               </div>
             </div>
           </div>
-
           <div>
             <h3>Perfil profesional</h3>
             <div className="info-list">
               <div className="info-row">
                 <span className="info-label">Experiencia</span>
                 <span className="info-value">
-                  {postulante.experiencia_anios}{' '}
-                  {postulante.experiencia_anios === 1 ? 'año' : 'años'}
+                  {postulante.experiencia_anios} {postulante.experiencia_anios === 1 ? 'año' : 'años'}
                 </span>
               </div>
               <div className="info-row">
@@ -281,12 +278,7 @@ export function PostulanteDetalleModal({
               {postulante.linkedin != null && postulante.linkedin !== '' && (
                 <div className="info-row">
                   <span className="info-label">LinkedIn</span>
-                  <a
-                    className="info-value"
-                    href={postulante.linkedin}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                  <a className="info-value" href={postulante.linkedin} target="_blank" rel="noreferrer">
                     Ver perfil
                   </a>
                 </div>
@@ -297,13 +289,9 @@ export function PostulanteDetalleModal({
 
         <div>
           <h3>Notas del equipo ({notas.length})</h3>
-
           <Can permisos={PERM_GESTIONAR}>
             <form className="form-stack" onSubmit={(evento) => void agregarNota(evento)}>
-              <Field
-                label="Nueva nota interna"
-                hint="Solo la ve el equipo de reclutamiento; el candidato nunca la lee."
-              >
+              <Field label="Nueva nota interna" hint="Solo la ve el equipo de reclutamiento; el candidato nunca la lee.">
                 <textarea
                   rows={3}
                   maxLength={2000}
@@ -320,9 +308,7 @@ export function PostulanteDetalleModal({
               </div>
             </form>
           </Can>
-
           {errorNotas !== null && <Alert tone="error">{errorNotas}</Alert>}
-
           {cargandoNotas ? (
             <LoadingBlock message="Cargando notas…" />
           ) : errorNotas !== null ? null : notas.length === 0 ? (
@@ -350,6 +336,18 @@ export function PostulanteDetalleModal({
           onClose={() => setRechazando(false)}
           onSuccess={async () => {
             setRechazando(false)
+            await onUpdated()
+          }}
+        />
+      )}
+
+      {contratando && (
+        <ContratarPostulanteModal
+          postulante={postulante}
+          empresaId={empresaId}
+          onClose={() => setContratando(false)}
+          onSuccess={async () => {
+            setContratando(false)
             await onUpdated()
           }}
         />
