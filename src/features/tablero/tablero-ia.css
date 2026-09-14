@@ -1,0 +1,27 @@
+.ia-badge {
+  float: right;
+  background: #EFE8F7;
+  color: #7A5AA6;
+  border-radius: 8px;
+  padding: 2px 7px;
+  font: 700 11px 'Segoe UI', sans-serif;
+}
+
+.ia-panel {
+  margin-top: 16px;
+  padding: 12px;
+  background: #F6F3FB;
+  border-radius: 14px;
+}
+
+.ia-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+
+.ia-chip {
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.ia-chip.ok { background: #DEF2E4; color: #17845A; }
+.ia-chip.miss { background: #FBE4E1; color: #B0483C; }

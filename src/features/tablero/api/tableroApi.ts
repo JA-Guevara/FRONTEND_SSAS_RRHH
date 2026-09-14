@@ -29,6 +29,9 @@ export type PostulanteDetalle = {
   motivo_rechazo: string | null
   codigo_seguimiento: string
   puntaje_manual: number | null
+  puntaje_ia: number | null
+  habilidades_detectadas: string[]
+  habilidades_faltantes: string[]
 }
 
 function scopedPath(path: string, empresaId?: string) {
@@ -72,6 +75,18 @@ async function hydrate(items: TableroItem[], empresaId?: string): Promise<Postul
       motivo_rechazo: item.motivo_rechazo,
       codigo_seguimiento: item.codigo_seguimiento,
       puntaje_manual: item.puntaje_manual == null ? null : Number(item.puntaje_manual),
+      puntaje_ia:
+        'puntaje_ia' in item && item.puntaje_ia != null
+          ? Number(item.puntaje_ia)
+          : null,
+      habilidades_detectadas:
+        'habilidades_detectadas' in item && Array.isArray(item.habilidades_detectadas)
+          ? item.habilidades_detectadas
+          : [],
+      habilidades_faltantes:
+        'habilidades_faltantes' in item && Array.isArray(item.habilidades_faltantes)
+          ? item.habilidades_faltantes
+          : [],
     }
   })
 }

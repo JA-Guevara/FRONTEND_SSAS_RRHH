@@ -20,6 +20,7 @@ import {
 } from '../api/tableroApi'
 import { estadoCanonico, formatFechaHora, PERM_GESTIONAR } from '../utils/tableroUi'
 import { RechazarPostulanteModal } from './RechazarPostulanteModal'
+import '../tablero-ia.css'
 
 type Props = {
   postulante: PostulanteDetalle
@@ -51,6 +52,9 @@ export function PostulanteDetalleModal({
   const [descargando, setDescargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const habilidadesDetectadas = postulante.habilidades_detectadas ?? []
+  const habilidadesFaltantes = postulante.habilidades_faltantes ?? []
+
   useEffect(() => {
     let activo = true
     setCargandoNotas(true)
@@ -61,7 +65,6 @@ export function PostulanteDetalleModal({
       })
       .catch((cause: unknown) => {
         if (!activo) return
-        // Un fallo al leer las notas no puede parecer «no hay notas».
         setNotas([])
         setErrorNotas(cause instanceof Error ? cause.message : 'No se pudieron cargar las notas.')
       })
@@ -87,7 +90,6 @@ export function PostulanteDetalleModal({
       await actualizarPuntajePostulante(postulante.id, puntaje, empresaId)
       await onUpdated()
     } catch (cause) {
-      // Si el puntaje no se guardó, el usuario no puede creer que sí.
       setError(cause instanceof Error ? cause.message : 'No se pudo guardar el puntaje.')
     } finally {
       setGuardandoPuntaje(false)
@@ -193,6 +195,36 @@ export function PostulanteDetalleModal({
               </Button>
             </form>
           </Can>
+        </div>
+
+        <div className="ia-panel">
+          <h3>Análisis de CV</h3>
+          <p>
+            Afinidad IA:{' '}
+            <strong>
+              {postulante.puntaje_ia == null ? 'Sin análisis' : `${Math.round(postulante.puntaje_ia)}%`}
+            </strong>
+          </p>
+          <p className="info-label">Habilidades detectadas</p>
+          <div className="ia-chips">
+            {habilidadesDetectadas.length === 0 ? (
+              <span className="text-muted">Ninguna</span>
+            ) : (
+              habilidadesDetectadas.map((h) => (
+                <span key={h} className="ia-chip ok">{h}</span>
+              ))
+            )}
+          </div>
+          <p className="info-label">Habilidades faltantes</p>
+          <div className="ia-chips">
+            {habilidadesFaltantes.length === 0 ? (
+              <span className="text-muted">Ninguna</span>
+            ) : (
+              habilidadesFaltantes.map((h) => (
+                <span key={h} className="ia-chip miss">{h}</span>
+              ))
+            )}
+          </div>
         </div>
 
         <div className="detail-grid">

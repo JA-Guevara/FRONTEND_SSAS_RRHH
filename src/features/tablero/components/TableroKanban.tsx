@@ -4,6 +4,7 @@ import { Alert, Button, EstadoBadge } from '../../../shared/components'
 import { moverPostulacion, type Etapa, type PostulanteDetalle } from '../api/tableroApi'
 import { estadoCanonico, formatFecha, PERM_GESTIONAR } from '../utils/tableroUi'
 import { PostulanteDetalleModal } from './PostulanteDetalleModal'
+import '../tablero-ia.css'
 
 type Props = {
   etapas: Etapa[]
@@ -26,7 +27,6 @@ export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: P
       await moverPostulacion(postulacionId, etapaId, empresaId)
       await onChanged()
     } catch (cause) {
-      // Nunca se traga: si la etapa no cambió, el usuario tiene que enterarse.
       setError(cause instanceof Error ? cause.message : 'No se pudo cambiar la etapa.')
     }
   }
@@ -45,12 +45,10 @@ export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: P
               data-recibiendo={columnaActiva === etapa.id ? 'true' : undefined}
               onDragOver={(evento) => {
                 if (!puedeGestionar) return
-                // Sin este preventDefault el navegador no acepta la suelta.
                 evento.preventDefault()
                 setColumnaActiva(etapa.id)
               }}
               onDragLeave={(evento) => {
-                // Salir hacia un hijo de la columna no cuenta como salir de la columna.
                 const destino = evento.relatedTarget
                 if (destino instanceof Node && evento.currentTarget.contains(destino)) return
                 setColumnaActiva(null)
@@ -61,7 +59,6 @@ export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: P
                 setColumnaActiva(null)
                 setArrastrandoId(null)
                 if (!puedeGestionar || postulacionId === null || postulacionId === '') return
-                // Soltar la tarjeta en su propia columna no es un cambio de etapa.
                 const soltada = postulaciones.find(
                   (postulacion) => postulacion.id === postulacionId,
                 )
@@ -82,7 +79,6 @@ export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: P
                 <div className="board-cards">
                   {tarjetas.map((tarjeta) => (
                     <Fragment key={tarjeta.id}>
-                      {/* Es un <button> para que la ficha se abra también con el teclado. */}
                       <button
                         type="button"
                         className="board-card"
@@ -100,6 +96,9 @@ export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: P
                       >
                         <span className="board-card-top">
                           <strong>{tarjeta.nombre_postulante}</strong>
+                          {tarjeta.puntaje_ia != null && (
+                            <span className="ia-badge">{Math.round(tarjeta.puntaje_ia)}%</span>
+                          )}
                           <EstadoBadge estado={estadoCanonico(tarjeta.estado)} />
                         </span>
                         <span className="board-card-meta">
@@ -113,7 +112,6 @@ export function TableroKanban({ etapas, postulaciones, empresaId, onChanged }: P
                         </span>
                       </button>
 
-                      {/* Alternativa por teclado al arrastrar y soltar: nunca se retira. */}
                       <Can permisos={PERM_GESTIONAR}>
                         <div
                           className="board-card-actions"
