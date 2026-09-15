@@ -1,0 +1,6 @@
+Julia Quispe
+La Paz · julia.quispe@demo.ssah
+CI 4412563 LP
+
+Python y PostgreSQL. APIs REST básicas.
+No usa Docker.

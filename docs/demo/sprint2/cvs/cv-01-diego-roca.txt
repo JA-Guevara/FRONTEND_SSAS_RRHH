@@ -1,0 +1,6 @@
+Diego Roca
+Santa Cruz · diego.roca@demo.ssah
+CI 7845123 SC
+
+Desarrollador backend con 5 años.
+Python, PostgreSQL, diseño de APIs REST y Docker en producción.

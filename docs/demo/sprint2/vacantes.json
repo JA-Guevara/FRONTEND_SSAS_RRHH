@@ -1,0 +1,30 @@
+{
+  "vacantes": [
+    {
+      "titulo": "Desarrollador Backend Semi Senior",
+      "modalidad": "HIBRIDO",
+      "ubicacion": "Santa Cruz",
+      "cantidad_vacantes": 1,
+      "descripcion": "Desarrollo de APIs y servicios internos.",
+      "habilidades": [
+        { "nombre": "Python", "peso": 5 },
+        { "nombre": "PostgreSQL", "peso": 4 },
+        { "nombre": "APIs REST", "peso": 4 },
+        { "nombre": "Docker", "peso": 3 }
+      ]
+    },
+    {
+      "titulo": "Auxiliar Contable",
+      "modalidad": "PRESENCIAL",
+      "ubicacion": "Santa Cruz",
+      "cantidad_vacantes": 1,
+      "descripcion": "Apoyo en registros contables y declaraciones.",
+      "habilidades": [
+        { "nombre": "Contabilidad", "peso": 5 },
+        { "nombre": "Excel", "peso": 4 },
+        { "nombre": "NIIF", "peso": 3 },
+        { "nombre": "SIAT", "peso": 2 }
+      ]
+    }
+  ]
+}
