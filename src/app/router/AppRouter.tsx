@@ -11,6 +11,7 @@ import { AltaEmpresaPage } from '../../features/empresas/pages/AltaEmpresaPage'
 import { ConfiguracionEmpresaPage } from '../../features/empresas/pages/ConfiguracionEmpresaPage'
 import { EmpresaModulosPage } from '../../features/empresas/pages/EmpresaModulosPage'
 import { OrganizacionPage } from '../../features/organizacion/pages/OrganizacionPage'
+import { ImportacionPage } from '../../features/importacion/pages/ImportacionPage'
 import { PortalPublicoPage } from '../../features/portal/pages/PortalPublicoPage'
 import { RolesPage } from '../../features/roles/pages/RolesPage'
 import { ReportesPage } from '../../features/reportes/pages/ReportesPage'
@@ -25,6 +26,8 @@ import { MiSuscripcionPage } from '../../features/suscripciones/pages/MiSuscripc
 import { PlanesPage } from '../../features/suscripciones/pages/PlanesPage'
 import { MiPerfilPage } from '../../features/perfil/pages/MiPerfilPage'
 import { EntrevistasPage } from '../../features/entrevistas/pages/EntrevistasPage'
+import { SeleccionPage } from '../../features/seleccion/pages/SeleccionPage'
+import { AyudaPage } from '../../features/ayuda/pages/AyudaPage'
 import { FullPageStatus } from '../../shared/components'
 import { RequireAccess } from '../guards/RequireAccess'
 import { RequireRealm } from '../guards/RequireRealm'
@@ -88,6 +91,7 @@ export function AppRouter() {
         <Route index element={<DashboardPage />} />
         <Route path="cambiar-clave" element={<ChangePasswordPage />} />
         <Route path="perfil" element={<MiPerfilPage />} />
+        <Route path="ayuda" element={<AyudaPage />} />
 
         <Route path="empresas" element={plataforma(<AltaEmpresaPage />, ['platform:empresas:ver'])} />
         <Route path="respaldos" element={plataforma(<RespaldosPage />, ['platform:backup:ver'])} />
@@ -144,9 +148,10 @@ export function AppRouter() {
             'platform:organizacion:gestionar',
           ])}
         />
+        <Route path="importaciones" element={empresa(<ImportacionPage />, 'ORGANIZACION', ['importacion:gestionar', 'platform:importacion:gestionar'])} />
 
         <Route path="vacantes" element={empresa(<VacantesListPage />, 'RECLUTAMIENTO', RECLUTAMIENTO)} />
-        <Route path="postulantes" element={empresa(<PostulantesPage />, 'RECLUTAMIENTO', ['postulantes:ver', 'platform:postulantes:gestionar'])} />
+        <Route path="postulantes" element={empresa(<PostulantesPage />, 'RECLUTAMIENTO', ['postulantes:ver', 'platform:postulantes:ver'])} />
         <Route path="habilidades" element={empresa(<HabilidadesPage />, 'RECLUTAMIENTO', ['habilidades:ver', 'platform:habilidades:gestionar'])} />
         <Route
           path="vacantes/nueva"
@@ -162,8 +167,10 @@ export function AppRouter() {
         />
         <Route
           path="entrevistas"
-          element={empresa(<EntrevistasPage />, 'RECLUTAMIENTO', ['postulaciones:ver', 'platform:postulaciones:ver'])}
+          element={empresa(<EntrevistasPage />, 'RECLUTAMIENTO', ['entrevistas:ver', 'platform:entrevistas:ver'])}
         />
+        <Route path="seleccion" element={empresa(<SeleccionPage />, 'RECLUTAMIENTO', ['postulaciones:ver', 'platform:postulaciones:ver'])} />
+        <Route path="vacantes/:id/seleccion" element={empresa(<SeleccionPage />, 'RECLUTAMIENTO', ['postulaciones:ver', 'platform:postulaciones:ver'])} />
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>

@@ -45,12 +45,14 @@ export function Modal({ title, onClose, children, footer, size = 'md' }: ModalPr
   // Escape para cerrar y tabulación circular dentro del diálogo.
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      const dialog = dialogRef.current
+      const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]')
+      if (dialog === null || dialogs[dialogs.length - 1] !== dialog) return
       if (event.key === 'Escape') {
         onCloseRef.current()
         return
       }
-      const dialog = dialogRef.current
-      if (event.key !== 'Tab' || dialog === null) return
+      if (event.key !== 'Tab') return
       const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE))
       if (focusable.length === 0) return
       const first = focusable[0]

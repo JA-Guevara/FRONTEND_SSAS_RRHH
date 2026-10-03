@@ -14,6 +14,8 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Inicio' },
+  { to: '/entrevistas', label: 'Entrevistas', modulo: 'RECLUTAMIENTO', permisos: ['entrevistas:ver', 'platform:entrevistas:ver'], grupo: 'Reclutamiento' },
+  { to: '/seleccion', label: 'Selección', modulo: 'RECLUTAMIENTO', permisos: ['postulaciones:ver', 'platform:postulaciones:ver'], grupo: 'Reclutamiento' },
   {
     to: '/empresas',
     label: 'Empresas',
@@ -32,7 +34,7 @@ export const NAV_ITEMS: NavItem[] = [
     to: '/postulantes',
     label: 'Postulantes',
     modulo: 'RECLUTAMIENTO',
-    permisos: ['postulantes:ver', 'platform:postulantes:gestionar'],
+    permisos: ['postulantes:ver', 'platform:postulantes:ver'],
     grupo: 'Reclutamiento',
   },
   {
@@ -49,6 +51,7 @@ export const NAV_ITEMS: NavItem[] = [
     permisos: ['departamentos:ver', 'cargos:ver', 'platform:organizacion:gestionar'],
     grupo: 'Empresa',
   },
+  { to: '/importaciones', label: 'Importar datos', modulo: 'ORGANIZACION', permisos: ['importacion:gestionar', 'platform:importacion:gestionar'], grupo: 'Empresa' },
   {
     to: '/empresa/configuracion',
     label: 'Configuración',
@@ -106,5 +109,6 @@ export const NAV_ITEMS: NavItem[] = [
     grupo: 'Cuenta',
   },
   { to: '/perfil', label: 'Mi perfil', grupo: 'Cuenta' },
+  { to: '/ayuda', label: 'Ayuda', grupo: 'Cuenta' },
   { to: '/cambiar-clave', label: 'Cambiar contraseña', grupo: 'Cuenta' },
 ]

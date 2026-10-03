@@ -420,7 +420,7 @@ button.metric-card[aria-pressed='true'] {
 .filters,
 .toolbar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
   align-items: end;
   gap: var(--space-3);
   margin: var(--space-5) 0;
@@ -458,6 +458,8 @@ button.metric-card[aria-pressed='true'] {
 
 /* --- Tablas --- */
 .table-wrap {
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
   border-radius: var(--radius-md);
 }
@@ -507,6 +509,28 @@ td small {
   display: flex;
   flex-wrap: wrap;
   justify-content: end;
+  gap: var(--space-2);
+}
+
+.help-question-row {
+  justify-content: flex-start;
+  margin-top: var(--space-2);
+}
+
+.help-question-row input {
+  flex: 1 1 18rem;
+  min-width: min(18rem, 100%);
+}
+
+.help-topic-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.help-topic-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
 }
 
@@ -1066,6 +1090,32 @@ td small {
 @media (max-width: 640px) {
   .backup-create-row { grid-template-columns: 1fr; }
 }
+
+.report-query {
+  display: grid;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--space-5);
+}
+
+.report-query-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.report-privacy {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.report-interpretation {
+  margin-bottom: var(--space-4);
+  color: var(--muted);
+}
+
+.report-interpretation strong { color: var(--ink); }
 
 .report-builder-list {
   display: grid;

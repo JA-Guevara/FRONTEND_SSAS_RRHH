@@ -5,11 +5,16 @@ export type Order = { campo: string; direccion: 'asc' | 'desc' }
 export type ReportConfig = { fuente: string; columnas: string[]; filtros: Filter[]; orden: Order[] }
 export type Source = { codigo: string; nombre: string; columnas: string[] }
 export type Preview = { columnas: string[]; items: Record<string, unknown>[]; total: number; page: number; per_page: number }
+export type Interpretation = { config: ReportConfig | null; aclaracion: string | null }
 
 const scope = (empresaId?: string) => buildQuery({ empresa_id: empresaId })
 
 export const reportesApi = {
   catalog: () => apiRequest<Source[]>('/api/v1/reportes/catalogo'),
+  interpret: (texto: string, empresaId?: string) =>
+    apiRequest<Interpretation>(`/api/v1/reportes/interpretar${scope(empresaId)}`, {
+      method: 'POST', body: { texto }, timeoutMs: 35_000,
+    }),
   preview: (config: ReportConfig, empresaId?: string) =>
     apiRequest<Preview>(`/api/v1/reportes/vista-previa${scope(empresaId)}`, { method: 'POST', body: config }),
   create: (nombre: string, config: ReportConfig, empresaId?: string) =>
