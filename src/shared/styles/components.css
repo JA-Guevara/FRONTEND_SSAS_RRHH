@@ -272,7 +272,7 @@
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: var(--space-4);
 }
 
@@ -354,7 +354,7 @@
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   gap: var(--space-4);
 }
 
@@ -826,6 +826,7 @@ td small {
   width: min(100%, 540px);
   max-height: calc(100vh - var(--space-8));
   overflow-y: auto;
+  min-width: 0;
   border-radius: var(--radius-lg);
   padding: var(--space-6);
   background: var(--paper);
@@ -1567,13 +1568,25 @@ tbody tr { transition: background-color 0.15s ease; }
 
 @media (max-width: 640px) {
   .panel { padding: var(--space-4); }
+  .form-section { padding: var(--space-4); }
+  .form-grid, .detail-grid, .check-grid, .checklist, .audit-filters, .audit-detail { grid-template-columns: minmax(0, 1fr); }
+  .page-header-actions { width: 100%; }
+  .page-header-actions .button { min-width: 0; white-space: normal; text-align: center; }
+  .button { max-width: 100%; white-space: normal; text-align: center; overflow-wrap: anywhere; }
+  .report-query-actions .button { flex: 1 1 auto; }
+  .modal-backdrop { padding: 0; }
   .panel-heading + * { margin-top: var(--space-4); }
   .row-actions { justify-content: flex-start; }
   .table-wrap { margin-inline: calc(var(--space-4) * -1); border-right: 0; border-left: 0; border-radius: 0; }
   th, td { padding: var(--space-3); }
-  .modal { max-height: 100vh; border-radius: var(--radius-md); padding: var(--space-4); }
+  .modal { width: 100%; max-height: 100dvh; border-radius: 0; padding: var(--space-4); }
+  .modal-header h2 { overflow-wrap: anywhere; }
+  .modal-footer .button { flex: 1 1 auto; }
   .modal form > .modal-footer, .modal > .modal-footer { bottom: calc(var(--space-4) * -1); margin: var(--space-2) calc(var(--space-4) * -1) calc(var(--space-4) * -1); padding: var(--space-3) var(--space-4); }
   .permission-grid { grid-template-columns: 1fr; }
   .sticky-actions { margin-inline: calc(var(--space-4) * -1); margin-bottom: calc(var(--space-4) * -1); padding-inline: var(--space-4); }
   .subscription-summary { grid-template-columns: 1fr; }
+  .score-box, .info-row { flex-wrap: wrap; }
+  .info-value { text-align: left; overflow-wrap: anywhere; }
+  .file-field input[type='file'] { max-width: 100%; }
 }

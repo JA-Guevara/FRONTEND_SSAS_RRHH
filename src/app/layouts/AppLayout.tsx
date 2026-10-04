@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { Menu, X } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { Button } from '../../shared/components'
@@ -7,6 +9,7 @@ import type { NavItem } from '../access/navigation'
 import { useCompanyScope } from '../context/CompanyScopeContext'
 
 export function AppLayout() {
+  const [menuOpen, setMenuOpen] = useState(false)
   const { logout, user } = useAuth()
   const { company, companies, error, selectCompany, clearCompany, loading } = useCompanyScope()
   const { can, hasModulo } = useAccess()
@@ -47,23 +50,35 @@ export function AppLayout() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="sidebar-brand">
-          <div className="brand-mark brand-mark-small" aria-hidden="true">
-            S
+      <aside className={`sidebar${menuOpen ? ' sidebar-open' : ''}`}>
+        <div className="sidebar-top">
+          <div className="sidebar-brand">
+            <div className="brand-mark brand-mark-small" aria-hidden="true">
+              S
+            </div>
+            <div>
+              <strong>SSAS</strong>
+              <span>Recursos Humanos</span>
+            </div>
           </div>
-          <div>
-            <strong>SSAS</strong>
-            <span>Recursos Humanos</span>
-          </div>
+          <button
+            className="mobile-menu-toggle"
+            type="button"
+            aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={menuOpen}
+            aria-controls="main-navigation"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
 
-        <nav className="main-nav" aria-label="Navegación principal">
+        <nav id="main-navigation" className="main-nav" aria-label="Navegación principal">
           {[...grupos.entries()].map(([grupo, entradas]) => (
             <div key={grupo}>
               {grupo !== '' && <p className="nav-group-title">{grupo}</p>}
               {entradas.map((item) => (
-                <NavLink key={item.to} to={item.to} end={item.to === '/'}>
+                <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setMenuOpen(false)}>
                   {item.label}
                 </NavLink>
               ))}
