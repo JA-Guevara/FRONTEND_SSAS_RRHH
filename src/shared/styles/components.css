@@ -159,6 +159,16 @@
   font-weight: 700;
 }
 
+.report-columns {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.report-columns legend {
+  padding: 0 0 var(--space-2);
+}
+
 .field input:not([type='checkbox']):not([type='radio']),
 .field select,
 .field textarea,

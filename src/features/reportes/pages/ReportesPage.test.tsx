@@ -112,3 +112,41 @@ describe('reportes por voz o texto', () => {
     expect(await screen.findByText('Ana')).toBeInTheDocument()
   })
 })
+
+describe('filtros manuales de reportes', () => {
+  const sources = [
+    { codigo: 'vacantes', nombre: 'Vacantes', columnas: ['titulo', 'estado'] },
+    { codigo: 'usuarios', nombre: 'Usuarios', columnas: ['nombres', 'username'] },
+    { codigo: 'postulaciones', nombre: 'Postulaciones', columnas: ['postulante', 'estado'] },
+  ]
+  const cases = [
+    ['vacantes', 'titulo'],
+    ['usuarios', 'nombres'],
+    ['postulaciones', 'postulante'],
+  ] as const
+  const operators = ['igual', 'contiene', 'mayor_igual', 'menor_igual'] as const
+
+  it.each(cases.flatMap(([source, field]) => operators.map((operator) => [source, field, operator] as const)))(
+    'envía %s con filtro %s %s',
+    async (source, field, operator) => {
+      vi.mocked(reportesApi.catalog).mockResolvedValue(sources)
+      render(<ReportesPage />)
+      await waitFor(() => expect(screen.getByRole('option', { name: 'Postulaciones' })).toBeInTheDocument())
+
+      fireEvent.change(screen.getByLabelText('Fuente'), { target: { value: source } })
+      fireEvent.click(screen.getByRole('checkbox', { name: field }))
+      fireEvent.click(screen.getByRole('button', { name: 'Añadir filtro' }))
+      fireEvent.change(screen.getByLabelText('Campo del filtro 1'), { target: { value: field } })
+      fireEvent.change(screen.getByLabelText('Operador del filtro 1'), { target: { value: operator } })
+      fireEvent.change(screen.getByLabelText('Valor del filtro 1'), { target: { value: 'Prueba' } })
+      fireEvent.click(screen.getByRole('button', { name: 'Vista previa' }))
+
+      await waitFor(() => expect(reportesApi.preview).toHaveBeenCalledWith({
+        fuente: source,
+        columnas: [field],
+        filtros: [{ campo: field, operador: operator, valor: 'Prueba' }],
+        orden: [],
+      }, 'company-a'))
+    },
+  )
+})

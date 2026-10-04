@@ -171,7 +171,7 @@ export function ReportesPage() {
         <Field label="Fuente"><select value={sourceCode} onChange={(e) => changeSource(e.target.value)}>{sources.map((item) => <option key={item.codigo} value={item.codigo}>{item.nombre}</option>)}</select></Field>
         <Field label="Nombre para guardar"><input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Postulaciones del mes" /></Field>
       </div>
-      <Field label="Columnas"><div className="check-grid">{source?.columnas.map((column) => <label className="check-label" key={column}><input type="checkbox" checked={columns.includes(column)} onChange={() => setColumns((current) => current.includes(column) ? current.filter((item) => item !== column) : [...current, column])} />{column.replaceAll('_', ' ')}</label>)}</div></Field>
+      <fieldset className="field report-columns"><legend>Columnas</legend><div className="check-grid">{source?.columnas.map((column) => <label className="check-label" key={column}><input type="checkbox" checked={columns.includes(column)} onChange={() => setColumns((current) => current.includes(column) ? current.filter((item) => item !== column) : [...current, column])} />{column.replaceAll('_', ' ')}</label>)}</div></fieldset>
       <div className="report-builder-list">
         <div className="panel-heading"><h3>Filtros</h3><Button size="sm" variant="secondary" onClick={() => setFilters((items) => [...items, { ...EMPTY_FILTER }])}><Plus size={16} aria-hidden="true" />Añadir filtro</Button></div>
         {filters.length === 0 && <div className="inline-empty"><FilterIcon size={18} aria-hidden="true" /><span>Sin filtros. El reporte incluirá todos los registros disponibles.</span></div>}
