@@ -24,6 +24,13 @@ export const NAV_ITEMS: NavItem[] = [
     grupo: 'Plataforma',
   },
   {
+    to: '/administradores-globales',
+    label: 'Administradores globales',
+    soloRealm: 'platform',
+    permisos: ['platform:usuarios:gestionar'],
+    grupo: 'Plataforma',
+  },
+  {
     to: '/vacantes',
     label: 'Vacantes',
     modulo: 'RECLUTAMIENTO',

@@ -7,6 +7,7 @@ import { useAccess } from '../access/AccessProvider'
 import { NAV_ITEMS } from '../access/navigation'
 import type { NavItem } from '../access/navigation'
 import { useCompanyScope } from '../context/CompanyScopeContext'
+import { ChatWidget } from '../../features/ayuda/components/ChatWidget'
 
 export function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -134,6 +135,7 @@ export function AppLayout() {
         )}
         <Outlet />
       </main>
+      {esTenant && <ChatWidget />}
     </div>
   )
 }

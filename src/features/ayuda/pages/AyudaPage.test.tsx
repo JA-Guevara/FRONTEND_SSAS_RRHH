@@ -6,6 +6,8 @@ import { ayudaApi } from '../api/ayudaApi'
 import { AyudaPage } from './AyudaPage'
 
 vi.mock('../api/ayudaApi', () => ({ ayudaApi: { topics: vi.fn(), ask: vi.fn(), explain: vi.fn() } }))
+vi.mock('../../../app/access/AccessProvider', () => ({ useAccess: () => ({ can: () => false }) }))
+vi.mock('../../auth/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }))
 
 beforeEach(() => {
   vi.mocked(ayudaApi.topics).mockResolvedValue([{ id: 'importacion', titulo: 'Importar catálogos', ruta: '/importaciones' }])

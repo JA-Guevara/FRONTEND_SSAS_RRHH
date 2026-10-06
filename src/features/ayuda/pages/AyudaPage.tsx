@@ -3,8 +3,13 @@ import { Link } from 'react-router-dom'
 import { Send, Sparkles } from 'lucide-react'
 import { Alert, Button, PageHeader, Panel } from '../../../shared/components'
 import { ayudaApi, type HelpAnswer, type HelpTopic } from '../api/ayudaApi'
+import { KnowledgeManager } from '../components/KnowledgeManager'
+import { useAccess } from '../../../app/access/AccessProvider'
+import { useAuth } from '../../auth/hooks/useAuth'
 
 export function AyudaPage() {
+  const { can } = useAccess()
+  const { user } = useAuth()
   const [topics, setTopics] = useState<HelpTopic[]>([])
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState<HelpAnswer | null>(null)
@@ -42,7 +47,7 @@ export function AyudaPage() {
 
   return <section className="page-stack">
     <PageHeader title="Ayuda" eyebrow="Cuenta" description="Consulta cómo usar las funciones disponibles para tu acceso." />
-    <Alert tone="info">No incluyas contraseñas, CV ni datos personales. La pregunta escrita se consulta solo en la ayuda local; la IA recibe únicamente una guía fija cuando eliges explicarla.</Alert>
+    <Alert tone="info">No incluyas contraseñas, CV ni datos personales. El asistente flotante consulta solo artículos publicados de esta empresa.</Alert>
     <Panel title="Preguntas frecuentes">
       <div className="help-topic-list">
         {topics.map(topic => <div className="help-topic-row" key={topic.id}>
@@ -67,5 +72,6 @@ export function AyudaPage() {
         {answer.fuentes.map(source => <Link key={source.ruta} to={source.ruta}>{source.titulo}</Link>)}
       </div>}
     </Panel>
+    {user?.realm === 'tenant' && can('roles:gestionar') && <KnowledgeManager />}
   </section>
 }

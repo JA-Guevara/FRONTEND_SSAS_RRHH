@@ -94,6 +94,10 @@ export function AppRouter() {
         <Route path="ayuda" element={<AyudaPage />} />
 
         <Route path="empresas" element={plataforma(<AltaEmpresaPage />, ['platform:empresas:ver'])} />
+        <Route
+          path="administradores-globales"
+          element={plataforma(<ListadoUsuariosPage scope="platform" />, ['platform:usuarios:gestionar'])}
+        />
         <Route path="respaldos" element={plataforma(<RespaldosPage />, ['platform:backup:ver'])} />
         <Route path="planes" element={plataforma(<PlanesPage />, ['platform:planes:ver'])} />
         <Route
@@ -126,7 +130,7 @@ export function AppRouter() {
 
         <Route
           path="usuarios"
-          element={empresa(<ListadoUsuariosPage />, 'USUARIOS', ['usuarios:ver', 'platform:usuarios:gestionar'])}
+          element={empresa(<ListadoUsuariosPage scope="company" />, 'USUARIOS', ['usuarios:ver', 'platform:usuarios:gestionar'])}
         />
         <Route
           path="roles"
