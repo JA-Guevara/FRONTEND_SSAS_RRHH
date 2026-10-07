@@ -48,9 +48,9 @@ it('lists and creates a global administrator without the selected company', asyn
   await user.type(screen.getByLabelText('Nombres'), 'Ana')
   await user.type(screen.getByLabelText('Apellidos'), 'Paz')
   await user.type(screen.getByLabelText('Correo electrónico'), 'ana@example.com')
-  await user.type(screen.getByLabelText('Nombre de usuario'), 'anapaz')
+  await user.type(screen.getByLabelText(/^Nombre de usuario/), 'anapaz')
   await user.click(await screen.findByRole('checkbox', { name: 'Super Admin' }))
-  await user.type(screen.getByLabelText('Contraseña provisional'), 'ClaveSegura!123')
+  await user.type(screen.getByLabelText(/^Contraseña provisional/), 'ClaveSegura!123')
   await user.click(screen.getByRole('button', { name: 'Crear administrador' }))
 
   await waitFor(() => expect(usuariosApi.create).toHaveBeenCalledWith(

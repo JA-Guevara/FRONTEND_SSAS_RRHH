@@ -16,6 +16,7 @@ import { PortalPublicoPage } from '../../features/portal/pages/PortalPublicoPage
 import { RolesPage } from '../../features/roles/pages/RolesPage'
 import { ReportesPage } from '../../features/reportes/pages/ReportesPage'
 import { RespaldosPage } from '../../features/respaldos/pages/RespaldosPage'
+import { RespaldosEmpresaPage } from '../../features/respaldos/pages/RespaldosEmpresaPage'
 import { TableroPage } from '../../features/tablero/pages/TableroPage'
 import { ListadoUsuariosPage } from '../../features/usuarios/pages/ListadoUsuariosPage'
 import { VacanteFormPage } from '../../features/vacantes/pages/VacanteFormPage'
@@ -99,6 +100,7 @@ export function AppRouter() {
           element={plataforma(<ListadoUsuariosPage scope="platform" />, ['platform:usuarios:gestionar'])}
         />
         <Route path="respaldos" element={plataforma(<RespaldosPage />, ['platform:backup:ver'])} />
+        <Route path="respaldos-empresa" element={<RequireAccess permisos={['backup:ver', 'platform:backup:ver']}><RespaldosEmpresaPage /></RequireAccess>} />
         <Route path="planes" element={plataforma(<PlanesPage />, ['platform:planes:ver'])} />
         <Route
           path="suscripcion"

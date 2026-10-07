@@ -506,6 +506,7 @@ export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
         </Field>
         <Field
           label="Roles"
+          group
           hint={
             esVistaGlobal
               ? 'Roles globales de la plataforma. Obligatorio: sin rol el usuario no puede iniciar sesión.'

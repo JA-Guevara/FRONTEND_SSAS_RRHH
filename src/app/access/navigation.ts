@@ -102,6 +102,12 @@ export const NAV_ITEMS: NavItem[] = [
     grupo: 'Plataforma',
   },
   {
+    to: '/respaldos-empresa',
+    label: 'Respaldos por empresa',
+    permisos: ['backup:ver', 'platform:backup:ver'],
+    grupo: 'Administración',
+  },
+  {
     to: '/planes',
     label: 'Planes y suscripciones',
     soloRealm: 'platform',
