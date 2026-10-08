@@ -58,6 +58,13 @@ export const NAV_ITEMS: NavItem[] = [
     permisos: ['departamentos:ver', 'cargos:ver', 'platform:organizacion:gestionar'],
     grupo: 'Empresa',
   },
+  {
+    to: '/empleados',
+    label: 'Empleados',
+    modulo: 'ORGANIZACION',
+    permisos: ['empleados:ver', 'platform:empleados:ver'],
+    grupo: 'Empresa',
+  },
   { to: '/importaciones', label: 'Importar datos', modulo: 'ORGANIZACION', permisos: ['importacion:gestionar', 'platform:importacion:gestionar'], grupo: 'Empresa' },
   {
     to: '/empresa/configuracion',

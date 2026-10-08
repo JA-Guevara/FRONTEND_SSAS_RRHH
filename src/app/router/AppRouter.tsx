@@ -11,6 +11,7 @@ import { AltaEmpresaPage } from '../../features/empresas/pages/AltaEmpresaPage'
 import { ConfiguracionEmpresaPage } from '../../features/empresas/pages/ConfiguracionEmpresaPage'
 import { EmpresaModulosPage } from '../../features/empresas/pages/EmpresaModulosPage'
 import { OrganizacionPage } from '../../features/organizacion/pages/OrganizacionPage'
+import { EmpleadosPage } from '../../features/empleados/pages/EmpleadosPage'
 import { ImportacionPage } from '../../features/importacion/pages/ImportacionPage'
 import { PortalPublicoPage } from '../../features/portal/pages/PortalPublicoPage'
 import { RolesPage } from '../../features/roles/pages/RolesPage'
@@ -153,6 +154,10 @@ export function AppRouter() {
             'cargos:ver',
             'platform:organizacion:gestionar',
           ])}
+        />
+        <Route
+          path="empleados"
+          element={empresa(<EmpleadosPage />, 'ORGANIZACION', ['empleados:ver', 'platform:empleados:ver'])}
         />
         <Route path="importaciones" element={empresa(<ImportacionPage />, 'ORGANIZACION', ['importacion:gestionar', 'platform:importacion:gestionar'])} />
 
