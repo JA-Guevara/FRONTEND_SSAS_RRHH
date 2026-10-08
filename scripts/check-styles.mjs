@@ -126,7 +126,8 @@ for (const file of cssFiles) {
     if (relPath.endsWith('layout/nav.css') || relPath.endsWith('layout/shell.css')) {
       if (/\bcolor:\s*var\(--(ink|ink-2|muted|line)\)/.test(stripped)) {
         const isSidebarNav = relPath.endsWith('layout/nav.css') && index < 120
-        const isSidebarShell = relPath.endsWith('layout/shell.css') && (index < 110 || (index > 164 && index < 240)) && !stripped.includes('option')
+        const isOption = stripped.includes('option') || (index > 0 && lines[index - 1].includes('option'))
+        const isSidebarShell = relPath.endsWith('layout/shell.css') && (index < 110 || (index > 164 && index < 240)) && !isOption
         if (isSidebarNav || isSidebarShell) {
           errors.push({
             type: 'INVALID_INVERSE_COLOR',
