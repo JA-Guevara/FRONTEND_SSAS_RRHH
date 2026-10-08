@@ -37,29 +37,25 @@ Una pantalla visible no prueba integración. Si usa arreglos locales o `setTimeo
 
 | Área | Estado | Observaciones |
 |---|---|---|
-| Arquitectura | PARCIAL | Slices claros, pero existen dependencias cruzadas contrarias a las reglas documentadas. |
-| Configuración | IMPLEMENTADO | `.env` está ignorado; `.env.example` restaurado; Vite usa un único proxy `/api` local y conserva `preview.allowedHosts`. |
-| Contrato OpenAPI | IMPLEMENTADO | `schema.d.ts` regenerado desde Railway y `npm run check:api` detecta drift contra el OpenAPI desplegado. |
-| Cliente HTTP | PARCIAL | Maneja JSON, bearer y 401; no renueva automáticamente una sesión durante una petición fallida. |
-| Autenticación | PARCIAL | Login, refresh, logout, perfil, recuperación tenant y cambio de clave conectados; faltan verificación de correo y recuperación platform. |
-| Autorización visual | PENDIENTE | Las rutas solo distinguen `tenant/platform`; no evalúan permisos ni módulos habilitados. |
-| Empresas | PARCIAL | La UI lista y aprovisiona; wrappers de detalle/edición/estado no tienen UI. |
-| Usuarios | PARCIAL | Lista, crea, activa y desactiva; faltan detalle, edición, desbloqueo, contraseña administrativa, eliminación y restauración en UI. |
-| Roles | PARCIAL | Lista, crea y elimina; faltan edición y matriz de permisos. |
-| Permisos | PARCIAL | Backend aplica RBAC, pero el frontend no recibe catálogo ni permisos efectivos. |
-| Bitácora | PARCIAL | Lista y filtra; falta paginación, contexto platform por empresa y validación E2E. |
-| Organización | PARCIAL | Departamentos y cargos consumen la API real y respetan empresa_id; falta DELETE porque no está publicado en el OpenAPI desplegado. |
-| Vacantes | PARCIAL | UI de CRUD y transiciones construida sobre mocks; backend no publica router autenticado de vacantes. |
-| Tablero de postulaciones | PARCIAL | Kanban, rechazo, notas y puntaje son simulados en memoria. |
-| Portal público | PARCIAL | Empresa, vacantes y envío son mock; backend local solo tiene creación y seguimiento público de postulaciones. |
-| Módulos por empresa | PENDIENTE | No existe catálogo de módulos ni relación empresa-módulo en backend. |
-| Dashboard global | PARCIAL | El menú platform solo muestra Empresas. |
-| Manejo de errores | PARCIAL | Hay mensajes básicos; estados y formularios no comparten una estrategia uniforme. |
-| Accesibilidad | DESCONOCIDO | No existe auditoría automatizada ni manual registrada. |
-| Tests | PENDIENTE | No hay Vitest, Testing Library, MSW ni E2E. |
-| Lint | PARCIAL | `npm run lint` termina bien, pero solo analiza `.js/.jsx`; la aplicación es `.ts/.tsx`. |
-| Build TypeScript | IMPLEMENTADO | `npm run build` y `tsc --noEmit` pasan en la auditoría del 2026-09-07. |
-| Documentación | PARCIAL | Se crea este sistema; `ARQUITECTURA_FRONTEND.md` estaba desactualizado. |
+| Arquitectura | IMPLEMENTADO | Screaming Architecture + Slices en `src/features/`. Separación limpia de API, componentes y páginas. |
+| Configuración | IMPLEMENTADO | `.env` configurado; Vite proxy `/api` y soporte para despliegue en Railway. |
+| Contrato OpenAPI | IMPLEMENTADO | `schema.d.ts` generado contra OpenAPI 3.1 del backend; tipado estricto en clientes API. |
+| Cliente HTTP | IMPLEMENTADO | `httpClient.ts` maneja JSON, Bearer token, y renovación automática transparente vía `refresh_token` en 401. |
+| Autenticación | IMPLEMENTADO | Login multi-tenant (empresa o plataforma), auto-registro de empresas, logout, forgot/reset password y cambio de clave. |
+| Autorización visual | IMPLEMENTADO | Guards `RequireRealm` (plataforma vs tenant) y `RequireAccess` (verificación de módulo activo y permisos RBAC). |
+| Empresas | IMPLEMENTADO | Aprovisionamiento con modal, listado paginado, activación, suspensión, borrado lógico y restauración. |
+| Usuarios | IMPLEMENTADO | Listado con filtros, alta de usuario con roles, activación, desactivación, desbloqueo, contraseña temporal y restauración. |
+| Roles y Permisos | IMPLEMENTADO | Listado de roles, creación de roles corporativos y matriz interactiva de asignación de los 43 permisos RBAC. |
+| Bitácora | IMPLEMENTADO | Listado de auditoría en tiempo real con filtros (módulo, acción, usuario, fechas) y visor de diferencias JSONB. |
+| Organización | IMPLEMENTADO | CRUD completo de Departamentos (jerárquicos) y Cargos (con bandas salariales mín/máx). |
+| Vacantes | IMPLEMENTADO | CRUD completo conectado a API real, matriz de habilidades ponderadas y transiciones: Publicar, Pausar, Reanudar, Cerrar, Eliminar. |
+| Tablero de postulaciones | IMPLEMENTADO | Tablero Kanban dinámico con etapas de BD, calificación manual (1-100), notas confidenciales, descarga de CV en PDF y descarte tipificado. |
+| Portal público | IMPLEMENTADO | Vista institucional de vacantes por empresa (`/empleos/:slug`), formulario con subida de archivo PDF de CV y consulta por código. |
+| Módulos por empresa | IMPLEMENTADO | Catálogo y panel interactivo para habilitar/deshabilitar módulos contratados por empresa. |
+| Dashboard global | IMPLEMENTADO | Tarjetas resumen con métricas (usuarios, vacantes, postulaciones) y bitácora reciente según alcance. |
+| Manejo de errores | IMPLEMENTADO | Sistema unificado con `Alert`, validación visual en `Field`, `EmptyState` y captura de excepciones de API. |
+| Sistema de Diseño | IMPLEMENTADO | Componentes accesibles (`Button`, `Modal`, `DataTable`, `Badge`, `ConfirmDialog`, `Pagination`) con tokens CSS. |
+| Documentación | SINCRONIZADO | Sincronizado con la documentación maestra en `/docs/` a nivel raíz. |
 
 ## 3. Arquitectura actual
 
