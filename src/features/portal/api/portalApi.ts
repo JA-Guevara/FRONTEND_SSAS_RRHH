@@ -58,14 +58,19 @@ export class PortalApiError extends Error {
 const NETWORK_MESSAGE =
   'No se pudo contactar con el servidor. Revisa tu conexión e inténtalo de nuevo.'
 
-const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+const rawApiUrl = (import.meta.env.VITE_API_URL ?? '').replace('-7c33', '').replace(/\/$/, '')
+const API_URL =
+  rawApiUrl ||
+  (typeof window !== 'undefined' && window.location.hostname.endsWith('railway.app')
+    ? 'https://backendssasrrhh-production.up.railway.app'
+    : '')
 
 function getApiUrl(path: string) {
   return `${API_URL}${path}`
 }
 
 async function readApiError(response: Response) {
-  const data = await response.json().catch(() => null) as ApiErrorPayload | null
+  const data = (await response.json().catch(() => null)) as ApiErrorPayload | null
   const detail = data?.detail
 
   if (typeof detail === 'string' && detail.trim() !== '') return detail
@@ -81,13 +86,27 @@ async function readApiError(response: Response) {
 }
 
 async function publicRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const reqInit = {
+    headers: { Accept: 'application/json', ...init?.headers },
+    ...init,
+  }
   let response: Response
   try {
-    response = await fetch(getApiUrl(path), {
-      headers: { Accept: 'application/json', ...init?.headers },
-      ...init,
-    })
-  } catch {
+    try {
+      response = await fetch(getApiUrl(path), reqInit)
+    } catch (directError) {
+      if (API_URL && typeof window !== 'undefined') {
+        try {
+          response = await fetch(path, reqInit)
+        } catch {
+          throw directError
+        }
+      } else {
+        throw directError
+      }
+    }
+  } catch (error) {
+    console.error(`[Portal API Network Error] ${getApiUrl(path)}:`, error)
     // Sólo es una red bloqueada o CORS: un fallo de red jamás debe mostrarse
     // como «Failed to fetch» ni como si la empresa no tuviera vacantes.
     throw new PortalApiError(NETWORK_MESSAGE, 0)

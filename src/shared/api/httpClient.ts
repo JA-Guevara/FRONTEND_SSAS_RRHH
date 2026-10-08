@@ -1,7 +1,12 @@
 import { notifySessionExpired, tokenStorage } from './session'
 import type { StoredSession } from './session'
 
-const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+const rawApiUrl = (import.meta.env.VITE_API_URL ?? '').replace('-7c33', '').replace(/\/$/, '')
+const API_URL =
+  rawApiUrl ||
+  (typeof window !== 'undefined' && window.location.hostname.endsWith('railway.app')
+    ? 'https://backendssasrrhh-production.up.railway.app'
+    : '')
 const DEFAULT_TIMEOUT_MS = 30_000
 const REFRESH_PATH = '/api/v1/auth/refresh'
 
@@ -174,21 +179,47 @@ async function performRequest(
   }, timeoutMs)
   signal?.addEventListener('abort', () => controller.abort())
 
+  const requestHeaders = {
+    Accept: 'application/json',
+    // El navegador debe fijar el boundary del multipart: no se toca Content-Type.
+    ...(body !== undefined && formData === undefined
+      ? { 'Content-Type': 'application/json' }
+      : {}),
+    ...(token !== null ? { Authorization: `Bearer ${token}` } : {}),
+    ...headers,
+  }
+  const requestBody = formData ?? (body !== undefined ? JSON.stringify(body) : undefined)
+
   try {
-    return await fetch(`${API_URL}${path}`, {
-      method,
-      signal: controller.signal,
-      headers: {
-        Accept: 'application/json',
-        // El navegador debe fijar el boundary del multipart: no se toca Content-Type.
-        ...(body !== undefined && formData === undefined
-          ? { 'Content-Type': 'application/json' }
-          : {}),
-        ...(token !== null ? { Authorization: `Bearer ${token}` } : {}),
-        ...headers,
-      },
-      body: formData ?? (body !== undefined ? JSON.stringify(body) : undefined),
-    })
+    try {
+      return await fetch(`${API_URL}${path}`, {
+        method,
+        signal: controller.signal,
+        headers: requestHeaders,
+        body: requestBody,
+      })
+    } catch (directError) {
+      // Si la petición directa falla por CORS o conectividad pero estamos en el navegador y
+      // API_URL era absoluto, intentamos el proxy relativo (/api...) servido por Vite.
+      if (
+        API_URL &&
+        typeof window !== 'undefined' &&
+        !controller.signal.aborted &&
+        !vencioPorEspera
+      ) {
+        try {
+          return await fetch(path, {
+            method,
+            signal: controller.signal,
+            headers: requestHeaders,
+            body: requestBody,
+          })
+        } catch {
+          // Si el proxy tampoco responde, se preserva el error original
+        }
+      }
+      throw directError
+    }
   } catch (error) {
     // `AbortError` se comprueba por nombre y no por `instanceof DOMException`:
     // no todos los entornos lo implementan con esa clase.
@@ -201,6 +232,7 @@ async function performRequest(
       )
     }
     if (abortada) throw new ApiError('La solicitud fue cancelada.', 0)
+    console.error(`[API Network Error] ${method ?? 'GET'} ${API_URL}${path}:`, error)
     throw new ApiError(
       'No se pudo contactar con el servidor. Revisa tu conexión y que la dirección de la API sea correcta.',
       0,
