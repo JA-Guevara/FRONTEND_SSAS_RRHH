@@ -9,6 +9,7 @@ export type User = {
   name: string
   email: string
   username?: string | null
+  foto_url?: string | null
   roles: string[]
   /** Permisos efectivos que devuelve el backend, ya filtrados por módulo habilitado. */
   permissions: string[]

@@ -4674,6 +4674,8 @@ export interface components {
             empresa_id?: string | null;
             /** Username */
             username?: string | null;
+            /** Foto Url */
+            foto_url?: string | null;
             /** Roles */
             roles?: string[];
             /**
@@ -4732,6 +4734,8 @@ export interface components {
             username: string;
             /** Telefono */
             telefono?: string | null;
+            /** Foto Url */
+            foto_url?: string | null;
             /** Is Active */
             is_active: boolean;
             /** Email Verified */

@@ -15,6 +15,7 @@ function normalizeUser(raw: AuthUser): User {
     name: raw.name,
     email: raw.email,
     username: raw.username,
+    foto_url: raw.foto_url ?? null,
     roles: raw.roles ?? [],
     permissions: raw.permissions ?? [],
     modulos: raw.modulos ?? [],
