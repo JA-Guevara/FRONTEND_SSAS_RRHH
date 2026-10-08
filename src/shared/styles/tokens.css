@@ -14,6 +14,17 @@
   --accent: #d9f36f;
   --accent-dark: #b9d64a;
 
+  /* Planes de suscripción */
+  --plan-basic: #5b6b8c;
+  --plan-basic-bg: #f3f5fa;
+  --plan-premium-bg: linear-gradient(155deg, #0b3d2a 0%, #0d4932 45%, #145a3f 100%);
+  --plan-premium-ink: #f4f1e6;
+  --plan-premium-muted: #c9d6cd;
+  --gold-300: #f7dc8a;
+  --gold-500: #e3b448;
+  --gold-700: #8a6510;
+  --gold-glow: rgba(227, 180, 72, 0.45);
+
   /* Neutros */
   --ink: #17211c;
   --ink-2: #3d4a43;
