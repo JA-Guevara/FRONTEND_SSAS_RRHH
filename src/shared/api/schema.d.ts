@@ -264,6 +264,158 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/chatbot/articulos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Articles
+         * @description Lista los artículos de conocimiento de la empresa.
+         */
+        get: operations["list_articles_api_v1_chatbot_articulos_get"];
+        put?: never;
+        /**
+         * Create Article
+         * @description Crea un artículo de conocimiento e indexa sus fragmentos.
+         */
+        post: operations["create_article_api_v1_chatbot_articulos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chatbot/articulos/{article_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Article
+         * @description Obtiene un artículo publicado de la empresa.
+         */
+        get: operations["read_article_api_v1_chatbot_articulos__article_id__get"];
+        /**
+         * Update Article
+         * @description Actualiza un artículo de la empresa y reindexa sus fragmentos.
+         */
+        put: operations["update_article_api_v1_chatbot_articulos__article_id__put"];
+        post?: never;
+        /**
+         * Delete Article
+         * @description Elimina un artículo y sus fragmentos indexados.
+         */
+        delete: operations["delete_article_api_v1_chatbot_articulos__article_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chatbot/sugerencias": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Suggestions
+         * @description Sugiere títulos de artículos relacionados con la ayuda.
+         */
+        get: operations["suggestions_api_v1_chatbot_sugerencias_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chatbot/publico/{slug}/sugerencias": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Public Suggestions
+         * @description Sugiere títulos públicos del portal de la empresa.
+         */
+        get: operations["public_suggestions_api_v1_chatbot_publico__slug__sugerencias_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chatbot/publico/{slug}/articulos/{article_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Public Read Article
+         * @description Obtiene un artículo público del portal de la empresa.
+         */
+        get: operations["public_read_article_api_v1_chatbot_publico__slug__articulos__article_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chatbot/mensajes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Message
+         * @description Responde a una pregunta usando la base de conocimiento de la empresa.
+         */
+        post: operations["message_api_v1_chatbot_mensajes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chatbot/publico/{slug}/mensajes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Public Message
+         * @description Responde a una pregunta usando solo el contenido público del portal.
+         */
+        post: operations["public_message_api_v1_chatbot_publico__slug__mensajes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/bitacora": {
         parameters: {
             query?: never;
@@ -392,6 +544,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/empleados": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar empleados
+         * @description Lista los empleados de la empresa con filtros por nombre, código, estado y cargo.
+         */
+        get: operations["listar_empleados_api_v1_empleados_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/empleados/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Obtener empleado
+         * @description Obtiene la ficha detallada de un empleado, incluyendo datos laborales, personales y bancarios.
+         */
+        get: operations["obtener_empleado_api_v1_empleados__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/habilidades": {
         parameters: {
             query?: never;
@@ -449,7 +641,7 @@ export interface paths {
         };
         /**
          * Plantilla
-         * @description Operación de importación CSV limitada a la empresa autorizada.
+         * @description Operación de importación CSV/Excel limitada a la empresa autorizada.
          */
         get: operations["plantilla_api_v1_importaciones__kind__plantilla_get"];
         put?: never;
@@ -471,7 +663,7 @@ export interface paths {
         put?: never;
         /**
          * Previsualizar
-         * @description Operación de importación CSV limitada a la empresa autorizada.
+         * @description Operación de importación CSV/Excel limitada a la empresa autorizada.
          */
         post: operations["previsualizar_api_v1_importaciones__kind__previsualizar_post"];
         delete?: never;
@@ -491,7 +683,7 @@ export interface paths {
         put?: never;
         /**
          * Confirmar
-         * @description Operación de importación CSV limitada a la empresa autorizada.
+         * @description Operación de importación CSV/Excel limitada a la empresa autorizada.
          */
         post: operations["confirmar_api_v1_importaciones__kind__confirmar_post"];
         delete?: never;
@@ -802,6 +994,46 @@ export interface paths {
         get: operations["consultar_postulacion_publica_api_v1_publico_postulaciones__codigo__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publico/postulaciones/{codigo}/entrevista": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar Entrevista
+         * @description Consulta pública de la entrevista programada de una postulación.
+         */
+        get: operations["consultar_entrevista_api_v1_publico_postulaciones__codigo__entrevista_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publico/postulaciones/{codigo}/entrevista/confirmar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirmar Entrevista
+         * @description Confirma de forma pública una entrevista programada.
+         */
+        post: operations["confirmar_entrevista_api_v1_publico_postulaciones__codigo__entrevista_confirmar_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1332,46 +1564,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/empleados": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Empleados
-         * @description Empleados dentro de la empresa autorizada. Requiere permiso específico; plataforma debe indicar empresa_id.
-         */
-        get: operations["empleados_api_v1_empleados_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/empleados/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Empleado
-         * @description Empleado dentro de la empresa autorizada. Requiere permiso específico; plataforma debe indicar empresa_id.
-         */
-        get: operations["empleado_api_v1_empleados__id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/postulantes/{id}/banco-talento": {
         parameters: {
             query?: never;
@@ -1402,8 +1594,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Asociar
-         * @description Asociar dentro de la empresa autorizada. Requiere permiso específico; plataforma debe indicar empresa_id.
+         * Asociar postulante del banco
+         * @description Asocia un postulante del banco de talentos a una vacante activa (CU-18).
          */
         post: operations["asociar_api_v1_postulantes__id__postulaciones_post"];
         delete?: never;
@@ -1518,6 +1710,26 @@ export interface paths {
         get: operations["catalogo_api_v1_reportes_catalogo_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reportes/interpretar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Interpretar
+         * @description Interpreta texto; no envía filas ni el catálogo al proveedor de IA.
+         */
+        post: operations["interpretar_api_v1_reportes_interpretar_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2464,6 +2676,40 @@ export interface components {
              */
             fecha_analisis: string;
         };
+        /** ArticleInput */
+        ArticleInput: {
+            /** Titulo */
+            titulo: string;
+            /** Contenido */
+            contenido: string;
+            /**
+             * Categoria
+             * @default General
+             */
+            categoria: string;
+            /**
+             * Publico
+             * @default false
+             */
+            publico: boolean;
+            /**
+             * Publicado
+             * @default false
+             */
+            publicado: boolean;
+        };
+        /**
+         * AsociacionResponse
+         * @description Resultado de asociar un postulante del banco de talentos a una vacante (CU-18).
+         */
+        AsociacionResponse: {
+            /** Id */
+            id: string;
+            /** Vacante Id */
+            vacante_id: string;
+            /** Estado */
+            estado: string;
+        };
         /** AsociarRequest */
         AsociarRequest: {
             /**
@@ -2613,7 +2859,10 @@ export interface components {
         };
         /** Body_confirmar_api_v1_importaciones__kind__confirmar_post */
         Body_confirmar_api_v1_importaciones__kind__confirmar_post: {
-            /** Archivo */
+            /**
+             * Archivo
+             * Format: binary
+             */
             archivo: string;
             /** Sha256 */
             sha256: string;
@@ -2646,6 +2895,7 @@ export interface components {
             anios_experiencia: number;
             /**
              * Cv
+             * Format: binary
              * @description Archivo CV en PDF o DOCX, maximo 5 MB.
              */
             cv: string;
@@ -2654,7 +2904,10 @@ export interface components {
         };
         /** Body_previsualizar_api_v1_importaciones__kind__previsualizar_post */
         Body_previsualizar_api_v1_importaciones__kind__previsualizar_post: {
-            /** Archivo */
+            /**
+             * Archivo
+             * Format: binary
+             */
             archivo: string;
         };
         /** CambiarEtapaRequest */
@@ -2742,6 +2995,11 @@ export interface components {
             current_password: string;
             /** New Password */
             new_password: string;
+        };
+        /** ChatInput */
+        ChatInput: {
+            /** Pregunta */
+            pregunta: string;
         };
         /** CheckoutRequest */
         CheckoutRequest: {
@@ -2990,6 +3248,101 @@ export interface components {
             /** Updated At */
             updated_at?: string | null;
         };
+        /**
+         * EmpleadoDetalle
+         * @description Ficha completa del empleado. Incluye datos personales y bancarios.
+         */
+        EmpleadoDetalle: {
+            /** Id */
+            id: string;
+            /** Codigo */
+            codigo: string;
+            /** Nombres */
+            nombres: string;
+            /** Apellido Paterno */
+            apellido_paterno: string;
+            /** Apellido Materno */
+            apellido_materno?: string | null;
+            /** Cargo Nombre */
+            cargo_nombre?: string | null;
+            /**
+             * Fecha Ingreso
+             * Format: date
+             */
+            fecha_ingreso: string;
+            /** Estado */
+            estado: string;
+            /** Empresa Id */
+            empresa_id: string;
+            /** Ci */
+            ci: string;
+            /** Ci Expedido */
+            ci_expedido: string;
+            /** Fecha Nacimiento */
+            fecha_nacimiento?: string | null;
+            /** Genero */
+            genero?: string | null;
+            /** Estado Civil */
+            estado_civil?: string | null;
+            /** Direccion */
+            direccion?: string | null;
+            /** Telefono */
+            telefono?: string | null;
+            /** Email Personal */
+            email_personal?: string | null;
+            /** Contacto Emergencia */
+            contacto_emergencia?: string | null;
+            /** Telefono Emergencia */
+            telefono_emergencia?: string | null;
+            /** Nua Cua */
+            nua_cua?: string | null;
+            /** Afp */
+            afp?: string | null;
+            /** Banco */
+            banco?: string | null;
+            /** Numero Cuenta */
+            numero_cuenta?: string | null;
+            /** Tipo Cuenta */
+            tipo_cuenta?: string | null;
+            /** Fecha Salida */
+            fecha_salida?: string | null;
+            /** Motivo Salida */
+            motivo_salida?: string | null;
+            /** Foto Url */
+            foto_url?: string | null;
+            /**
+             * Fecha Registro
+             * Format: date-time
+             */
+            fecha_registro: string;
+            /** Postulacion Id */
+            postulacion_id?: string | null;
+        };
+        /**
+         * EmpleadoListItem
+         * @description Fila de la grilla de empleados.
+         */
+        EmpleadoListItem: {
+            /** Id */
+            id: string;
+            /** Codigo */
+            codigo: string;
+            /** Nombres */
+            nombres: string;
+            /** Apellido Paterno */
+            apellido_paterno: string;
+            /** Apellido Materno */
+            apellido_materno?: string | null;
+            /** Cargo Nombre */
+            cargo_nombre?: string | null;
+            /**
+             * Fecha Ingreso
+             * Format: date
+             */
+            fecha_ingreso: string;
+            /** Estado */
+            estado: string;
+        };
         /** EmpleadoResponse */
         EmpleadoResponse: {
             /** Id */
@@ -3011,6 +3364,13 @@ export interface components {
             fecha_ingreso: string;
             /** Estado */
             estado: string;
+        };
+        /** EmpleadosPage */
+        EmpleadosPage: {
+            /** Items */
+            items: components["schemas"]["EmpleadoListItem"][];
+            /** Total */
+            total: number;
         };
         /** EmpresaCreateData */
         EmpresaCreateData: {
@@ -3254,6 +3614,26 @@ export interface components {
             nombre_postulante?: string | null;
             /** Entrevistador Nombre */
             entrevistador_nombre?: string | null;
+        };
+        /** EntrevistaVisible */
+        EntrevistaVisible: {
+            /** Id */
+            id: string;
+            /**
+             * Fecha Hora
+             * Format: date-time
+             */
+            fecha_hora: string;
+            /** Duracion Min */
+            duracion_min: number;
+            /** Modalidad */
+            modalidad: string;
+            /** Lugar */
+            lugar: string | null;
+            /** Enlace Reunion */
+            enlace_reunion: string | null;
+            /** Estado */
+            estado: string;
         };
         /** EntrevistadorOpcion */
         EntrevistadorOpcion: {
@@ -3499,6 +3879,17 @@ export interface components {
             password: string;
             /** Telefono */
             telefono?: string | null;
+        };
+        /** InterpretarReporteRequest */
+        InterpretarReporteRequest: {
+            /** Texto */
+            texto: string;
+        };
+        /** InterpretarReporteResponse */
+        InterpretarReporteResponse: {
+            config: components["schemas"]["ReporteConfig"] | null;
+            /** Aclaracion */
+            aclaracion?: string | null;
         };
         /** LimitUsage */
         LimitUsage: {
@@ -4494,10 +4885,6 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
         };
         /** VerifyEmailSchema */
         VerifyEmailSchema: {
@@ -5056,6 +5443,305 @@ export interface operations {
             };
         };
     };
+    list_articles_api_v1_chatbot_articulos_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    create_article_api_v1_chatbot_articulos_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticleInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_article_api_v1_chatbot_articulos__article_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_article_api_v1_chatbot_articulos__article_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticleInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_article_api_v1_chatbot_articulos__article_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    suggestions_api_v1_chatbot_sugerencias_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    public_suggestions_api_v1_chatbot_publico__slug__sugerencias_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_read_article_api_v1_chatbot_publico__slug__articulos__article_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                article_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    message_api_v1_chatbot_mensajes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_message_api_v1_chatbot_publico__slug__mensajes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_audit_logs_api_v1_bitacora_get: {
         parameters: {
             query?: {
@@ -5552,6 +6238,75 @@ export interface operations {
             };
         };
     };
+    listar_empleados_api_v1_empleados_get: {
+        parameters: {
+            query?: {
+                empresa_id?: string | null;
+                q?: string | null;
+                estado?: string | null;
+                cargo_id?: string | null;
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmpleadosPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obtener_empleado_api_v1_empleados__id__get: {
+        parameters: {
+            query?: {
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmpleadoDetalle"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_habilidades_api_v1_habilidades_get: {
         parameters: {
             query?: {
@@ -5703,7 +6458,9 @@ export interface operations {
     };
     plantilla_api_v1_importaciones__kind__plantilla_get: {
         parameters: {
-            query?: never;
+            query?: {
+                formato?: string;
+            };
             header?: never;
             path: {
                 kind: string;
@@ -6945,6 +7702,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description El almacenamiento persistente de CV no esta disponible. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     consultar_postulacion_publica_api_v1_publico_postulaciones__codigo__get: {
@@ -6973,6 +7737,70 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    consultar_entrevista_api_v1_publico_postulaciones__codigo__entrevista_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigo: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntrevistaVisible"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirmar_entrevista_api_v1_publico_postulaciones__codigo__entrevista_confirmar_post: {
+        parameters: {
+            query: {
+                entrevista_id: string;
+            };
+            header?: never;
+            path: {
+                codigo: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntrevistaVisible"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -8093,72 +8921,6 @@ export interface operations {
             };
         };
     };
-    empleados_api_v1_empleados_get: {
-        parameters: {
-            query?: {
-                empresa_id?: string | null;
-                offset?: number;
-                limit?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EmpleadoResponse"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    empleado_api_v1_empleados__id__get: {
-        parameters: {
-            query?: {
-                empresa_id?: string | null;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EmpleadoResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     banco_api_v1_postulantes__id__banco_talento_patch: {
         parameters: {
             query?: {
@@ -8214,12 +8976,12 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AsociacionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -8660,6 +9422,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    interpretar_api_v1_reportes_interpretar_post: {
+        parameters: {
+            query?: {
+                empresa_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InterpretarReporteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterpretarReporteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
