@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
@@ -312,7 +312,7 @@ export function ConfiguracionEmpresaPage() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: 1000, margin: '2rem auto', padding: '0 1rem' }}>
+      <div className="page-stack">
         <LoadingBlock message="Cargando configuración de la empresa..." />
       </div>
     )
@@ -320,7 +320,7 @@ export function ConfiguracionEmpresaPage() {
 
   if (!activeEmpresaId) {
     return (
-      <div style={{ maxWidth: 1000, margin: '2rem auto', padding: '0 1rem' }}>
+      <div className="page-stack">
         <Alert tone="info" title="Sin empresa seleccionada">
           Debes pertenecer a una empresa o seleccionar una en la barra superior para configurar su perfil.
         </Alert>
@@ -331,41 +331,32 @@ export function ConfiguracionEmpresaPage() {
   const portalUrl = `/empleos/${form.slug || empresa?.slug || ''}`
 
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto', padding: '1.5rem 1rem 3rem' }}>
+    <div className="page-stack">
       <PageHeader
         eyebrow="Configuración institucional"
         title="Centro de configuración"
-        description="Administra la información, la marca y los parámetros legales de la empresa. Cada sección se guarda por separado."
+        subtitle="Administra la información, la marca y los parámetros legales de la empresa. Cada sección se guarda por separado."
       />
 
       {feedback && (
-        <div style={{ marginBottom: '1.25rem' }}>
-          <Alert tone={feedback.kind} title={feedback.kind === 'success' ? 'Guardado' : 'Error'}>
-            {feedback.message}
-          </Alert>
-        </div>
+        <Alert tone={feedback.kind} title={feedback.kind === 'success' ? 'Guardado' : 'Error'}>
+          {feedback.message}
+        </Alert>
       )}
 
-      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+      <div className="tabs" role="tablist">
         {TABS.map(({ key, label }) => (
           <button
             key={key}
             type="button"
+            role="tab"
+            aria-selected={tab === key}
             onClick={() => setTab(key)}
-            style={{
-              padding: '0.55rem 1rem',
-              borderRadius: '9999px',
-              border: tab === key ? '1px solid #166534' : '1px solid #e2e8f0',
-              background: tab === key ? '#f0fdf4' : '#ffffff',
-              color: tab === key ? '#166534' : '#475569',
-              fontWeight: 600,
-              fontSize: '0.875rem',
-              cursor: 'pointer',
-            }}
+            className={`tab ${tab === key ? 'active' : ''}`}
           >
             {label}
             {key !== 'legales' && dirtySections[key as 'general' | 'contacto' | 'visual' | 'portal'] && (
-              <span style={{ color: '#b45309', marginLeft: '0.35rem' }} aria-hidden="true">
+              <span className="badge badge-warning" aria-hidden="true">
                 {'\u2022'}
               </span>
             )}
@@ -374,9 +365,9 @@ export function ConfiguracionEmpresaPage() {
       </div>
 
       {tab === 'general' && (
-        <form onSubmit={handleSaveGeneral} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSaveGeneral} className="stack">
           <Panel title="Información general y legal" eyebrow="Datos de identificación fiscal y corporativa">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+            <div className="grid-2">
               <Field label="Razón social *">
                 <input className="input" value={form.razon_social} onChange={(e) => setField('razon_social', e.target.value)} required />
               </Field>
@@ -395,7 +386,7 @@ export function ConfiguracionEmpresaPage() {
                 />
               </Field>
             </div>
-            <div style={{ marginTop: '1rem' }}>
+            <div className="mt-4">
               <Field label="Descripción de la empresa / Acerca de nosotros">
                 <textarea
                   className="input"
@@ -416,9 +407,9 @@ export function ConfiguracionEmpresaPage() {
       )}
 
       {tab === 'contacto' && (
-        <form onSubmit={handleSaveContacto} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSaveContacto} className="stack">
           <Panel title="Contacto y ubicación" eyebrow="Datos visibles para los postulantes y el equipo">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+            <div className="grid-2">
               <Field label="Correo electrónico institucional">
                 <input type="email" className="input" value={form.email} onChange={(e) => setField('email', e.target.value)} />
               </Field>
@@ -442,52 +433,39 @@ export function ConfiguracionEmpresaPage() {
       )}
 
       {tab === 'visual' && (
-        <form onSubmit={handleSaveVisual} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSaveVisual} className="stack">
           <Panel title="Identidad visual y marca" eyebrow="Personalización corporativa">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', alignItems: 'flex-start' }}>
+            <div className="grid-2 items-start">
               <div>
                 <Field label="URL del logotipo (PNG, SVG, JPG)">
                   <input type="url" className="input" placeholder="https://ejemplo.com/logo.png" value={form.logo_url} onChange={(e) => setField('logo_url', e.target.value)} />
                 </Field>
-                <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div
-                    style={{
-                      width: 70,
-                      height: 70,
-                      borderRadius: '0.5rem',
-                      border: '1px solid #e2e8f0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: '#f8fafc',
-                      overflow: 'hidden',
-                    }}
-                  >
+                <div className="logo-preview-wrap">
+                  <div className="logo-preview-box">
                     {form.logo_url ? (
                       <img
                         src={form.logo_url}
                         alt="Vista previa del logotipo"
-                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                         onError={(e) => {
                           ;(e.target as HTMLElement).style.display = 'none'
                         }}
                       />
                     ) : (
-                      <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Sin logo</span>
+                      <span className="text-muted text-sm">Sin logo</span>
                     )}
                   </div>
-                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Vista previa del logotipo.</span>
+                  <span className="text-muted text-sm">Vista previa del logotipo.</span>
                 </div>
               </div>
 
               <div>
                 <Field label="Color primario de la marca">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div className="color-input-wrap">
                     <input
                       type="color"
+                      className="color-picker-input"
                       value={form.color_primario}
                       onChange={(e) => setField('color_primario', e.target.value)}
-                      style={{ width: 44, height: 40, padding: 2, borderRadius: '0.375rem', border: '1px solid #cbd5e1', cursor: 'pointer' }}
                     />
                     <input
                       type="text"
@@ -495,22 +473,12 @@ export function ConfiguracionEmpresaPage() {
                       value={form.color_primario}
                       onChange={(e) => setField('color_primario', e.target.value)}
                       placeholder="#176b4b"
-                      style={{ fontFamily: 'monospace' }}
                     />
                   </div>
                 </Field>
                 <div
-                  style={{
-                    marginTop: '0.75rem',
-                    padding: '0.65rem 1rem',
-                    borderRadius: '0.5rem',
-                    background: form.color_primario,
-                    color: '#ffffff',
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    textAlign: 'center',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  }}
+                  className="color-preview-sample"
+                  style={{ backgroundColor: form.color_primario }}
                 >
                   Muestra de botón principal ({form.color_primario})
                 </div>
@@ -526,55 +494,34 @@ export function ConfiguracionEmpresaPage() {
       )}
 
       {tab === 'portal' && (
-        <form onSubmit={handleSavePortal} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSavePortal} className="stack">
           <Panel title="Portal público de empleos" eyebrow="Exposición pública de ofertas laborales">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+            <div className="stack">
+              <label className="row">
                 <input
                   type="checkbox"
                   checked={form.portal_publico_activo}
                   onChange={(e) => setField('portal_publico_activo', e.target.checked)}
-                  style={{ width: 18, height: 18, cursor: 'pointer' }}
                 />
-                <span style={{ fontWeight: 600, color: '#1e293b' }}>
+                <span className="text-strong">
                   Habilitar portal público de empleo para esta empresa
                 </span>
               </label>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b' }}>
+              <p className="text-muted text-sm">
                 Si desactivas esta opción, los postulantes no podrán ver la lista de vacantes activas ni enviar candidaturas externas.
               </p>
               {form.portal_publico_activo && form.slug && (
-                <div
-                  style={{
-                    background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '0.5rem',
-                    padding: '1rem',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '0.75rem',
-                  }}
-                >
+                <div className="portal-info-box">
                   <div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569' }}>Dirección pública de tu portal de empleo:</div>
-                    <code style={{ fontSize: '0.9rem', color: '#0d9488', fontWeight: 600 }}>
+                    <div className="portal-url-label">Dirección pública de tu portal de empleo:</div>
+                    <code className="portal-url-code">
                       {window.location.origin}/empleos/{form.slug}
                     </code>
                   </div>
                   <Link
                     to={portalUrl}
                     target="_blank"
-                    style={{
-                      padding: '0.45rem 0.85rem',
-                      borderRadius: '0.375rem',
-                      background: '#0d9488',
-                      color: '#ffffff',
-                      fontWeight: 600,
-                      fontSize: '0.85rem',
-                      textDecoration: 'none',
-                    }}
+                    className="button button-primary"
                   >
                     Abrir portal
                   </Link>
@@ -591,13 +538,13 @@ export function ConfiguracionEmpresaPage() {
       )}
 
       {tab === 'legales' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="stack">
           <Panel
             title={editingPeriodoId ? 'Editar periodo de parámetros legales' : 'Registrar periodo de parámetros legales'}
             eyebrow="Vigencia y porcentajes de aportes y retenciones"
           >
             <form onSubmit={handleGuardarPeriodo}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              <div className="grid-2">
                 <Field label="Vigencia desde *">
                   <input type="date" className="input" value={periodoForm.vigencia_desde} onChange={(e) => setPeriodoField('vigencia_desde', e.target.value)} required />
                 </Field>
@@ -619,7 +566,7 @@ export function ConfiguracionEmpresaPage() {
                   </Field>
                 ))}
               </div>
-              <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <div className="form-actions mt-4">
                 {editingPeriodoId && (
                   <Button type="button" variant="ghost" onClick={cancelarEdicion}>
                     Cancelar edición
@@ -640,30 +587,17 @@ export function ConfiguracionEmpresaPage() {
                 Registra el primer periodo de parámetros legales para esta empresa.
               </Alert>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <div className="stack-sm">
                 {periodos.map((periodo) => (
-                  <div
-                    key={periodo.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '0.75rem',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '0.5rem',
-                      padding: '0.85rem 1rem',
-                      background: '#ffffff',
-                    }}
-                  >
+                  <div key={periodo.id} className="periodo-card">
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <strong style={{ fontSize: '0.9rem', color: '#1e293b' }}>
+                      <div className="row">
+                        <strong className="periodo-fechas">
                           {(periodo.vigencia_desde as string).slice(0, 10)} al {(periodo.vigencia_hasta as string).slice(0, 10)}
                         </strong>
                         {periodo.vigente && <Badge tone="success">Vigente</Badge>}
                       </div>
-                      <div style={{ marginTop: '0.35rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', fontSize: '0.8rem', color: '#475569' }}>
+                      <div className="periodo-metricas">
                         {PORCENTAJE_LABELS.map(({ field, label }) => (
                           <span key={field}>
                             {label.replace(' (%)', '')}:{' '}
@@ -705,19 +639,8 @@ function SectionFooter({
   hint: string
 }) {
   return (
-    <div
-      style={{
-        marginTop: '1.25rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '0.75rem',
-        flexWrap: 'wrap',
-        borderTop: '1px solid #eef2f7',
-        paddingTop: '1rem',
-      }}
-    >
-      <span style={{ fontSize: '0.82rem', color: dirty ? '#b45309' : '#94a3b8' }}>
+    <div className="section-footer">
+      <span className={`section-footer-hint ${dirty ? 'dirty' : ''}`}>
         {dirty ? 'Cambios sin guardar en esta sección' : hint}
       </span>
       <Button type="submit" variant="primary" loading={saving} disabled={!dirty}>

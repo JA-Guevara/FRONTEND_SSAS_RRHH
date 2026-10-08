@@ -1,0 +1,45 @@
+/* src/shared/styles/index.css
+   Punto de entrada único de estilos de la aplicación.
+   El orden de los imports define la cascada visual.
+   Regla: Toda feature puede tener su propia hoja <feature>.css en su raíz,
+   siempre que no declare :root ni colores literales fuera de tokens.css. */
+
+@import './tokens.css';
+@import './base.css';
+@import './utilities.css';
+
+/* Componentes compartidos del sistema */
+@import './components/button.css';
+@import './components/field.css';
+@import './components/table.css';
+@import './components/modal.css';
+@import './components/badge.css';
+@import './components/alert.css';
+@import './components/panel.css';
+@import './components/tabs.css';
+@import './components/toolbar.css';
+@import './components/pagination.css';
+@import './components/empty.css';
+@import './components/skeleton.css';
+@import './components/toast.css';
+
+/* Estructura y navegación de la aplicación */
+@import './layout/shell.css';
+@import './layout/nav.css';
+@import './layout/page.css';
+@import './layout/auth.css';
+
+/* Estilos de features */
+@import '../../features/suscripciones/suscripciones.css';
+@import '../../features/tablero/tablero.css';
+@import '../../features/tablero/tablero-ia.css';
+@import '../../features/portal/portal.css';
+@import '../../features/bitacora/bitacora.css';
+@import '../../features/usuarios/usuarios.css';
+@import '../../features/auth/auth.css';
+@import '../../features/reportes/reportes.css';
+@import '../../features/ayuda/ayuda.css';
+@import '../../features/entrevistas/entrevistas.css';
+@import '../../features/seleccion/seleccion.css';
+@import '../../features/respaldos/respaldos.css';
+@import '../../features/empresas/empresas.css';

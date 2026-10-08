@@ -1,0 +1,29 @@
+/* Estilos exclusivos del centro de ayuda y documentación interactiva (CU-34).
+   Prohibido: declarar :root, usar colores literales o estilar elementos de otra feature.
+   Todos los selectores empiezan con el prefijo o clase de esta feature. */
+
+.help-question-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: flex-start;
+  margin-top: var(--space-2);
+}
+
+.help-question-row input {
+  flex: 1 1 18rem;
+  min-width: min(18rem, 100%);
+}
+
+.help-topic-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.help-topic-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}

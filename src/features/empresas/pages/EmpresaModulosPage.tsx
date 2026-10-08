@@ -100,7 +100,7 @@ export function EmpresaModulosPage() {
           >
             <div className="card-grid">
               {opcionales.map((modulo) => (
-                <label key={modulo.id} className="card check-label" style={{ alignItems: 'start' }}>
+                <label key={modulo.id} className="card check-label items-start">
                   <input
                     type="checkbox"
                     checked={seleccion.has(modulo.codigo)}

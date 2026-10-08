@@ -1,0 +1,137 @@
+/* Estilos exclusivos de la feature usuarios y permisos (CU-01..CU-05).
+   Prohibido: declarar :root, usar colores literales o estilar elementos de otra feature.
+   Todos los selectores empiezan con el prefijo o clase de esta feature. */
+
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-2) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  background: var(--surface);
+}
+
+.check-grid .check-label {
+  align-items: center;
+  padding: var(--space-1) 0;
+}
+
+.checklist {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.checklist li::before {
+  display: inline-block;
+  width: 1.1em;
+  font-weight: 700;
+  content: '·';
+}
+
+.checklist li.cumple {
+  color: var(--success-ink);
+}
+
+.checklist li.cumple::before {
+  content: '✓';
+}
+
+.checklist li.pendiente {
+  color: var(--muted);
+}
+
+.checklist li.pendiente::before {
+  content: '○';
+}
+
+.role-permissions {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.permission-group {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+}
+
+.permission-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+}
+
+.permission-group-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.permission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.permission-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.permission-option.selected {
+  border-color: var(--brand-500);
+  background: var(--brand-50);
+}
+
+.permission-option input {
+  flex: 0 0 auto;
+  margin-top: var(--space-1);
+  accent-color: var(--brand);
+}
+
+.permission-option strong,
+.permission-option small {
+  display: block;
+}
+
+.permission-option small {
+  margin-top: var(--space-1);
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .check-grid,
+  .checklist,
+  .permission-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -13,6 +13,7 @@ type DataTableProps<T> = {
   columns: Column<T>[]
   rows: T[]
   rowKey: (row: T) => string
+  primaryColumn?: string
   loading?: boolean
   error?: string | null
   onRetry?: () => void
@@ -21,11 +22,12 @@ type DataTableProps<T> = {
   caption?: string
 }
 
-/** Tabla con los cuatro estados resueltos: cargando, error, vacío y con datos. */
+/** Tabla con los cuatro estados resueltos y soporte para tarjetas en móvil. */
 export function DataTable<T>({
   columns,
   rows,
   rowKey,
+  primaryColumn,
   loading = false,
   error = null,
   onRetry,
@@ -48,10 +50,12 @@ export function DataTable<T>({
     )
   }
 
+  const tableWrapClass = `table-wrap ${primaryColumn ? 'table-cards-mobile' : ''}`.trim()
+
   return (
-    <div className="table-wrap">
+    <div className={tableWrapClass}>
       <table className={className}>
-        {caption !== undefined && <caption className="sr-only">{caption}</caption>}
+        {caption !== undefined && <caption className="visually-hidden">{caption}</caption>}
         <thead>
           <tr>
             {columns.map((column) => (
@@ -82,11 +86,18 @@ export function DataTable<T>({
           {!loading &&
             rows.map((row) => (
               <tr key={rowKey(row)}>
-                {columns.map((column) => (
-                  <td key={column.key} className={column.align === 'right' ? 'cell-right' : undefined}>
-                    {column.render(row)}
-                  </td>
-                ))}
+                {columns.map((column) => {
+                  const headerLabel = typeof column.header === 'string' ? column.header : column.key
+                  return (
+                    <td
+                      key={column.key}
+                      data-label={headerLabel}
+                      className={column.align === 'right' ? 'cell-right' : undefined}
+                    >
+                      {column.render(row)}
+                    </td>
+                  )
+                })}
               </tr>
             ))}
         </tbody>

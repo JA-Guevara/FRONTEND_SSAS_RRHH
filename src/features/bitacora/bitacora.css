@@ -1,0 +1,61 @@
+/* Estilos exclusivos de la feature bitácora de auditoría (CU-24).
+   Prohibido: declarar :root, usar colores literales o estilar elementos de otra feature.
+   Todos los selectores empiezan con el prefijo o clase de esta feature. */
+
+.audit-table {
+  min-width: 1000px;
+}
+
+.audit-table th,
+.audit-table td {
+  vertical-align: top;
+}
+
+.audit-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  align-items: end;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+}
+
+.audit-detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+  background: var(--surface);
+}
+
+.audit-detail strong {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.audit-detail pre {
+  overflow: auto;
+  min-height: 70px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  color: var(--ink);
+  background: var(--paper);
+  font: var(--text-xs) / 1.5 var(--font-mono);
+  white-space: pre-wrap;
+}
+
+.audit-detail small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .audit-filters,
+  .audit-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,6 +1,4 @@
-/* Punto de entrada de estilos. El orden importa: tokens, base, componentes, layout.
-   Ninguna feature debe importar su propio CSS ni declarar un segundo :root. */
-@import './tokens.css';
-@import './base.css';
-@import './components.css';
-@import './layout.css';
+/* src/shared/styles/global.css
+   Punto de entrada maestro de estilos delegando a index.css.
+   Toda regla respeta los tokens del sistema visual de SSAS RRHH. */
+@import './index.css';

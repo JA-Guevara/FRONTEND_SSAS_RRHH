@@ -1,0 +1,47 @@
+/* Pestañas de navegación de contenido (Tabs). */
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: var(--space-5);
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: var(--space-3) 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: var(--text-base);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+.tab.selected,
+.tab.active,
+.tab[aria-selected='true'] {
+  border-bottom-color: var(--brand);
+  color: var(--brand);
+}
+
+.tab .badge {
+  margin-left: var(--space-2);
+}

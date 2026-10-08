@@ -14,8 +14,8 @@ export function LoginPage() {
       {realm === 'tenant' ? (
         <>
           <p className="auth-link"><Link to="/recuperar-clave">¿Olvidaste tu contraseña?</Link></p>
-          <p className="auth-link" style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #e2e8f0' }}>
-            ¿No tienes cuenta? <Link to="/registro" style={{ fontWeight: 600 }}>Registra tu empresa aquí</Link>
+          <p className="auth-link auth-link-divider">
+            ¿No tienes cuenta? <Link to="/registro" className="text-strong">Registra tu empresa aquí</Link>
           </p>
         </>
       ) : (

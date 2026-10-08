@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { perfilApi } from '../api/perfilApi'
-import { Alert, Badge, Button, Field, Panel } from '../../../shared/components'
+import { Alert, Badge, Button, Field, PageHeader, Panel } from '../../../shared/components'
 import type { components } from '../../../shared/api/schema'
 
 type Perfil = components['schemas']['UsuarioResponse']
@@ -73,14 +73,11 @@ export function MiPerfilPage() {
 
   return (
     <section className="page-stack">
-      <div>
-        <p className="eyebrow">Mi cuenta</p>
-        <h1>Mi perfil</h1>
-        <p className="page-description">
-          Consulta y actualiza tu información personal. Los datos de seguridad se gestionan por
-          separado.
-        </p>
-      </div>
+      <PageHeader
+        title="Mi perfil"
+        eyebrow="Mi cuenta"
+        subtitle="Consulta y actualiza tu información personal. Los datos de seguridad se gestionan por separado."
+      />
 
       {message !== null && <Alert tone="success" title="Perfil actualizado">{message}</Alert>}
       {errorMessage !== null && <Alert tone="error" title="No se pudo guardar">{errorMessage}</Alert>}
@@ -90,7 +87,7 @@ export function MiPerfilPage() {
       ) : loadError !== null ? (
         <Alert tone="error" title="Error al cargar el perfil">
           {loadError}
-          <div style={{ marginTop: '0.75rem' }}>
+          <div className="pt-2">
             <Button variant="secondary" size="sm" onClick={() => void cargar()}>
               Reintentar
             </Button>
@@ -98,7 +95,7 @@ export function MiPerfilPage() {
         </Alert>
       ) : perfil !== null ? (
         <>
-          <div style={{ display: 'grid', gap: '1.25rem', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', alignItems: 'start' }}>
+          <div className="grid-2 items-start">
             <Panel title="Información personal" eyebrow="Datos editables de tu cuenta">
               <form onSubmit={guardar} className="form-stack">
                 <Field label="Nombre *">
@@ -127,7 +124,7 @@ export function MiPerfilPage() {
                     placeholder="+591 7 1234567"
                   />
                 </Field>
-                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <div className="form-actions">
                   <Button variant="primary" type="submit" loading={saving}>
                     Guardar cambios
                   </Button>
@@ -135,7 +132,7 @@ export function MiPerfilPage() {
               </form>
             </Panel>
 
-            <div style={{ display: 'grid', gap: '1.25rem' }}>
+            <div className="stack">
               <Panel title="Cuenta y acceso" eyebrow="Identidad de inicio de sesión">
                 <dl className="detail-list">
                   <div><dt>Correo electrónico</dt><dd>{perfil.email}</dd></div>
@@ -158,7 +155,7 @@ export function MiPerfilPage() {
                   <div>
                     <dt>Roles</dt>
                     <dd>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                      <div className="badge-list">
                         {(perfil.roles ?? []).map((rol) => <Badge key={rol} tone="brand">{rol}</Badge>)}
                       </div>
                     </dd>
@@ -167,15 +164,17 @@ export function MiPerfilPage() {
               </Panel>
 
               <Panel title="Seguridad" eyebrow="Contraseña y acceso">
-                <p className="page-description" style={{ marginBottom: '0.75rem' }}>
+                <p className="page-description">
                   Cambia tu contraseña o gestiona el estado de tu cuenta desde la pantalla de
                   seguridad.
                 </p>
-                <Link to="/cambiar-clave">
-                  <Button variant="secondary">
-                    Cambiar contraseña
-                  </Button>
-                </Link>
+                <div className="pt-2">
+                  <Link to="/cambiar-clave">
+                    <Button variant="secondary">
+                      Cambiar contraseña
+                    </Button>
+                  </Link>
+                </div>
               </Panel>
             </div>
           </div>

@@ -1,0 +1,82 @@
+/* Estados de carga, vacío y error. */
+
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-6);
+  background: var(--paper);
+  text-align: center;
+}
+
+.empty-state h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.empty-state p {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--muted);
+}
+
+.empty-state > .button {
+  margin-top: var(--space-2);
+}
+
+.empty-table {
+  padding: var(--space-8);
+  color: var(--muted);
+  text-align: center;
+}
+
+.inline-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--line);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: ssas-spin 0.8s linear infinite;
+}
+
+.spinner-sm {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-width: 2px;
+}
+
+@keyframes ssas-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-block {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10);
+  color: var(--muted);
+}
+
+.full-page-status {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-4);
+  color: var(--muted);
+}

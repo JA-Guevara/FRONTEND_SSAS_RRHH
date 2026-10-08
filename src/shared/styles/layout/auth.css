@@ -1,0 +1,121 @@
+/* Disposición y presentación de pantallas de acceso y autenticación. */
+
+.auth-page {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: minmax(0, 1.1fr) minmax(420px, 0.9fr);
+}
+
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(2rem, 6vw, 6rem);
+  color: var(--paper);
+  background:
+    radial-gradient(circle at 80% 20%, var(--brand-500) 0, transparent 35%),
+    var(--brand-dark);
+}
+
+.auth-brand h1 {
+  max-width: 760px;
+  margin-bottom: var(--space-8);
+  font-size: var(--text-display);
+}
+
+.auth-brand p:not(.eyebrow) {
+  max-width: 610px;
+  color: var(--brand-100);
+  font-size: var(--text-md);
+  line-height: 1.7;
+}
+
+.auth-brand .eyebrow {
+  color: var(--accent);
+}
+
+.auth-panel {
+  display: grid;
+  place-items: center;
+  padding: clamp(1.5rem, 5vw, 4rem);
+  background: var(--paper);
+}
+
+.auth-card {
+  width: min(100%, 440px);
+}
+
+.auth-card h2 {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-2xl);
+}
+
+.auth-description {
+  margin-bottom: var(--space-8);
+  color: var(--muted);
+}
+
+.auth-link {
+  margin-top: var(--space-6);
+  color: var(--muted);
+  font-size: var(--text-base);
+  text-align: center;
+}
+
+.auth-link-divider {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.realm-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1);
+  border-radius: var(--radius-md);
+  padding: var(--space-1);
+  background: var(--surface);
+}
+
+.realm-selector button {
+  min-height: var(--control-h-sm);
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  background: transparent;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.realm-selector button.selected {
+  color: var(--paper);
+  background: var(--brand);
+}
+
+@media (max-width: 1024px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-brand {
+    min-height: 0;
+    gap: var(--space-4);
+    padding: var(--space-5);
+  }
+
+  .auth-brand h1 {
+    margin-bottom: 0;
+    font-size: var(--text-2xl);
+  }
+
+  .auth-brand p:not(.eyebrow) {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .auth-panel {
+    padding: var(--space-5) var(--space-4);
+  }
+}

@@ -1,0 +1,56 @@
+/* Estilos exclusivos de la feature reportes con voz y texto (CU-31, CU-32).
+   Prohibido: declarar :root, usar colores literales o estilar elementos de otra feature.
+   Todos los selectores empiezan con el prefijo o clase de esta feature. */
+
+.report-query {
+  display: grid;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--space-5);
+}
+
+.report-query-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.report-privacy {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.report-interpretation {
+  margin-bottom: var(--space-4);
+  color: var(--muted);
+}
+
+.report-interpretation strong {
+  color: var(--ink);
+}
+
+.report-builder-list {
+  display: grid;
+  gap: var(--space-3);
+  margin-block: var(--space-5);
+}
+
+.report-filter-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) minmax(180px, 2fr) auto;
+  gap: var(--space-2);
+  align-items: end;
+}
+
+@media (max-width: 640px) {
+  .report-filter-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.report-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

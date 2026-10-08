@@ -1,0 +1,151 @@
+/* Diálogos modales y capas de superposición. */
+
+.modal-backdrop {
+  position: fixed;
+  z-index: var(--z-backdrop);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgba(13, 73, 50, 0.42);
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  position: relative;
+  z-index: var(--z-modal);
+  display: grid;
+  gap: var(--space-4);
+  width: min(100%, 540px);
+  max-height: calc(100vh - var(--space-8));
+  overflow-y: auto;
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  background: var(--paper);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-sm {
+  width: min(100%, 400px);
+}
+
+.modal-lg {
+  width: min(100%, 760px);
+}
+
+.modal-xl {
+  width: min(100%, 960px);
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.modal-body {
+  min-width: 0;
+}
+
+.modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.modal form > .modal-footer,
+.modal > .modal-footer {
+  position: sticky;
+  bottom: calc(var(--space-6) * -1);
+  margin: var(--space-2) calc(var(--space-6) * -1) calc(var(--space-6) * -1);
+  border-top: 1px solid var(--line);
+  padding: var(--space-4) var(--space-6);
+  background: var(--paper);
+}
+
+@media (max-width: 640px) {
+  .modal-backdrop {
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    max-height: 100dvh;
+    border-radius: 0;
+    padding: var(--space-4);
+  }
+
+  .modal-header h2 {
+    overflow-wrap: anywhere;
+  }
+
+  .modal-footer .button {
+    flex: 1 1 auto;
+  }
+
+  .modal form > .modal-footer,
+  .modal > .modal-footer {
+    bottom: calc(var(--space-4) * -1);
+    margin: var(--space-2) calc(var(--space-4) * -1) calc(var(--space-4) * -1);
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+/* Cajón lateral (Drawer) */
+.drawer-backdrop {
+  position: fixed;
+  z-index: var(--z-modal);
+  inset: 0;
+  background: rgba(13, 73, 50, 0.42);
+  backdrop-filter: blur(4px);
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: min(100%, 420px);
+  background: var(--paper);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  transition: transform 0.25s var(--ease-out);
+}
+
+.drawer-right {
+  right: 0;
+}
+
+.drawer-left {
+  left: 0;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.drawer-header h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+  color: var(--ink);
+}
+
+.drawer-body {
+  padding: var(--space-4);
+  flex: 1;
+}

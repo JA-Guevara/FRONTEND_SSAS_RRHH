@@ -1,0 +1,48 @@
+/* Controles de paginación para tablas y listados. */
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.pagination-info {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pagination-page {
+  min-width: var(--control-h-sm);
+  min-height: var(--control-h-sm);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-2);
+  color: var(--ink-2);
+  background: var(--paper);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pagination-page[aria-current='page'] {
+  border-color: var(--brand);
+  color: var(--paper);
+  background: var(--brand);
+}
+
+.pagination-page:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}

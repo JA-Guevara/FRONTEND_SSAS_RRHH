@@ -1,100 +1,262 @@
 import { useEffect, useState } from 'react'
+import {
+  Award,
+  BriefcaseBusiness,
+  Building2,
+  Users,
+  UsersRound,
+} from 'lucide-react'
 import { getDashboardResumen } from '../../features/dashboard/api/dashboardApi'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import type { components } from '../../shared/api/schema'
+import {
+  Badge,
+  Card,
+  DataTable,
+  PageHeader,
+  Stat,
+  type Column,
+} from '../../shared/components'
 
 type Dashboard = components['schemas']['ResumenDashboardResponse']
+type BitacoraItem = NonNullable<Dashboard['bitacora_reciente']>[number]
 
 export function DashboardPage() {
   const { user } = useAuth()
   const isPlatform = user?.realm === 'platform'
   const [data, setData] = useState<Dashboard | null>(null)
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
-    void getDashboardResumen().then((result) => {
-      if (active) setData(result)
-    }).catch((cause: unknown) => {
-      if (active) setError(cause instanceof Error ? cause.message : 'No se pudo cargar el resumen.')
-    })
-    return () => { active = false }
+    setLoading(true)
+    void getDashboardResumen()
+      .then((result) => {
+        if (active) {
+          setData(result)
+          setError(null)
+        }
+      })
+      .catch((cause: unknown) => {
+        if (active) {
+          setError(cause instanceof Error ? cause.message : 'No se pudo cargar el resumen.')
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
   }, [])
 
   const empresa = data?.empresa
   const plataforma = data?.plataforma
 
-  const vacantesActivas = (empresa?.vacantes_por_estado.PUBLICADA ?? 0) + (empresa?.vacantes_por_estado.PAUSADA ?? 0)
-  const totalPostulaciones = Object.values(empresa?.postulaciones_por_etapa ?? {}).reduce((sum, n) => sum + n, 0)
-  const metricas = isPlatform
-    ? [
-        ['Empresas activas', plataforma?.empresas_activas ?? 0],
-        ['Empresas suspendidas', plataforma?.empresas_suspendidas ?? 0],
-        ['Vacantes publicadas', plataforma?.vacantes_publicadas ?? 0],
-        ['Postulaciones del mes', plataforma?.postulaciones_del_mes ?? 0],
-        ['Usuarios totales', plataforma?.usuarios_totales ?? 0],
-        ['Empresas eliminadas', plataforma?.empresas_eliminadas ?? 0],
-      ]
-    : [
-        ['Usuarios activos', empresa?.usuarios_activos ?? 0],
-        ['Usuarios inactivos', empresa?.usuarios_inactivos ?? 0],
-        ['Vacantes publicadas', empresa?.vacantes_por_estado.PUBLICADA ?? 0],
-        ['Vacantes activas', vacantesActivas],
-        ['Total postulaciones', totalPostulaciones],
-        ['Cargos registrados', empresa?.cargos ?? 0],
-      ]
+  const vacantesActivas =
+    (empresa?.vacantes_por_estado.PUBLICADA ?? 0) + (empresa?.vacantes_por_estado.PAUSADA ?? 0)
+  const totalPostulaciones = Object.values(empresa?.postulaciones_por_etapa ?? {}).reduce(
+    (sum, n) => sum + n,
+    0,
+  )
+
+  const fechaHoy = new Intl.DateTimeFormat('es-BO', {
+    dateStyle: 'full',
+  }).format(new Date())
+
   const etapas = Object.entries(empresa?.postulaciones_por_etapa ?? {})
+  const maxEtapa = Math.max(...etapas.map(([, v]) => v), 1)
+
+  const vacantesPorEstado = Object.entries(empresa?.vacantes_por_estado ?? {})
+  const maxVacantes = Math.max(...vacantesPorEstado.map(([, v]) => v), 1)
+
+  const activityColumns: Column<BitacoraItem>[] = [
+    {
+      key: 'fecha',
+      header: 'Fecha',
+      render: (row) => (
+        <span className="text-sm text-muted">
+          {new Date(row.fecha).toLocaleString('es-BO', {
+            dateStyle: 'short',
+            timeStyle: 'short',
+          })}
+        </span>
+      ),
+    },
+    {
+      key: 'modulo',
+      header: 'Módulo',
+      render: (row) => <Badge tone="info">{row.modulo}</Badge>,
+    },
+    {
+      key: 'accion',
+      header: 'Acción',
+      render: (row) => <strong className="text-sm">{row.accion}</strong>,
+    },
+    {
+      key: 'actor',
+      header: 'Actor',
+      render: (row) => <span className="text-sm">{row.actor ?? 'Sistema'}</span>,
+    },
+  ]
 
   return (
-    <section className="page-stack" aria-labelledby="dashboard-title">
-      <div>
-        <p className="eyebrow">Panel principal</p>
-        <h1 id="dashboard-title">Hola, {user?.name}</h1>
-        <p className="page-description">
-          {isPlatform
-            ? 'Administra empresas desde los servicios globales de la plataforma.'
-            : 'Administra usuarios, roles, vacantes y eventos de auditoría de tu empresa.'}
-        </p>
-      </div>
-      {error && <p className="form-error" role="alert">{error}</p>}
-      <div className="card-grid">{metricas.map(([label, value], index) => <article className="card" key={label}><span className="card-number">{String(index + 1).padStart(2, '0')}</span><h2>{label}</h2><p className="dashboard-metric">{value}</p></article>)}</div>
-      {!isPlatform && etapas.length > 0 && (
-        <section className="panel">
-          <div className="panel-heading"><h2>Postulaciones por etapa</h2><span className="panel-count">{totalPostulaciones} total</span></div>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>Etapa</th><th>Postulaciones</th></tr></thead>
-              <tbody>
-                {etapas.map(([etapa, cantidad]) => (
-                  <tr key={etapa}>
-                    <td>{etapa}</td>
-                    <td>{cantidad}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+    <div className="page-stack">
+      <PageHeader
+        eyebrow="Panel principal"
+        title={`Hola, ${user?.name ?? 'Usuario'}`}
+        subtitle={`Resumen operativo al ${fechaHoy}`}
+      />
+
+      {error && <p className="alert alert-error" role="alert">{error}</p>}
+
+      {/* Tarjetas Stat principales */}
+      <section aria-label="Métricas clave" className="card-grid">
+        {isPlatform ? (
+          <>
+            <Stat
+              label="Empresas activas"
+              value={plataforma?.empresas_activas ?? (loading ? '—' : 0)}
+              tone="success"
+              icon={<Building2 size={20} />}
+            />
+            <Stat
+              label="Vacantes publicadas"
+              value={plataforma?.vacantes_publicadas ?? (loading ? '—' : 0)}
+              tone="brand"
+              icon={<BriefcaseBusiness size={20} />}
+            />
+            <Stat
+              label="Postulaciones del mes"
+              value={plataforma?.postulaciones_del_mes ?? (loading ? '—' : 0)}
+              tone="default"
+              icon={<Users size={20} />}
+            />
+            <Stat
+              label="Usuarios totales"
+              value={plataforma?.usuarios_totales ?? (loading ? '—' : 0)}
+              tone="warning"
+              icon={<UsersRound size={20} />}
+            />
+          </>
+        ) : (
+          <>
+            <Stat
+              label="Vacantes activas"
+              value={vacantesActivas}
+              tone="brand"
+              icon={<BriefcaseBusiness size={20} />}
+            />
+            <Stat
+              label="Total postulaciones"
+              value={totalPostulaciones}
+              tone="success"
+              icon={<Users size={20} />}
+            />
+            <Stat
+              label="Usuarios activos"
+              value={empresa?.usuarios_activos ?? (loading ? '—' : 0)}
+              tone="default"
+              icon={<UsersRound size={20} />}
+            />
+            <Stat
+              label="Cargos definidos"
+              value={empresa?.cargos ?? (loading ? '—' : 0)}
+              tone="warning"
+              icon={<Award size={20} />}
+            />
+          </>
+        )}
+      </section>
+
+      {/* Gráficos visuales SVG */}
+      {!isPlatform && (
+        <section aria-label="Gráficos del proceso" className="grid-2">
+          {/* Embudo de postulaciones */}
+          <Card title="Embudo de selección" subtitle={`${totalPostulaciones} candidatos en proceso`}>
+            {etapas.length === 0 ? (
+              <p className="text-muted text-sm">Sin postulaciones registradas aún.</p>
+            ) : (
+              <div className="stack-sm">
+                {etapas.map(([etapa, cantidad]) => {
+                  const pct = Math.round((cantidad / maxEtapa) * 100)
+                  return (
+                    <div key={etapa} className="stack-sm">
+                      <div className="row-between text-sm">
+                        <span className="text-strong">{etapa}</span>
+                        <span className="text-muted">{cantidad}</span>
+                      </div>
+                      <svg width="100%" height="10" role="img" aria-label={`${etapa}: ${cantidad}`}>
+                        <rect width="100%" height="10" rx="5" fill="var(--surface-2)" />
+                        <rect
+                          width={`${pct}%`}
+                          height="10"
+                          rx="5"
+                          fill="var(--brand)"
+                        />
+                      </svg>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </Card>
+
+          {/* Vacantes por estado */}
+          <Card title="Vacantes por estado" subtitle="Distribución en los procesos">
+            {vacantesPorEstado.length === 0 ? (
+              <p className="text-muted text-sm">Sin vacantes registradas.</p>
+            ) : (
+              <div className="stack-sm">
+                {vacantesPorEstado.map(([estado, cantidad]) => {
+                  const pct = Math.round((cantidad / maxVacantes) * 100)
+                  const toneColor =
+                    estado === 'PUBLICADA'
+                      ? 'var(--brand)'
+                      : estado === 'PAUSADA'
+                      ? 'var(--warning)'
+                      : estado === 'CERRADA'
+                      ? 'var(--muted)'
+                      : 'var(--brand-500)'
+                  return (
+                    <div key={estado} className="stack-sm">
+                      <div className="row-between text-sm">
+                        <span className="text-strong">{estado}</span>
+                        <span className="text-muted">{cantidad}</span>
+                      </div>
+                      <svg width="100%" height="10" role="img" aria-label={`${estado}: ${cantidad}`}>
+                        <rect width="100%" height="10" rx="5" fill="var(--surface-2)" />
+                        <rect
+                          width={`${pct}%`}
+                          height="10"
+                          rx="5"
+                          fill={toneColor}
+                        />
+                      </svg>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </Card>
         </section>
       )}
-      <section className="panel">
-        <div className="panel-heading"><h2>Actividad reciente</h2><span className="panel-count">{data?.bitacora_reciente?.length ?? 0} eventos</span></div>
-        <div className="table-wrap">
-          <table>
-            <thead><tr><th>Fecha</th><th>Módulo</th><th>Acción</th><th>Actor</th></tr></thead>
-            <tbody>
-              {data?.bitacora_reciente?.map((item) => (
-                <tr key={item.id}>
-                  <td>{new Date(item.fecha).toLocaleString('es-BO')}</td>
-                  <td>{item.modulo}</td>
-                  <td>{item.accion}</td>
-                  <td>{item.actor ?? 'Sistema'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {data !== null && data.bitacora_reciente?.length === 0 && <div className="empty-table">No hay actividad reciente.</div>}
-        </div>
-      </section>
-    </section>
+
+      {/* Actividad reciente */}
+      <Card
+        title="Actividad reciente"
+        subtitle={`${data?.bitacora_reciente?.length ?? 0} eventos registrados en el sistema`}
+      >
+        <DataTable
+          columns={activityColumns}
+          rows={data?.bitacora_reciente ?? []}
+          rowKey={(r) => r.id}
+          loading={loading}
+          primaryColumn="accion"
+          emptyMessage="No se registra actividad reciente."
+        />
+      </Card>
+    </div>
   )
 }

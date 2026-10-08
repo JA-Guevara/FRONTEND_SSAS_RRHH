@@ -1,0 +1,20 @@
+/* Estilos exclusivos de autenticación y formularios de acceso.
+   Prohibido: declarar :root, usar colores literales o estilar elementos de otra feature. */
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.user-form > label {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.company-form {
+  display: grid;
+  gap: var(--space-5);
+}

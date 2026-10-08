@@ -1,0 +1,57 @@
+/* Barra de herramientas, filtros y búsqueda de listados (Toolbar). */
+
+.toolbar,
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+  align-items: end;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+
+.toolbar-dense {
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
+}
+
+.toolbar label,
+.filters label {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.toolbar-actions,
+.filters-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.toolbar .check-label,
+.filters .check-label {
+  display: flex;
+  min-height: var(--control-h);
+  align-self: end;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.toolbar .check-label input,
+.filters .check-label input {
+  width: 1rem;
+  min-height: 1rem;
+  margin: 0;
+  flex: 0 0 1rem;
+}
+
+@media (max-width: 640px) {
+  .toolbar,
+  .filters {
+    grid-template-columns: 1fr;
+  }
+}

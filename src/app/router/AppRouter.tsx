@@ -30,6 +30,7 @@ import { MiPerfilPage } from '../../features/perfil/pages/MiPerfilPage'
 import { EntrevistasPage } from '../../features/entrevistas/pages/EntrevistasPage'
 import { SeleccionPage } from '../../features/seleccion/pages/SeleccionPage'
 import { AyudaPage } from '../../features/ayuda/pages/AyudaPage'
+import { SistemaVisualPage } from '../../features/dev/pages/SistemaVisualPage'
 import { FullPageStatus } from '../../shared/components'
 import { RequireAccess } from '../guards/RequireAccess'
 import { RequireRealm } from '../guards/RequireRealm'
@@ -182,6 +183,10 @@ export function AppRouter() {
         />
         <Route path="seleccion" element={empresa(<SeleccionPage />, 'RECLUTAMIENTO', ['postulaciones:ver', 'platform:postulaciones:ver'])} />
         <Route path="vacantes/:id/seleccion" element={empresa(<SeleccionPage />, 'RECLUTAMIENTO', ['postulaciones:ver', 'platform:postulaciones:ver'])} />
+
+        {import.meta.env.DEV && (
+          <Route path="sistema-visual" element={<SistemaVisualPage />} />
+        )}
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>

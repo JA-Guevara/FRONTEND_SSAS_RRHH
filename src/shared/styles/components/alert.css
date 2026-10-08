@@ -1,0 +1,53 @@
+/* Avisos, mensajes de retroalimentación y alertas. */
+
+.alert {
+  display: grid;
+  gap: var(--space-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+}
+
+.alert-error,
+.form-error {
+  margin: 0;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--danger);
+  color: var(--danger-ink);
+  background: var(--danger-bg);
+  font-size: var(--text-base);
+}
+
+.alert-warning {
+  margin: 0;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--warning);
+  color: var(--warning-ink);
+  background: var(--warning-bg);
+  font-size: var(--text-base);
+}
+
+.alert-success,
+.success-message {
+  border: 1px solid var(--success);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  color: var(--success-ink);
+  background: var(--success-bg);
+}
+
+.alert-info,
+.notice {
+  border-left: 3px solid var(--brand);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  color: var(--brand-dark);
+  background: var(--brand-50);
+}
+
+.content-alert {
+  margin: 0;
+}

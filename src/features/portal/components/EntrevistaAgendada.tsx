@@ -71,13 +71,13 @@ export function EntrevistaAgendada({ codigo }: Props) {
   }
 
   return (
-    <section aria-label="Entrevista agendada" className="panel flow-sm mt-4">
-      <div className="flex-between">
-        <h3 className="text-lg font-semibold">Entrevista agendada</h3>
+    <section aria-label="Entrevista agendada" className="panel stack-sm">
+      <div className="row-between">
+        <h3 className="text-lg text-strong">Entrevista agendada</h3>
         <EstadoBadge estado={entrevista.estado} />
       </div>
 
-      <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
+      <div className="grid-2 text-sm">
         <div>
           <span className="text-muted">Fecha y hora:</span>{' '}
           <strong>{formatearFechaHora(entrevista.fecha_hora) ?? entrevista.fecha_hora}</strong>
@@ -97,7 +97,7 @@ export function EntrevistaAgendada({ codigo }: Props) {
               href={entrevista.enlace_reunion}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary underline"
+              className="text-sm"
             >
               Unirse a la reunión
             </a>

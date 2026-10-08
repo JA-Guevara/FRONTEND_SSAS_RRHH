@@ -57,7 +57,7 @@ export function EmpleadoDetalleModal({ empleadoId, empresaId, onClose }: Props) 
       {!loading && empleado && (
         <div className="form-stack">
           <Panel title="Datos laborales">
-            <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
+            <div className="grid-2 text-sm">
               <div>
                 <span className="text-muted">Código:</span> <strong>{mostrar(empleado.codigo)}</strong>
               </div>
@@ -87,7 +87,7 @@ export function EmpleadoDetalleModal({ empleadoId, empresaId, onClose }: Props) 
           </Panel>
 
           <Panel title="Datos personales">
-            <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
+            <div className="grid-2 text-sm">
               <div>
                 <span className="text-muted">CI:</span>{' '}
                 <strong>
@@ -110,14 +110,14 @@ export function EmpleadoDetalleModal({ empleadoId, empresaId, onClose }: Props) 
               <div>
                 <span className="text-muted">Teléfono:</span> <strong>{mostrar(empleado.telefono)}</strong>
               </div>
-              <div className="md:col-span-2">
+              <div className="col-span-full">
                 <span className="text-muted">Correo personal:</span> <strong>{mostrar(empleado.email_personal)}</strong>
               </div>
             </div>
           </Panel>
 
           <Panel title="Contacto de emergencia">
-            <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
+            <div className="grid-2 text-sm">
               <div>
                 <span className="text-muted">Contacto:</span> <strong>{mostrar(empleado.contacto_emergencia)}</strong>
               </div>
@@ -128,7 +128,7 @@ export function EmpleadoDetalleModal({ empleadoId, empresaId, onClose }: Props) 
           </Panel>
 
           <Panel title="Datos de pago">
-            <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
+            <div className="grid-2 text-sm">
               <div>
                 <span className="text-muted">NUA / CUA:</span> <strong>{mostrar(empleado.nua_cua)}</strong>
               </div>
@@ -141,7 +141,7 @@ export function EmpleadoDetalleModal({ empleadoId, empresaId, onClose }: Props) 
               <div>
                 <span className="text-muted">Tipo de cuenta:</span> <strong>{mostrar(empleado.tipo_cuenta)}</strong>
               </div>
-              <div className="md:col-span-2">
+              <div className="col-span-full">
                 <span className="text-muted">Número de cuenta:</span>{' '}
                 <strong>{enmascararCuenta(empleado.numero_cuenta)}</strong>
               </div>
@@ -152,7 +152,7 @@ export function EmpleadoDetalleModal({ empleadoId, empresaId, onClose }: Props) 
             <div className="pt-2">
               <Link
                 to={'/seleccion?postulacion=' + empleado.postulacion_id}
-                className="text-primary underline text-sm"
+                className="text-sm"
               >
                 Ver proceso de selección
               </Link>
