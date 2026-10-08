@@ -10,6 +10,13 @@ export default defineConfig({
       '.up.railway.app',
       'localhost',
     ],
+    proxy: {
+      '/api': {
+        target: 'https://backendssasrrhh-production.up.railway.app',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   server: {
     allowedHosts: [
