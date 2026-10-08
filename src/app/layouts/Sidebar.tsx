@@ -130,18 +130,122 @@ export function Sidebar({
       </nav>
 
       <div className="sidebar-user">
-        <div className="row-between">
-          <div className="truncate">
-            <span className="truncate text-strong">
-              {user?.name}
-            </span>
-            <small>{user?.email}</small>
+        {menuUsuarioOpen && (
+          <div className="sidebar-user-dropdown" role="menu" aria-label="Menú de cuenta">
+            <div className="sidebar-dropdown-header">
+              <div className="sidebar-dropdown-name truncate">{user?.name}</div>
+              <div className="sidebar-dropdown-email truncate">{user?.email}</div>
+            </div>
+
+            <Link
+              to="/cuenta?tab=perfil"
+              className="sidebar-dropdown-link"
+              role="menuitem"
+              onClick={() => {
+                setMenuUsuarioOpen(false)
+                onCloseMenu()
+              }}
+            >
+              <UserIcon size={16} />
+              <span>Mi perfil</span>
+            </Link>
+
+            <Link
+              to="/cuenta?tab=seguridad"
+              className="sidebar-dropdown-link"
+              role="menuitem"
+              onClick={() => {
+                setMenuUsuarioOpen(false)
+                onCloseMenu()
+              }}
+            >
+              <Shield size={16} />
+              <span>Seguridad</span>
+            </Link>
+
+            <Link
+              to="/cuenta?tab=preferencias"
+              className="sidebar-dropdown-link"
+              role="menuitem"
+              onClick={() => {
+                setMenuUsuarioOpen(false)
+                onCloseMenu()
+              }}
+            >
+              <Palette size={16} />
+              <span>Preferencias</span>
+            </Link>
+
+            <Link
+              to="/cuenta?tab=notificaciones"
+              className="sidebar-dropdown-link"
+              role="menuitem"
+              onClick={() => {
+                setMenuUsuarioOpen(false)
+                onCloseMenu()
+              }}
+            >
+              <Bell size={16} />
+              <span>Notificaciones</span>
+            </Link>
+
+            <Link
+              to="/cuenta?tab=sesiones"
+              className="sidebar-dropdown-link"
+              role="menuitem"
+              onClick={() => {
+                setMenuUsuarioOpen(false)
+                onCloseMenu()
+              }}
+            >
+              <Laptop size={16} />
+              <span>Sesiones activas</span>
+            </Link>
+
+            <div className="sidebar-dropdown-divider" />
+
+            <div className="sidebar-dropdown-footer">
+              <span className="sidebar-dropdown-email">Tema:</span>
+              <ThemeToggle />
+            </div>
+
+            <div className="sidebar-dropdown-divider" />
+
+            <button
+              type="button"
+              className="sidebar-dropdown-link"
+              role="menuitem"
+              onClick={() => {
+                setMenuUsuarioOpen(false)
+                onLogout()
+              }}
+            >
+              <LogOut size={16} />
+              <span>Cerrar sesión</span>
+            </button>
           </div>
-          <ThemeToggle />
-        </div>
-        <Button variant="quiet" onClick={onLogout}>
-          Cerrar sesión
-        </Button>
+        )}
+
+        <button
+          type="button"
+          className="sidebar-avatar-trigger"
+          aria-expanded={menuUsuarioOpen}
+          aria-haspopup="menu"
+          onClick={() => setMenuUsuarioOpen(!menuUsuarioOpen)}
+        >
+          <Avatar src={user?.foto_url} name={user?.name} id={user?.id} size="sm" />
+          <div className="sidebar-avatar-meta">
+            <span className="sidebar-avatar-name truncate">{user?.name}</span>
+            <span className="sidebar-avatar-role truncate">
+              {esPlataforma ? 'Plataforma' : (user?.roles?.[0] ?? 'Usuario')}
+            </span>
+          </div>
+          {menuUsuarioOpen ? (
+            <ChevronDown size={16} className="sidebar-avatar-chevron" />
+          ) : (
+            <ChevronUp size={16} className="sidebar-avatar-chevron" />
+          )}
+        </button>
       </div>
     </aside>
   )
