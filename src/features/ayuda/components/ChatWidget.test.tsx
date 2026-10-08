@@ -21,3 +21,19 @@ test('opens, asks the public API and shows the source', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Política' }))
   expect(await screen.findByText('Texto aprobado')).toBeInTheDocument()
 })
+
+test('shows a safe navigation link returned with a guided answer', async () => {
+  vi.mocked(chatbotApi.ask).mockResolvedValue({
+    respuesta: 'Hay una vacante publicada.',
+    fuentes: [],
+    enlaces: [{ titulo: 'Ver vacantes', ruta: '/empleos/empresa' }],
+    sin_respuesta: false,
+  })
+  render(<ChatWidget slug="empresa" />)
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir asistente' }))
+  fireEvent.change(screen.getByRole('textbox', { name: 'Pregunta para el asistente' }), { target: { value: 'Hay vacantes?' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar pregunta' }))
+
+  expect(await screen.findByText('Hay una vacante publicada.')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Ver vacantes' })).toHaveAttribute('href', '/empleos/empresa')
+})

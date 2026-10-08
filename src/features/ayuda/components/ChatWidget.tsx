@@ -3,7 +3,7 @@ import { ArrowLeft, MessageCircle, Send, X } from 'lucide-react'
 import { chatbotApi, type ChatAnswer, type KnowledgeArticle } from '../api/chatbotApi'
 import './chat-widget.css'
 
-type Message = { id: number; role: 'user' | 'assistant'; text: string; sources?: ChatAnswer['fuentes'] }
+type Message = { id: number; role: 'user' | 'assistant'; text: string; sources?: ChatAnswer['fuentes']; links?: ChatAnswer['enlaces'] }
 
 export function ChatWidget({ slug }: { slug?: string }) {
   const [open, setOpen] = useState(false)
@@ -36,7 +36,7 @@ export function ChatWidget({ slug }: { slug?: string }) {
     setLoading(true)
     try {
       const answer = await chatbotApi.ask(text, slug)
-      setMessages(previous => [...previous, { id: Date.now() + 1, role: 'assistant', text: answer.respuesta, sources: answer.fuentes }])
+      setMessages(previous => [...previous, { id: Date.now() + 1, role: 'assistant', text: answer.respuesta, sources: answer.fuentes, links: answer.enlaces }])
     } catch (cause) {
       setQuestion(text)
       setError(cause instanceof Error ? cause.message : 'No se pudo enviar la pregunta.')
@@ -67,6 +67,7 @@ export function ChatWidget({ slug }: { slug?: string }) {
         {messages.map(item => <div key={item.id} className={`chat-bubble ${item.role}`}>
           <p>{item.text}</p>
           {item.sources && item.sources.length > 0 && <div className="chat-sources">Fuentes: {item.sources.map(source => <button key={source.id} type="button" onClick={() => void openSource(source.id)}>{source.titulo}</button>)}</div>}
+          {item.links && item.links.length > 0 && <div className="chat-links">{item.links.map(link => <a key={link.ruta} href={link.ruta}>{link.titulo}</a>)}</div>}
         </div>)}
         {loading && <p className="chat-status">Consultando…</p>}
         {sourceLoading && <p className="chat-status">Abriendo fuente…</p>}

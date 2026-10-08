@@ -1,6 +1,11 @@
 import { apiRequest } from '../../../shared/api/httpClient'
 
-export type ChatAnswer = { respuesta: string; fuentes: { id: string; titulo: string }[]; sin_respuesta: boolean }
+export type ChatAnswer = {
+  respuesta: string
+  fuentes: { id: string; titulo: string }[]
+  enlaces?: { titulo: string; ruta: string }[]
+  sin_respuesta: boolean
+}
 export type KnowledgeArticle = { id: string; titulo: string; contenido: string; categoria: string; publico: boolean; publicado: boolean; actualizado_en: string }
 export type ArticleInput = Omit<KnowledgeArticle, 'id' | 'actualizado_en'>
 
