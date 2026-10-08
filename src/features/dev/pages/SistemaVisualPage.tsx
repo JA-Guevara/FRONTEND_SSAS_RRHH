@@ -260,6 +260,24 @@ export function SistemaVisualPage() {
               </div>
             </div>
           </section>
+
+          <section className="stack">
+            <h2 className="text-lg text-strong">Superficie Invertida (Barra Lateral) — WCAG AA / AAA</h2>
+            <div className="grid-auto">
+              <div className="card text-center" style={{ background: 'var(--bg-inverse)', color: 'var(--on-inverse)' }}>
+                <strong>--on-inverse (#eaf3ee)</strong>
+                <p className="text-sm">Texto principal (9.20 : 1 · AAA)</p>
+              </div>
+              <div className="card text-center" style={{ background: 'var(--bg-inverse)', color: 'var(--on-inverse-muted)' }}>
+                <strong>--on-inverse-muted (#9dbdad)</strong>
+                <p className="text-sm">Rótulos y pistas (5.12 : 1 · AA)</p>
+              </div>
+              <div className="card text-center" style={{ background: 'var(--bg-inverse)', color: 'var(--accent)' }}>
+                <strong>--accent (#d9f36f)</strong>
+                <p className="text-sm">Enlace activo (8.43 : 1 · AAA)</p>
+              </div>
+            </div>
+          </section>
         </div>
       )}
 

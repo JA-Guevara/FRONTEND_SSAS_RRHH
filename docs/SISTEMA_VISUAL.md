@@ -40,7 +40,19 @@ Todos los valores visuales se consumen mediante variables CSS declaradas en `src
 | `--line` | `#dce2dc` | `#2a332d` | Bordes sutiles y divisores |
 | `--line-strong`| `#b4c0b6` | `#3b463f` | Bordes de inputs y tablas |
 
-### 1.4 Puntos de Quiebre (Breakpoints)
+### 1.4 Superficie Invertida (Barra Lateral y Zonas Oscuras Fijas)
+La barra lateral utiliza `--bg-inverse` (`--brand-900`: `#0d4932`) de forma constante en tema claro y oscuro. Para garantizar conformidad **WCAG AA/AAA (≥ 4.5:1 / ≥ 7.0:1)**, ningún elemento dentro de la barra puede usar `--ink` o `--muted`.
+
+| Token | Valor | Ratio vs `#0d4932` | WCAG | Propósito |
+|---|---|---|---|---|
+| `--on-inverse` | `#eaf3ee` | **9.20 : 1** | AAA | Texto principal y enlaces normales |
+| `--on-inverse-muted`| `#9dbdad` | **5.12 : 1** | AA | Rótulos de grupo, pistas y subtítulos |
+| `--on-inverse-subtle`| `rgba(255,255,255,0.60)` | — | — | Iconos inactivos |
+| `--on-inverse-hover` | `rgba(255,255,255,0.10)` | — | — | Fondo hover de enlaces |
+| `--on-inverse-active`| `rgba(217,243,111,0.16)`| — | — | Fondo activo |
+| `--accent` | `#d9f36f` | **8.43 : 1** | AAA | Enlace activo destacado |
+
+### 1.5 Puntos de Quiebre (Breakpoints)
 La escala es **móvil-primero** (`min-width`) y utiliza exclusivamente 4 escalones:
 - `640px` (`sm`): Teléfono grande
 - `768px` (`md`): Tableta vertical / pantalla mediana
