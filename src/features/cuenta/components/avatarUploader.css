@@ -14,6 +14,10 @@
   background-color: var(--brand-50);
 }
 
+.avatar-uploader-file-input {
+  display: none;
+}
+
 .avatar-uploader-main {
   display: flex;
   align-items: center;

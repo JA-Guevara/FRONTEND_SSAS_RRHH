@@ -1,0 +1,329 @@
+.cuenta-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .cuenta-layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+}
+
+.cuenta-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  background-color: var(--surface);
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+}
+
+@media (max-width: 768px) {
+  .cuenta-tabs {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: var(--space-1);
+  }
+}
+
+.cuenta-tab-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  white-space: nowrap;
+}
+
+.cuenta-tab-button:hover {
+  background-color: var(--surface-2);
+  color: var(--ink);
+}
+
+.cuenta-tab-button.active {
+  background-color: var(--brand-50);
+  color: var(--brand-700);
+  font-weight: 600;
+}
+
+.cuenta-content {
+  background-color: var(--paper);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.cuenta-section-header {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cuenta-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cuenta-avatar-wrap {
+  margin-bottom: var(--space-6);
+}
+
+.cuenta-status-msg {
+  margin-bottom: var(--space-4);
+}
+
+.cuenta-security-form {
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cuenta-pref-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 500px;
+}
+
+.cuenta-section-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.cuenta-section-desc {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  margin: 0;
+}
+
+.cuenta-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.cuenta-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.cuenta-field label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.cuenta-field input,
+.cuenta-field select {
+  height: var(--control-h);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--paper);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.cuenta-field input:focus,
+.cuenta-field select:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: var(--focus-ring);
+}
+
+.cuenta-field input:disabled {
+  background-color: var(--surface-2);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.cuenta-strength-meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.cuenta-strength-bars {
+  display: flex;
+  gap: var(--space-1);
+  height: 6px;
+}
+
+.cuenta-strength-bar {
+  flex: 1;
+  border-radius: var(--radius-full);
+  background-color: var(--surface-2);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.cuenta-strength-bar.weak {
+  background-color: var(--danger);
+}
+
+.cuenta-strength-bar.medium {
+  background-color: var(--warning);
+}
+
+.cuenta-strength-bar.strong {
+  background-color: var(--success);
+}
+
+.cuenta-policy-list {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.cuenta-policy-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cuenta-policy-item.met {
+  color: var(--success-ink);
+}
+
+.cuenta-sesiones-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cuenta-sesion-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--surface);
+  gap: var(--space-4);
+}
+
+.cuenta-sesion-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cuenta-sesion-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cuenta-sesion-device {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cuenta-sesion-meta {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.cuenta-badge-current {
+  font-size: var(--text-xs);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background-color: var(--brand-100);
+  color: var(--brand-700);
+  font-weight: 600;
+}
+
+.cuenta-actividad-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cuenta-actividad-item {
+  display: flex;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cuenta-actividad-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--brand);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.cuenta-actividad-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.cuenta-actividad-desc {
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.cuenta-actividad-meta {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  display: flex;
+  gap: var(--space-3);
+}
+
+.cuenta-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cuenta-toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cuenta-toggle-title {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.cuenta-toggle-desc {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}

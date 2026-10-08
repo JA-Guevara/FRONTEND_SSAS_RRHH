@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent } from 'react'
-import { Camera, Trash2, UploadCloud } from 'lucide-react'
+import { Trash2, UploadCloud } from 'lucide-react'
 import { Avatar } from '../../../shared/components/avatar/Avatar'
 import { Button } from '../../../shared/components'
 import './avatarUploader.css'
@@ -111,18 +111,18 @@ export function AvatarUploader({
               ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              style={{ display: 'none' }}
+              className="avatar-uploader-file-input"
               onChange={handleInputChange}
               disabled={disabled || isProcessing}
             />
 
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
-              icon={UploadCloud}
               disabled={disabled || isProcessing}
               onClick={() => fileInputRef.current?.click()}
             >
+              <UploadCloud size={16} aria-hidden="true" />
               {isProcessing ? 'Procesando...' : fotoUrl ? 'Cambiar foto' : 'Subir foto'}
             </Button>
 
@@ -130,10 +130,10 @@ export function AvatarUploader({
               <Button
                 variant="danger"
                 size="sm"
-                icon={Trash2}
                 disabled={disabled || isProcessing}
                 onClick={() => void handleDelete()}
               >
+                <Trash2 size={16} aria-hidden="true" />
                 Eliminar
               </Button>
             )}
