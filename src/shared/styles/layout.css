@@ -45,6 +45,12 @@
   gap: var(--space-1);
   margin-top: var(--space-8);
   overflow-y: auto;
+  /* Sigue desplazándose con rueda o dedo, pero sin mostrar la barra. */
+  scrollbar-width: none;
+}
+
+.main-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-group,
@@ -373,7 +379,12 @@
     max-height: 100dvh;
     padding: var(--space-3) var(--space-4);
     overflow-y: auto;
+    scrollbar-width: none;
     box-shadow: var(--shadow-sm);
+  }
+
+  .sidebar::-webkit-scrollbar {
+    display: none;
   }
 
   .mobile-menu-toggle {
