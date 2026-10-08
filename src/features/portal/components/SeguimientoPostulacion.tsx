@@ -4,6 +4,7 @@ import { Alert, Button, EstadoBadge, Field, Panel } from '../../../shared/compon
 import type { components } from '../../../shared/api/schema'
 import { consultarPostulacion } from '../api/portalApi'
 import { enPalabras, formatearFecha } from '../utils/formato'
+import { EntrevistaAgendada } from './EntrevistaAgendada'
 
 type Seguimiento = components['schemas']['SeguimientoPostulacionResponse']
 
@@ -108,6 +109,7 @@ export function SeguimientoPostulacion({ volverHref }: Props) {
                 </span>
               </div>
             </div>
+            <EntrevistaAgendada codigo={resultado.codigo_seguimiento} />
           </div>
         )}
       </div>

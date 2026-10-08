@@ -77,3 +77,18 @@ export function formatearFecha(valor: string | null | undefined): string | null 
   if (!anio || !mes || !dia) return null
   return FECHA_LARGA.format(new Date(anio, mes - 1, dia))
 }
+
+const FECHA_HORA = new Intl.DateTimeFormat('es-BO', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
+export function formatearFechaHora(valor: string | null | undefined): string | null {
+  if (!valor) return null
+  const d = new Date(valor)
+  return isNaN(d.getTime()) ? null : FECHA_HORA.format(d)
+}
+

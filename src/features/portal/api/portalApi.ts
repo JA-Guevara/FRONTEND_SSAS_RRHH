@@ -142,3 +142,29 @@ export async function consultarPostulacion(codigo: string) {
   )
 }
 
+export type EntrevistaPublica = {
+  id: string
+  fecha_hora: string
+  duracion_min: number
+  modalidad: string
+  lugar: string | null
+  enlace_reunion: string | null
+  estado: string
+}
+
+/** CU-15: consulta la próxima entrevista agendada de una postulación. */
+export async function consultarEntrevista(codigo: string) {
+  return publicRequest<EntrevistaPublica>(
+    `/api/v1/publico/postulaciones/${encodeURIComponent(codigo)}/entrevista`,
+  )
+}
+
+/** CU-15: el postulante confirma su asistencia a la entrevista. */
+export async function confirmarEntrevista(codigo: string) {
+  return publicRequest<EntrevistaPublica>(
+    `/api/v1/publico/postulaciones/${encodeURIComponent(codigo)}/entrevista/confirmar`,
+    { method: 'POST' },
+  )
+}
+
+
