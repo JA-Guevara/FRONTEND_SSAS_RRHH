@@ -102,7 +102,7 @@
 }
 
 .company-scope-hint {
-  color: var(--muted);
+  color: var(--on-inverse-muted);
   font-size: var(--text-xs);
   line-height: 1.4;
 }
@@ -173,7 +173,7 @@
 
 .sidebar-user small {
   overflow: hidden;
-  color: var(--brand-100);
+  color: var(--on-inverse-muted);
   text-overflow: ellipsis;
 }
 

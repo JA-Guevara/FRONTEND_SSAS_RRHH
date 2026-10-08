@@ -146,8 +146,17 @@ export function AppRouter() {
         />
         <Route
           path="reportes"
-          element={empresa(<ReportesPage />, 'REPORTES', ['reportes:ver', 'platform:reportes:gestionar'])}
+          element={empresa(<ReportesPage initialTab="panel" />, 'REPORTES', ['reportes:ver', 'platform:reportes:gestionar'])}
         />
+        <Route
+          path="reportes/explorar"
+          element={empresa(<ReportesPage initialTab="explorar" />, 'REPORTES', ['reportes:ver', 'platform:reportes:gestionar'])}
+        />
+        <Route
+          path="reportes/construir"
+          element={empresa(<ReportesPage initialTab="construir" />, 'REPORTES', ['reportes:crear', 'platform:reportes:gestionar'])}
+        />
+
         <Route
           path="organizacion"
           element={empresa(<OrganizacionPage />, 'ORGANIZACION', [

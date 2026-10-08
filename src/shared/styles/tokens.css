@@ -35,6 +35,17 @@
   --surface: #f4f6f3;
   --surface-2: #eef2ed;
 
+  /* ---------- Superficie invertida ----------
+     La barra lateral es oscura en los dos temas. Todo lo que va encima
+     usa ESTOS tokens, nunca --ink, --muted ni --ink-2. */
+  --bg-inverse: var(--brand-900);
+  --on-inverse: #eaf3ee;
+  --on-inverse-muted: #9dbdad;
+  --on-inverse-subtle: rgba(255, 255, 255, 0.60);
+  --on-inverse-line: rgba(255, 255, 255, 0.14);
+  --on-inverse-hover: rgba(255, 255, 255, 0.10);
+  --on-inverse-active: rgba(217, 243, 111, 0.16);
+
   /* Semánticos: un único valor por significado en todo el producto */
   --success: #17b26a;
   --success-bg: #effaf4;
@@ -49,6 +60,17 @@
   --info-bg: #eff4ff;
   --info-ink: #1849a9;
   --neutral-dot: #98a2b3;
+
+  /* Series y gráficos de reportes (§6.3) */
+  --serie-1: #1f8259;
+  --serie-2: #2a78d6;
+  --serie-3: #eda100;
+  --rampa-1: #e6f1eb;
+  --rampa-2: #278c65;
+  --rampa-3: #1f8259;
+  --rampa-4: #176b4b;
+  --rampa-5: #0d4932;
+
 
   /* Puntos de quiebre (escala única y nombrada) */
   --bp-sm: 640px;
@@ -166,6 +188,14 @@
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
     --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --serie-1: #3fa87c;
+    --serie-2: #3987e5;
+    --serie-3: #c98500;
+    --rampa-1: #0d4932;
+    --rampa-2: #176b4b;
+    --rampa-3: #1f8259;
+    --rampa-4: #278c65;
+    --rampa-5: #3fa87c;
     color-scheme: dark;
   }
 }
@@ -192,5 +222,14 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --serie-1: #3fa87c;
+  --serie-2: #3987e5;
+  --serie-3: #c98500;
+  --rampa-1: #0d4932;
+  --rampa-2: #176b4b;
+  --rampa-3: #1f8259;
+  --rampa-4: #278c65;
+  --rampa-5: #3fa87c;
   color-scheme: dark;
 }
+

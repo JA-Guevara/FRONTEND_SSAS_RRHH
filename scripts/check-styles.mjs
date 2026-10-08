@@ -121,6 +121,21 @@ for (const file of cssFiles) {
         }
       }
     }
+
+    // Check forbidden normal text tokens on inverted surfaces
+    if (relPath.endsWith('layout/nav.css') || relPath.endsWith('layout/shell.css')) {
+      if (/\bcolor:\s*var\(--(ink|ink-2|muted|line)\)/.test(stripped)) {
+        // Only error if it's in nav.css or under sidebar in shell.css
+        if (relPath.endsWith('layout/nav.css') || index < 110 || (index > 164 && index < 240)) {
+          errors.push({
+            type: 'INVALID_INVERSE_COLOR',
+            file: relPath,
+            line: index + 1,
+            detail: `Zona invertida (sidebar/nav) no debe usar --ink/--muted/--line. Use tokens --on-inverse-*`,
+          })
+        }
+      }
+    }
   })
 }
 
