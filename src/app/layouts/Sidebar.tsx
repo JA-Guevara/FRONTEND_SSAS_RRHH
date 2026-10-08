@@ -1,5 +1,18 @@
-import { Menu, X } from 'lucide-react'
-import { Button } from '../../shared/components'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  Bell,
+  ChevronDown,
+  ChevronUp,
+  Laptop,
+  LogOut,
+  Menu,
+  Palette,
+  Shield,
+  User as UserIcon,
+  X,
+} from 'lucide-react'
+import { Avatar } from '../../shared/components/avatar/Avatar'
 import type { NavItem } from '../access/navigation'
 import type { User } from '../../features/auth/context/AuthContext'
 import type { components } from '../../shared/api/schema'
@@ -38,6 +51,7 @@ export function Sidebar({
   onClearCompany,
 }: SidebarProps) {
   const esPlataforma = user?.realm === 'platform'
+  const [menuUsuarioOpen, setMenuUsuarioOpen] = useState(false)
 
   function handleCompanyChange(id: string) {
     if (id === '') {
