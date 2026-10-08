@@ -1,0 +1,7 @@
+
+> frontend_ssas_rrhh@0.0.0 check:api
+> node scripts/check-api-contract.mjs
+
+Ô£¿ openapi-typescript 7.13.0
+­ƒÜÇ http://127.0.0.1:8012/openapi.json ÔåÆ C:\Users\JOSEG_~1\AppData\Local\Temp\ssas-openapi-LelAE1\schema.d.ts [243.4ms]
+OpenAPI contract is synchronized.

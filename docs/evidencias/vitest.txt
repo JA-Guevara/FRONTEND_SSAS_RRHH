@@ -1,0 +1,44 @@
+
+> frontend_ssas_rrhh@0.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/Uagrm/2 - 2026/Sistemas de Informacion II/Proyecto Princial/frontend_ssas_rrhh[39m
+
+ [32mÔ£ô[39m src/features/usuarios/utils/passwordPolicy.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mÔ£ô[39m src/features/seleccion/api/seleccionApi.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32mÔ£ô[39m src/features/ayuda/components/ChatWidget.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 369[2mms[22m[39m
+ [32mÔ£ô[39m src/features/empleados/components/EmpleadoDetalleModal.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 294[2mms[22m[39m
+ [32mÔ£ô[39m src/features/portal/components/EntrevistaAgendada.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 476[2mms[22m[39m
+ [32mÔ£ô[39m src/features/empleados/pages/EmpleadosPage.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 545[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m EmpleadosPage[2m > [22mpermite buscar por texto y re-ejecuta listarEmpleados con el t├®rmino de b├║squeda [33m 350[2mms[22m[39m
+ [32mÔ£ô[39m src/shared/components/Modal.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 959[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m Modal[2m > [22mEscape y Tab actuan solo en el dialogo superior de una evaluacion anidada [33m 402[2mms[22m[39m
+ [32mÔ£ô[39m src/features/importacion/pages/ImportacionPage.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 845[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m imports Excel users after preview without showing the initial password [33m 692[2mms[22m[39m
+ [32mÔ£ô[39m src/features/ayuda/pages/AyudaPage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 663[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m keeps free-form questions local and sends only a fixed article ID to the AI action [33m 661[2mms[22m[39m
+ [32mÔ£ô[39m src/app/layouts/AppLayout.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 975[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m opens the active section and keeps only one section expanded [33m 660[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m keeps the selected section open after navigating [33m 313[2mms[22m[39m
+ [32mÔ£ô[39m src/features/seleccion/pages/SeleccionPage.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1298[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m selection workflow[2m > [22mignores late tenant responses and clears prior selections on company change [33m 557[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m selection workflow[2m > [22mlimits comparison to four candidates and preserves selection when closing it [33m 407[2mms[22m[39m
+ [32mÔ£ô[39m src/features/seleccion/components/EvaluacionForm.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1352[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m evaluation form[2m > [22mkeeps data and backend field errors when saving fails [33m 761[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m evaluation form[2m > [22mrequires the platform evaluator selected from real scoped options [33m 525[2mms[22m[39m
+ [32mÔ£ô[39m src/features/entrevistas/components/EntrevistaForm.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 1480[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m interview form validation[2m > [22mrejects HTTP links before sending a virtual interview [33m 939[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m interview form validation[2m > [22msends HTTPS, string identifiers, timezone and the scoped tenant [33m 539[2mms[22m[39m
+ [32mÔ£ô[39m src/features/usuarios/pages/ListadoUsuariosPage.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 1488[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m lists and creates a global administrator without the selected company [33m 1473[2mms[22m[39m
+ [32mÔ£ô[39m src/features/reportes/pages/ReportesPage.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 3165[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m reportes por voz o texto[2m > [22mshows the transcription and automatically previews the interpreted report [33m 779[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m reportes por voz o texto[2m > [22mhides the old preview while edited filters are recalculated [33m 851[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m reportes por voz o texto[2m > [22mshows dictated text and automatically interprets it [33m 396[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m15 passed[39m[22m[90m (15)[39m
+[2m      Tests [22m [1m[32m79 passed[39m[22m[90m (79)[39m
+[2m   Start at [22m 10:30:36
+[2m   Duration [22m 7.34s[2m (transform 4.02s, setup 7.00s, collect 11.42s, tests 13.96s, environment 36.02s, prepare 2.63s)[22m
+
