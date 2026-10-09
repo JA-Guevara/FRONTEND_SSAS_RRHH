@@ -248,85 +248,105 @@ export function CargosSection({ cargos, departamentos, empresaId, loading, error
         >
           <form onSubmit={submit} className="user-form">
             <div className="form-grid">
-              <Field label="Código" hint="Opcional. Ej. DEV-SR, REC-JR">
-                <input
-                  className="input"
-                  value={form.codigo}
-                  onChange={(e) => setForm({ ...form, codigo: e.target.value.toUpperCase() })}
-                />
+              <Field label="Código" optional hint="Ej. DEV-SR, REC-JR">
+                {fieldProps => (
+                  <input
+                    {...fieldProps}
+                    className="input"
+                    value={form.codigo}
+                    onChange={(e) => setForm({ ...form, codigo: e.target.value.toUpperCase() })}
+                  />
+                )}
               </Field>
-              <Field label="Nombre del cargo *" error={formError}>
-                <input
-                  className="input"
-                  value={form.nombre}
-                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  placeholder="Ej. Desarrollador Fullstack"
-                  required
-                />
+              <Field label="Nombre del cargo" required error={formError}>
+                {fieldProps => (
+                  <input
+                    {...fieldProps}
+                    className="input"
+                    value={form.nombre}
+                    onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                    placeholder="Ej. Desarrollador Fullstack"
+                  />
+                )}
               </Field>
             </div>
 
             <div className="form-grid">
-              <Field label="Departamento">
-                <select
-                  className="input"
-                  value={form.departamentoId}
-                  onChange={(e) => setForm({ ...form, departamentoId: e.target.value })}
-                >
-                  <option value="">-- Sin departamento --</option>
-                  {departamentos.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.nombre}
-                    </option>
-                  ))}
-                </select>
+              <Field label="Departamento" optional>
+                {fieldProps => (
+                  <select
+                    {...fieldProps}
+                    className="input"
+                    value={form.departamentoId}
+                    onChange={(e) => setForm({ ...form, departamentoId: e.target.value })}
+                  >
+                    <option value="">-- Sin departamento --</option>
+                    {departamentos.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.nombre}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </Field>
 
               <Field label="Nivel / Seniority">
-                <select
-                  className="input"
-                  value={form.nivel}
-                  onChange={(e) => setForm({ ...form, nivel: e.target.value })}
-                >
-                  {NIVELES.map((nivel) => (
-                    <option key={nivel.value} value={nivel.value}>
-                      {nivel.label}
-                    </option>
-                  ))}
-                </select>
+                {fieldProps => (
+                  <select
+                    {...fieldProps}
+                    className="input"
+                    value={form.nivel}
+                    onChange={(e) => setForm({ ...form, nivel: e.target.value })}
+                  >
+                    {NIVELES.map((nivel) => (
+                      <option key={nivel.value} value={nivel.value}>
+                        {nivel.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </Field>
             </div>
 
             <div className="form-grid">
-              <Field label="Salario mínimo referencial (Bs.)">
-                <input
-                  type="number"
-                  min="0"
-                  className="input"
-                  value={form.salarioMin}
-                  onChange={(e) => setForm({ ...form, salarioMin: e.target.value })}
-                  placeholder="Ej. 5000"
-                />
+              <Field label="Salario mínimo referencial (Bs.)" optional>
+                {fieldProps => (
+                  <input
+                    {...fieldProps}
+                    type="number"
+                    min="0"
+                    className="input"
+                    value={form.salarioMin}
+                    onChange={(e) => setForm({ ...form, salarioMin: e.target.value })}
+                    placeholder="Ej. 5000"
+                  />
+                )}
               </Field>
-              <Field label="Salario máximo referencial (Bs.)">
-                <input
-                  type="number"
-                  min="0"
-                  className="input"
-                  value={form.salarioMax}
-                  onChange={(e) => setForm({ ...form, salarioMax: e.target.value })}
-                  placeholder="Ej. 8000"
-                />
+              <Field label="Salario máximo referencial (Bs.)" optional>
+                {fieldProps => (
+                  <input
+                    {...fieldProps}
+                    type="number"
+                    min="0"
+                    className="input"
+                    value={form.salarioMax}
+                    onChange={(e) => setForm({ ...form, salarioMax: e.target.value })}
+                    placeholder="Ej. 8000"
+                  />
+                )}
               </Field>
             </div>
 
-            <Field label="Descripción de funciones">
-              <textarea
-                className="input"
-                rows={3}
-                value={form.descripcion}
-                onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-              />
+            <Field label="Descripción de funciones" optional>
+              {fieldProps => (
+                <textarea
+                  {...fieldProps}
+                  className="input"
+                  rows={3}
+                  value={form.descripcion}
+                  onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+                />
+              )}
             </Field>
 
             <label className="check-label">

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Alert, Button, LoadingBlock, PageHeader, Panel } from '../../../shared/components'
+import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
 import type { components } from '../../../shared/api/schema'
 import { empresasApi } from '../api/empresasApi'
 import { modulosApi } from '../api/modulosApi'
@@ -8,8 +9,10 @@ import type { ModuloEmpresa } from '../api/modulosApi'
 
 type Empresa = components['schemas']['EmpresaResponse']
 
-export function EmpresaModulosPage() {
-  const { empresaId = '' } = useParams()
+export function EmpresaModulosPage({ empresaIdOverride }: { empresaIdOverride?: string } = {}) {
+  const { empresaId: paramEmpresaId = '' } = useParams()
+  const { company } = useCompanyScope()
+  const empresaId = empresaIdOverride || paramEmpresaId || company?.id || ''
   const [empresa, setEmpresa] = useState<Empresa | null>(null)
   const [modulos, setModulos] = useState<ModuloEmpresa[]>([])
   const [seleccion, setSeleccion] = useState<Set<string>>(new Set())

@@ -13,6 +13,7 @@
   --brand-dark: var(--brand-900);
   --accent: #d9f36f;
   --accent-dark: #b9d64a;
+  --on-brand: #ffffff;
 
   /* Planes de suscripción */
   --plan-basic: #5b6b8c;
@@ -168,6 +169,20 @@
 /* Modo oscuro automático según preferencias del sistema */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
+    /* Marca re-escalonada para fondo oscuro (§2.1) */
+    --brand-900: #0a2e20;
+    --brand-800: #114536;
+    --brand-700: #3fa87c;
+    --brand-600: #4bbd8c;
+    --brand-500: #5fcf9d;
+    --brand-100: #16332a;
+    --brand-50:  #101f1a;
+    --brand: var(--brand-700);
+    --accent:    #c8e65a;
+    --accent-dark: #a9c842;
+    --on-brand: #0f1411;
+
+    /* Neutros */
     --ink: #e8efe9;
     --ink-2: #b9c6bd;
     --muted: #8b9790;
@@ -176,18 +191,31 @@
     --paper: #151b17;
     --surface: #0f1411;
     --surface-2: #1a221d;
-    --brand: var(--brand-500);
+
+    /* Semánticos base re-escalonados */
+    --success: #3ddc97;
     --success-bg: #0c2b1d;
     --success-ink: #7ee2ad;
+    --warning: #ffb547;
     --warning-bg: #332310;
     --warning-ink: #fac37a;
+    --danger:  #ff6b5e;
     --danger-bg: #351815;
     --danger-ink: #f4a39b;
+    --info:    #6ba6ff;
     --info-bg: #10213f;
     --info-ink: #93b8ff;
+    --neutral-dot: #6b7a72;
+
+    /* Foco visible y elevación en oscuro */
+    --focus-ring: 0 0 0 3px rgba(95, 207, 157, 0.35);
+    --elevation-raised: 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --shadow: var(--shadow-lg);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
     --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+    /* Gráficos de reportes */
     --serie-1: #3fa87c;
     --serie-2: #3987e5;
     --serie-3: #c98500;
@@ -202,6 +230,20 @@
 
 /* Modo oscuro explícito por conmutador de usuario */
 :root[data-theme='dark'] {
+  /* Marca re-escalonada para fondo oscuro (§2.1) */
+  --brand-900: #0a2e20;
+  --brand-800: #114536;
+  --brand-700: #3fa87c;
+  --brand-600: #4bbd8c;
+  --brand-500: #5fcf9d;
+  --brand-100: #16332a;
+  --brand-50:  #101f1a;
+  --brand: var(--brand-700);
+  --accent:    #c8e65a;
+  --accent-dark: #a9c842;
+  --on-brand: #0f1411;
+
+  /* Neutros */
   --ink: #e8efe9;
   --ink-2: #b9c6bd;
   --muted: #8b9790;
@@ -210,18 +252,31 @@
   --paper: #151b17;
   --surface: #0f1411;
   --surface-2: #1a221d;
-  --brand: var(--brand-500);
+
+  /* Semánticos base re-escalonados */
+  --success: #3ddc97;
   --success-bg: #0c2b1d;
   --success-ink: #7ee2ad;
+  --warning: #ffb547;
   --warning-bg: #332310;
   --warning-ink: #fac37a;
+  --danger:  #ff6b5e;
   --danger-bg: #351815;
   --danger-ink: #f4a39b;
+  --info:    #6ba6ff;
   --info-bg: #10213f;
   --info-ink: #93b8ff;
+  --neutral-dot: #6b7a72;
+
+  /* Foco visible y elevación en oscuro */
+  --focus-ring: 0 0 0 3px rgba(95, 207, 157, 0.35);
+  --elevation-raised: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow: var(--shadow-lg);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+  /* Gráficos de reportes */
   --serie-1: #3fa87c;
   --serie-2: #3987e5;
   --serie-3: #c98500;

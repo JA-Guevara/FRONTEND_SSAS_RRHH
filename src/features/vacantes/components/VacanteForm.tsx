@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Alert, Button, Field } from '../../../shared/components'
+import {
+  Alert,
+  Button,
+  Field,
+  FormActions,
+  FormGrid,
+  FormSection,
+} from '../../../shared/components'
 import { ApiError } from '../../../shared/api/httpClient'
 import {
   MODALIDADES,
@@ -105,7 +112,6 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
         if (active) setCatalogoHabilidades(data.filter((h) => h.activo))
       })
       .catch((cause: unknown) => {
-        // Un fallo del catálogo no se traga: sin él no se pueden exigir habilidades.
         if (!active) return
         setCatalogoHabilidades([])
         setErrorHabilidades(
@@ -200,7 +206,15 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
     e.preventDefault()
     setOk('')
     setBad('')
-    if (!validate()) return
+    if (!validate()) {
+      setTimeout(() => {
+        const firstInvalid = document.querySelector<HTMLElement>(
+          'input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"]'
+        )
+        firstInvalid?.focus()
+      }, 10)
+      return
+    }
     setSaving(true)
     try {
       const cargo = cargos.find((item) => item.id === form.cargo_id)
@@ -233,132 +247,214 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
         setForm(empty)
         setHabilidadesRequeridas([])
       }
-      setOk(vacante ? 'Vacante actualizada' : 'Vacante guardada como borrador')
+      setOk(vacante ? 'Vacante actualizada con éxito' : 'Vacante guardada como borrador con éxito')
     } catch (cause) {
-      // El 422 del backend trae el error de cada campo: se muestra junto al campo.
       if (cause instanceof ApiError) setErrors(cause.fieldErrors)
-      setBad(cause instanceof Error ? cause.message : 'No se pudo guardar')
+      setBad(cause instanceof Error ? cause.message : 'No se pudo guardar la vacante.')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <form className="form-stack" onSubmit={(evento) => void handleSubmit(evento)}>
-      <fieldset className="form-section">
-        <legend>Datos de la vacante</legend>
-        <div className="form-grid">
-          <Field label="Título *" error={errors.titulo}>
-            <input value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
+    <form className="form-stack" noValidate onSubmit={(evento) => void handleSubmit(evento)}>
+      <FormSection
+        title="Datos de la vacante"
+        description="Información básica sobre el puesto, modalidad de trabajo y plazo de convocatoria."
+      >
+        <FormGrid columns={2}>
+          <Field label="Título del puesto" required error={errors.titulo}>
+            {fieldProps => (
+              <input
+                {...fieldProps}
+                className="input"
+                value={form.titulo}
+                onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+                placeholder="Ej. Desarrollador Fullstack Senior"
+              />
+            )}
           </Field>
-          <Field label="Cargo *" error={errors.cargo_id}>
-            <select value={form.cargo_id} onChange={(e) => setForm({ ...form, cargo_id: e.target.value })}>
-              <option value="">Seleccionar</option>
-              {cargos.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Departamento" hint="Se completa al elegir el cargo.">
-            <input value={departamento} disabled />
-          </Field>
-          <Field label="Cantidad de puestos *" error={errors.cantidad_vacantes}>
-            <input
-              value={form.cantidad_vacantes}
-              onChange={(e) => setForm({ ...form, cantidad_vacantes: e.target.value })}
-            />
-          </Field>
-          <Field label="Salario mínimo" error={errors.salario_min}>
-            <input
-              value={form.salario_min}
-              onChange={(e) => setForm({ ...form, salario_min: e.target.value })}
-            />
-          </Field>
-          <Field label="Salario máximo" error={errors.salario_max}>
-            <input
-              value={form.salario_max}
-              onChange={(e) => setForm({ ...form, salario_max: e.target.value })}
-            />
-          </Field>
-          <Field label="Modalidad">
-            <select
-              value={form.modalidad}
-              onChange={(e) => setForm({ ...form, modalidad: e.target.value as ModalidadVacante })}
-            >
-              {MODALIDADES.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Ubicación">
-            <input
-              value={form.ubicacion}
-              onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
-            />
-          </Field>
-          <Field label="Experiencia mínima (años)" error={errors.experiencia_min}>
-            <input
-              value={form.experiencia_min}
-              onChange={(e) => setForm({ ...form, experiencia_min: e.target.value })}
-            />
-          </Field>
-          <Field label="Fecha de cierre *" error={errors.fecha_cierre}>
-            <input
-              type="date"
-              value={form.fecha_cierre}
-              onChange={(e) => setForm({ ...form, fecha_cierre: e.target.value })}
-            />
-          </Field>
-        </div>
 
-        <label className="check-label">
+          <Field label="Cargo de la estructura" required error={errors.cargo_id}>
+            {fieldProps => (
+              <select
+                {...fieldProps}
+                className="input"
+                value={form.cargo_id}
+                onChange={(e) => setForm({ ...form, cargo_id: e.target.value })}
+              >
+                <option value="">Seleccionar cargo</option>
+                {cargos.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+            )}
+          </Field>
+
+          <Field label="Departamento" hint="Asignado automáticamente por el cargo.">
+            {fieldProps => (
+              <input {...fieldProps} className="input" value={departamento} disabled />
+            )}
+          </Field>
+
+          <Field label="Cantidad de puestos" required error={errors.cantidad_vacantes}>
+            {fieldProps => (
+              <input
+                {...fieldProps}
+                className="input"
+                type="number"
+                min="1"
+                value={form.cantidad_vacantes}
+                onChange={(e) => setForm({ ...form, cantidad_vacantes: e.target.value })}
+              />
+            )}
+          </Field>
+
+          <Field label="Salario mínimo" optional error={errors.salario_min} hint="En moneda local">
+            {fieldProps => (
+              <input
+                {...fieldProps}
+                className="input"
+                type="number"
+                placeholder="Ej. 7000"
+                value={form.salario_min}
+                onChange={(e) => setForm({ ...form, salario_min: e.target.value })}
+              />
+            )}
+          </Field>
+
+          <Field label="Salario máximo" optional error={errors.salario_max} hint="En moneda local">
+            {fieldProps => (
+              <input
+                {...fieldProps}
+                className="input"
+                type="number"
+                placeholder="Ej. 10000"
+                value={form.salario_max}
+                onChange={(e) => setForm({ ...form, salario_max: e.target.value })}
+              />
+            )}
+          </Field>
+
+          <Field label="Modalidad de trabajo">
+            {fieldProps => (
+              <select
+                {...fieldProps}
+                className="input"
+                value={form.modalidad}
+                onChange={(e) => setForm({ ...form, modalidad: e.target.value as ModalidadVacante })}
+              >
+                {MODALIDADES.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            )}
+          </Field>
+
+          <Field label="Ubicación física" optional hint="Ciudad o sede de la empresa">
+            {fieldProps => (
+              <input
+                {...fieldProps}
+                className="input"
+                placeholder="Ej. Santa Cruz de la Sierra"
+                value={form.ubicacion}
+                onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
+              />
+            )}
+          </Field>
+
+          <Field label="Experiencia mínima (años)" optional error={errors.experiencia_min}>
+            {fieldProps => (
+              <input
+                {...fieldProps}
+                className="input"
+                type="number"
+                min="0"
+                placeholder="0"
+                value={form.experiencia_min}
+                onChange={(e) => setForm({ ...form, experiencia_min: e.target.value })}
+              />
+            )}
+          </Field>
+
+          <Field label="Fecha de cierre" required error={errors.fecha_cierre} hint="Límite para recibir postulaciones">
+            {fieldProps => (
+              <input
+                {...fieldProps}
+                className="input"
+                type="date"
+                value={form.fecha_cierre}
+                onChange={(e) => setForm({ ...form, fecha_cierre: e.target.value })}
+              />
+            )}
+          </Field>
+        </FormGrid>
+
+        <label className="check-label mt-4">
           <input
             type="checkbox"
             checked={form.mostrar_salario}
             onChange={(e) => setForm({ ...form, mostrar_salario: e.target.checked })}
           />
-          Mostrar el salario en el portal público
+          Mostrar el salario en el portal público de empleo
         </label>
-      </fieldset>
+      </FormSection>
 
-      <fieldset className="form-section">
-        <legend>Detalle de la oferta</legend>
+      <FormSection
+        title="Detalle de la oferta"
+        description="Describe las responsabilidades principales, requisitos mínimos y beneficios que ofrece la empresa."
+      >
         <div className="form-stack">
-          <Field label="Descripción *" error={errors.descripcion}>
-            <textarea
-              rows={4}
-              value={form.descripcion}
-              onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-            />
+          <Field label="Descripción del rol" required error={errors.descripcion}>
+            {fieldProps => (
+              <textarea
+                {...fieldProps}
+                className="input"
+                rows={4}
+                value={form.descripcion}
+                onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+                placeholder="Describe el propósito del rol y los objetivos principales..."
+              />
+            )}
           </Field>
-          <Field label="Requisitos">
-            <textarea
-              rows={3}
-              value={form.requisitos}
-              onChange={(e) => setForm({ ...form, requisitos: e.target.value })}
-            />
+
+          <Field label="Requisitos y competencias" optional>
+            {fieldProps => (
+              <textarea
+                {...fieldProps}
+                className="input"
+                rows={3}
+                value={form.requisitos}
+                onChange={(e) => setForm({ ...form, requisitos: e.target.value })}
+                placeholder="Formación académica, tecnologías deseadas o certificaciones..."
+              />
+            )}
           </Field>
-          <Field label="Beneficios">
-            <textarea
-              rows={2}
-              value={form.beneficios}
-              onChange={(e) => setForm({ ...form, beneficios: e.target.value })}
-            />
+
+          <Field label="Beneficios y compensaciones" optional>
+            {fieldProps => (
+              <textarea
+                {...fieldProps}
+                className="input"
+                rows={2}
+                value={form.beneficios}
+                onChange={(e) => setForm({ ...form, beneficios: e.target.value })}
+                placeholder="Seguro médico, capacitaciones, horarios flexibles..."
+              />
+            )}
           </Field>
         </div>
-      </fieldset>
+      </FormSection>
 
-      <fieldset className="form-section">
-        <legend>Habilidades requeridas</legend>
+      <FormSection
+        title="Habilidades requeridas"
+        description="Asocia competencias técnicas o blandas para evaluar la compatibilidad de los candidatos."
+      >
         <div className="form-stack">
-          <p className="text-muted">
-            Asocia competencias técnicas o blandas para evaluar la compatibilidad de los candidatos.
-          </p>
-
           {errorHabilidades !== null && <Alert tone="error">{errorHabilidades}</Alert>}
 
           {errorHabilidades === null && catalogoHabilidades.length === 0 && (
@@ -368,39 +464,56 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
             </Alert>
           )}
 
-          <div className="form-grid">
+          <FormGrid columns={2}>
             <Field label="Habilidad">
-              <select
-                value={selectedHabilidadId}
-                onChange={(e) => setSelectedHabilidadId(e.target.value)}
-                disabled={habilidadesDisponibles.length === 0}
-              >
-                <option value="">Seleccionar habilidad</option>
-                {habilidadesDisponibles.map((h) => (
-                  <option key={h.id} value={h.id}>
-                    {h.nombre} ({h.categoria || 'General'})
-                  </option>
-                ))}
-              </select>
+              {fieldProps => (
+                <select
+                  {...fieldProps}
+                  className="input"
+                  value={selectedHabilidadId}
+                  onChange={(e) => setSelectedHabilidadId(e.target.value)}
+                  disabled={habilidadesDisponibles.length === 0}
+                >
+                  <option value="">Seleccionar habilidad</option>
+                  {habilidadesDisponibles.map((h) => (
+                    <option key={h.id} value={h.id}>
+                      {h.nombre} ({h.categoria || 'General'})
+                    </option>
+                  ))}
+                </select>
+              )}
             </Field>
+
             <Field label="Nivel requerido">
-              <select value={selectedNivel} onChange={(e) => setSelectedNivel(e.target.value)}>
-                <option value="BASICO">Básico</option>
-                <option value="INTERMEDIO">Intermedio</option>
-                <option value="AVANZADO">Avanzado</option>
-              </select>
+              {fieldProps => (
+                <select
+                  {...fieldProps}
+                  className="input"
+                  value={selectedNivel}
+                  onChange={(e) => setSelectedNivel(e.target.value)}
+                >
+                  <option value="BASICO">Básico</option>
+                  <option value="INTERMEDIO">Intermedio</option>
+                  <option value="AVANZADO">Avanzado</option>
+                </select>
+              )}
             </Field>
-            <Field label="Peso (ponderación)" hint="Entre 0,1 y 5,0.">
-              <input
-                type="number"
-                step="0.1"
-                min="0.1"
-                max="5.0"
-                value={selectedPeso}
-                onChange={(e) => setSelectedPeso(e.target.value)}
-              />
+
+            <Field label="Peso (ponderación)" hint="Entre 0,1 y 5,0">
+              {fieldProps => (
+                <input
+                  {...fieldProps}
+                  className="input"
+                  type="number"
+                  step="0.1"
+                  min="0.1"
+                  max="5.0"
+                  value={selectedPeso}
+                  onChange={(e) => setSelectedPeso(e.target.value)}
+                />
+              )}
             </Field>
-          </div>
+          </FormGrid>
 
           <label className="check-label">
             <input
@@ -440,16 +553,16 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
             <p className="text-muted">Todavía no se han asignado habilidades a esta vacante.</p>
           )}
         </div>
-      </fieldset>
+      </FormSection>
 
       {bad !== '' && <Alert tone="error">{bad}</Alert>}
       {ok !== '' && <Alert tone="success">{ok}</Alert>}
 
-      <div className="form-actions">
-        <Button type="submit" loading={saving}>
+      <FormActions sticky align="end">
+        <Button type="submit" loading={saving} size="lg">
           {vacante ? 'Guardar cambios' : 'Guardar borrador'}
         </Button>
-      </div>
+      </FormActions>
     </form>
   )
 }

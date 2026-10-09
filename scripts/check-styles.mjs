@@ -70,6 +70,34 @@ for (const file of cssFiles) {
 for (const file of cssFiles) {
   const relPath = normalizePath(relative(rootDir, file))
   if (relPath.endsWith('shared/styles/tokens.css')) {
+    // S-02: Verificar que los bloques oscuros contengan los tokens de color requeridos (§2.1)
+    const tokensContent = readFileSync(file, 'utf8')
+    const darkMediaMatch = tokensContent.match(/@media\s*\(prefers-color-scheme:\s*dark\)[^{]*\{[\s\S]*?:root:not\(\[data-theme='light'\]\)\s*\{([\s\S]*?)\}/)
+    const darkThemeMatch = tokensContent.match(/:root\[data-theme='dark'\]\s*\{([\s\S]*?)\}/)
+    const requiredDarkTokens = [
+      '--brand-700', '--brand-600', '--brand-500', '--brand-100',
+      '--accent', '--on-brand', '--ink', '--muted', '--line',
+      '--paper', '--surface', '--surface-2',
+      '--success', '--warning', '--danger', '--info', '--focus-ring', '--elevation-raised'
+    ]
+    for (const token of requiredDarkTokens) {
+      if (!darkMediaMatch || !darkMediaMatch[1].includes(token)) {
+        errors.push({
+          type: 'MISSING_DARK_TOKEN',
+          file: relPath,
+          line: 1,
+          detail: `Token '${token}' falta en el bloque @media dark de tokens.css`,
+        })
+      }
+      if (!darkThemeMatch || !darkThemeMatch[1].includes(token)) {
+        errors.push({
+          type: 'MISSING_DARK_TOKEN',
+          file: relPath,
+          line: 1,
+          detail: `Token '${token}' falta en el bloque :root[data-theme='dark'] de tokens.css`,
+        })
+      }
+    }
     continue // tokens.css defines the literal colors
   }
 

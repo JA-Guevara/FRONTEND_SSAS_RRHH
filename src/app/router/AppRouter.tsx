@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { ChangePasswordPage } from '../../features/auth/pages/ChangePasswordPage'
 import { ForgotPasswordPage } from '../../features/auth/pages/ForgotPasswordPage'
 import { LoginPage } from '../../features/auth/pages/LoginPage'
 import { RegisterCompanyPage } from '../../features/auth/pages/RegisterCompanyPage'
@@ -26,7 +25,7 @@ import { HabilidadesPage } from '../../features/habilidades/pages/HabilidadesPag
 import { PostulantesPage } from '../../features/postulantes/pages/PostulantesPage'
 import { MiSuscripcionPage } from '../../features/suscripciones/pages/MiSuscripcionPage'
 import { PlanesPage } from '../../features/suscripciones/pages/PlanesPage'
-import { MiPerfilPage } from '../../features/perfil/pages/MiPerfilPage'
+import { CuentaPage } from '../../features/cuenta/pages/CuentaPage'
 import { EntrevistasPage } from '../../features/entrevistas/pages/EntrevistasPage'
 import { SeleccionPage } from '../../features/seleccion/pages/SeleccionPage'
 import { AyudaPage } from '../../features/ayuda/pages/AyudaPage'
@@ -43,8 +42,12 @@ function ProtectedArea() {
   const location = useLocation()
   if (status === 'loading') return <FullPageStatus message="Comprobando tu sesión…" />
   if (status !== 'authenticated') return <Navigate to="/login" replace />
-  if (user?.must_change_password === true && location.pathname !== '/cambiar-clave') {
-    return <Navigate to="/cambiar-clave" replace />
+  if (
+    user?.must_change_password === true &&
+    location.pathname !== '/cambiar-clave' &&
+    !location.pathname.startsWith('/cuenta')
+  ) {
+    return <Navigate to="/cuenta?tab=seguridad" replace />
   }
   return <AppLayout />
 }
@@ -92,8 +95,9 @@ export function AppRouter() {
 
       <Route element={<ProtectedArea />}>
         <Route index element={<DashboardPage />} />
-        <Route path="cambiar-clave" element={<ChangePasswordPage />} />
-        <Route path="perfil" element={<MiPerfilPage />} />
+        <Route path="cuenta" element={<CuentaPage />} />
+        <Route path="cambiar-clave" element={<Navigate to="/cuenta?tab=seguridad" replace />} />
+        <Route path="perfil" element={<Navigate to="/cuenta?tab=perfil" replace />} />
         <Route path="ayuda" element={<AyudaPage />} />
 
         <Route path="empresas" element={plataforma(<AltaEmpresaPage />, ['platform:empresas:ver'])} />

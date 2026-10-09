@@ -38,7 +38,7 @@
 }
 
 .button-primary {
-  color: var(--paper);
+  color: var(--on-brand);
   background: var(--brand);
 }
 

@@ -50,8 +50,21 @@ it('keeps the selected section open after navigating', async () => {
 
   expect(screen.getByRole('link', { name: 'Inicio' })).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Cuenta' }))
-  await user.click(screen.getByRole('link', { name: 'Mi perfil' }))
+  await user.click(screen.getByRole('link', { name: 'Ayuda' }))
 
   expect(screen.getByRole('button', { name: 'Cuenta' })).toHaveAttribute('aria-expanded', 'true')
-  expect(screen.getByRole('link', { name: 'Mi perfil' })).toHaveClass('active')
+  expect(screen.getByRole('link', { name: 'Ayuda' })).toHaveClass('active')
+})
+
+it('opens avatar menu and displays account links', async () => {
+  renderLayout('/')
+  const user = userEvent.setup()
+
+  const avatarTrigger = screen.getByRole('button', { name: /Test/ })
+  await user.click(avatarTrigger)
+
+  expect(screen.getByRole('menu', { name: 'Menú de cuenta' })).toBeVisible()
+  expect(screen.getByRole('menuitem', { name: 'Mi perfil' })).toBeVisible()
+  expect(screen.getByRole('menuitem', { name: 'Seguridad' })).toBeVisible()
+  expect(screen.getByRole('menuitem', { name: 'Sesiones activas' })).toBeVisible()
 })

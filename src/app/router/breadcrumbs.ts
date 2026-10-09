@@ -53,6 +53,7 @@ export function getBreadcrumbsForPath(pathname: string): BreadcrumbItem[] {
     '/planes': { group: 'Plataforma', label: 'Planes y suscripciones' },
     '/respaldos': { group: 'Plataforma', label: 'Respaldos globales' },
     '/suscripcion': { group: 'Cuenta', label: 'Mi suscripción' },
+    '/cuenta': { group: 'Cuenta', label: 'Mi Cuenta' },
     '/perfil': { group: 'Cuenta', label: 'Mi perfil' },
     '/ayuda': { group: 'Cuenta', label: 'Centro de ayuda' },
     '/cambiar-clave': { group: 'Cuenta', label: 'Cambiar contraseña' },

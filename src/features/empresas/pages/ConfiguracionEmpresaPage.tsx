@@ -96,7 +96,7 @@ function toForm(data: Empresa | null): CompanyForm {
   }
 }
 
-export function ConfiguracionEmpresaPage() {
+export function ConfiguracionEmpresaPage({ initialTab = 'general' }: { initialTab?: TabKey } = {}) {
   const { user } = useAuth()
   const { company: scopeCompany } = useCompanyScope()
   const activeEmpresaId = user?.empresaId || scopeCompany?.id
@@ -106,7 +106,7 @@ export function ConfiguracionEmpresaPage() {
   const [form, setForm] = useState<CompanyForm>(toForm(null))
   const [savingSection, setSavingSection] = useState<TabKey | null>(null)
   const [feedback, setFeedback] = useState<Feedback | null>(null)
-  const [tab, setTab] = useState<TabKey>('general')
+  const [tab, setTab] = useState<TabKey>(initialTab)
 
   const [periodos, setPeriodos] = useState<ParametroLegal[]>([])
   const [periodosLoading, setPeriodosLoading] = useState(false)

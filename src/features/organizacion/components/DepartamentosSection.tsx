@@ -205,48 +205,59 @@ export function DepartamentosSection({ departamentos, empresaId, loading, error,
         >
           <form onSubmit={submit} className="user-form">
             <div className="form-grid">
-              <Field label="Código" hint="Opcional. Ej. RRHH, IT, FIN">
-                <input
-                  className="input"
-                  value={form.codigo}
-                  onChange={(e) => setForm({ ...form, codigo: e.target.value.toUpperCase() })}
-                />
+              <Field label="Código" optional hint="Ej. RRHH, IT, FIN">
+                {fieldProps => (
+                  <input
+                    {...fieldProps}
+                    className="input"
+                    value={form.codigo}
+                    onChange={(e) => setForm({ ...form, codigo: e.target.value.toUpperCase() })}
+                  />
+                )}
               </Field>
-              <Field label="Nombre *" error={formError}>
-                <input
-                  className="input"
-                  value={form.nombre}
-                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  placeholder="Ej. Recursos Humanos"
-                  required
-                />
+              <Field label="Nombre" required error={formError}>
+                {fieldProps => (
+                  <input
+                    {...fieldProps}
+                    className="input"
+                    value={form.nombre}
+                    onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                    placeholder="Ej. Recursos Humanos"
+                  />
+                )}
               </Field>
             </div>
 
-            <Field label="Departamento padre (jerarquía)">
-              <select
-                className="input"
-                value={form.padreId}
-                onChange={(e) => setForm({ ...form, padreId: e.target.value })}
-              >
-                <option value="">Ninguno (área principal)</option>
-                {departamentos
-                  .filter((item) => !bloquedosParaPadre.has(item.id))
-                  .map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.nombre} {item.codigo ? `(${item.codigo})` : ''}
-                    </option>
-                  ))}
-              </select>
+            <Field label="Departamento padre (jerarquía)" optional>
+              {fieldProps => (
+                <select
+                  {...fieldProps}
+                  className="input"
+                  value={form.padreId}
+                  onChange={(e) => setForm({ ...form, padreId: e.target.value })}
+                >
+                  <option value="">Ninguno (área principal)</option>
+                  {departamentos
+                    .filter((item) => !bloquedosParaPadre.has(item.id))
+                    .map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.nombre} {item.codigo ? `(${item.codigo})` : ''}
+                      </option>
+                    ))}
+                </select>
+              )}
             </Field>
 
-            <Field label="Descripción">
-              <textarea
-                className="input"
-                rows={3}
-                value={form.descripcion}
-                onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-              />
+            <Field label="Descripción" optional>
+              {fieldProps => (
+                <textarea
+                  {...fieldProps}
+                  className="input"
+                  rows={3}
+                  value={form.descripcion}
+                  onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+                />
+              )}
             </Field>
 
             <label className="check-label">

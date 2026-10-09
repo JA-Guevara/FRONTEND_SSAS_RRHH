@@ -30,7 +30,117 @@
 .chat-source { background: var(--paper); padding: 12px; border-radius: var(--radius-sm); white-space: pre-wrap; overflow-wrap: anywhere; }
 .chat-source h3 { font-size: var(--text-md); margin: 0 0 10px; }
 .chat-source p { margin: 0; }
+.chat-card-action {
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.chat-card-title {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--brand-dark);
+}
+
+.chat-card-desc {
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.chat-card-table {
+  width: 100%;
+  font-size: var(--text-xs);
+  border-collapse: collapse;
+  margin: var(--space-2) 0;
+}
+
+.chat-card-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.chat-card-table td:first-child {
+  font-weight: 600;
+  color: var(--muted);
+  width: 40%;
+}
+
+.chat-card-table td:last-child {
+  color: var(--ink);
+}
+
+.chat-card-buttons {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  margin-top: var(--space-2);
+}
+
+.chat-card-buttons button {
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--line);
+}
+
+.chat-card-btn-cancel {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.chat-card-btn-confirm {
+  background: var(--brand);
+  color: var(--paper);
+  border-color: var(--brand);
+}
+
+.chat-card-confirmed {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--success);
+  margin-top: var(--space-1);
+}
+
+.chat-mic-btn {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--paper);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.chat-mic-btn.active {
+  background: var(--danger);
+  color: var(--paper);
+  border-color: var(--danger);
+}
+
+.chat-voice-notice {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 2px 10px 6px;
+  background: var(--paper);
+  line-height: 1.2;
+}
+
 @media (max-width: 640px) {
   .chat-widget { right: 12px; bottom: 12px; }
   .chat-panel { height: min(520px, calc(100dvh - 84px)); }
 }
+

@@ -47,22 +47,22 @@ p {
 
 h1 {
   margin-bottom: var(--space-2);
-  font-size: var(--text-3xl);
-  font-weight: 800;
+  font-size: var(--text-2xl);
+  font-weight: 700;
   line-height: var(--leading-tight);
   letter-spacing: -0.02em;
 }
 
 h2 {
-  font-size: var(--text-xl);
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 600;
   line-height: var(--leading-tight);
   letter-spacing: -0.01em;
 }
 
 h3 {
-  font-size: var(--text-lg);
-  font-weight: 700;
+  font-size: var(--text-md);
+  font-weight: 600;
 }
 
 small {

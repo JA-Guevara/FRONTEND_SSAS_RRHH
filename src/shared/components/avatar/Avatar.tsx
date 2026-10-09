@@ -61,8 +61,8 @@ export function Avatar({
     <div
       className={`ui-avatar ui-avatar-${size} ${className}`.trim()}
       style={!showImage ? { backgroundColor: bgColor } : undefined}
-      aria-label={ariaLabel}
-      role="img"
+      role={!showImage ? 'img' : undefined}
+      aria-label={!showImage ? ariaLabel : undefined}
     >
       {showImage ? (
         <img

@@ -44,6 +44,40 @@ tbody tr:hover td {
   background: var(--brand-50);
 }
 
+/* Fila seleccionada: riel + fondo (§2.4) */
+tbody tr[aria-selected="true"] td {
+  background: var(--brand-100);
+}
+
+tbody tr[aria-selected="true"] td:first-child {
+  box-shadow: inset 3px 0 0 var(--brand-600);
+}
+
+/* Casilla marcada y foco de fila con teclado */
+.table-check:checked {
+  accent-color: var(--brand-600);
+}
+
+tbody tr:focus-visible {
+  outline: 2px solid var(--brand-600);
+  outline-offset: -2px;
+}
+
+/* Encabezado ordenable */
+th[aria-sort] {
+  cursor: pointer;
+}
+
+th[aria-sort="ascending"]::after {
+  content: " ↑";
+  color: var(--brand-700);
+}
+
+th[aria-sort="descending"]::after {
+  content: " ↓";
+  color: var(--brand-700);
+}
+
 td strong,
 td small {
   display: block;

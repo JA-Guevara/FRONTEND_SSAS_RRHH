@@ -4,7 +4,7 @@ import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useAccess } from '../access/AccessProvider'
 import { NAV_ITEMS, type NavItem } from '../access/navigation'
 import { useCompanyScope } from '../context/CompanyScopeContext'
-import { ChatWidget } from '../../features/ayuda/components/ChatWidget'
+import { Asistente } from '../../features/ayuda/components/Asistente'
 import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
 
@@ -73,7 +73,7 @@ export function AppLayout() {
         <Outlet />
       </main>
       <MobileNav />
-      {esTenant && <ChatWidget />}
+      <Asistente />
     </div>
   )
 }

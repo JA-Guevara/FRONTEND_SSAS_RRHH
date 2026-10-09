@@ -63,7 +63,8 @@
 
 .main-nav a.active {
   font-weight: 700;
-  color: var(--accent);
+  color: var(--on-inverse);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .nav-group-title {
