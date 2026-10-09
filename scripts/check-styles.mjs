@@ -152,7 +152,7 @@ for (const file of cssFiles) {
 
     // Check forbidden normal text tokens on inverted surfaces
     if (relPath.endsWith('layout/nav.css') || relPath.endsWith('layout/shell.css')) {
-      if (/\bcolor:\s*var\(--(ink|ink-2|muted|line)\)/.test(stripped)) {
+      if (/(?<!background-)\bcolor:\s*var\(--(ink|ink-2|muted|line|paper|brand-100)\)/.test(stripped)) {
         const isSidebarNav = relPath.endsWith('layout/nav.css') && index < 120
         const isOption = stripped.includes('option') || (index > 0 && lines[index - 1].includes('option'))
         const isSidebarShell = relPath.endsWith('layout/shell.css') && (index < 110 || (index > 164 && index < 240)) && !isOption
@@ -161,7 +161,7 @@ for (const file of cssFiles) {
             type: 'INVALID_INVERSE_COLOR',
             file: relPath,
             line: index + 1,
-            detail: `Zona invertida (sidebar/nav) no debe usar --ink/--muted/--line. Use tokens --on-inverse-*`,
+            detail: `Zona invertida (sidebar/nav) no debe usar --ink/--muted/--line/--paper/--brand-100. Use tokens --on-inverse-*`,
           })
         }
       }

@@ -97,7 +97,7 @@ td small {
 }
 
 .strong-cell {
-  color: var(--brand-dark);
+  color: var(--brand);
   font-weight: 700;
   white-space: nowrap;
 }

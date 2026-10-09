@@ -44,7 +44,7 @@
   border-left: 3px solid var(--brand);
   border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
-  color: var(--brand-dark);
+  color: var(--brand);
   background: var(--brand-50);
 }
 

@@ -26,7 +26,7 @@
 
 .badge-brand,
 .role-badge {
-  color: var(--brand-dark);
+  color: var(--brand);
   background: var(--brand-100);
 }
 

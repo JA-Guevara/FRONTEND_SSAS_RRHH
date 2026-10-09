@@ -186,7 +186,7 @@ input[type='radio'] {
 
 .form-section legend {
   padding-inline: var(--space-2);
-  color: var(--brand-dark);
+  color: var(--brand);
   font-size: var(--text-lg);
   font-weight: 800;
 }
@@ -268,7 +268,7 @@ textarea[aria-invalid='true'] {
   margin: 0;
   font-size: var(--text-lg);
   font-weight: 800;
-  color: var(--brand-dark);
+  color: var(--brand);
 }
 
 .form-section-desc {

@@ -11,6 +11,7 @@
   --brand-50: #f2f8f5;
   --brand: var(--brand-700);
   --brand-dark: var(--brand-900);
+  --brand-hover: var(--brand-900);
   --accent: #d9f36f;
   --accent-dark: #b9d64a;
   --on-brand: #ffffff;
@@ -29,7 +30,7 @@
   /* Neutros */
   --ink: #17211c;
   --ink-2: #3d4a43;
-  --muted: #66716a;
+  --muted: #657069;
   --line: #dce2dc;
   --line-strong: #c3cdc5;
   --paper: #ffffff;
@@ -181,6 +182,7 @@
     --brand-100: #16332a;
     --brand-50:  #101f1a;
     --brand: var(--brand-700);
+    --brand-hover: var(--brand-600);
     --accent:    #c8e65a;
     --accent-dark: #a9c842;
     --on-brand: #0f1411;
@@ -243,6 +245,7 @@
   --brand-100: #16332a;
   --brand-50:  #101f1a;
   --brand: var(--brand-700);
+  --brand-hover: var(--brand-600);
   --accent:    #c8e65a;
   --accent-dark: #a9c842;
   --on-brand: #0f1411;

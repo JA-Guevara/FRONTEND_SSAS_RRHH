@@ -59,8 +59,27 @@ const PAIRS = [
   ['--brand-700', '--paper'],
   ['--brand-700', '--surface'],
   ['--brand-700', '--surface-2'],
+  // Títulos, badges, alertas y celdas fuertes: color de marca sobre superficie clara
+  ['--brand', '--paper'],
+  ['--brand', '--surface'],
+  ['--brand', '--surface-2'],
+  ['--brand', '--brand-50'],
+  ['--brand', '--brand-100'],
+  // Superficies oscuras de marca (sidebar, cabecera del chat, hero de auth/portal)
+  ['--on-inverse', '--brand-dark'],
+  ['--on-inverse-muted', '--brand-dark'],
+  ['--on-inverse', '--brand-900'],
+  ['--on-inverse', '--brand-800'],
+  // Hover del botón primario (R4-28)
+  ['--on-brand', '--brand-hover'],
+  // Botones con fondo de marca o peligro
+  ['--paper', '--brand'],
+  ['--paper', '--danger'],
   ['--danger', '--paper'],
   ['--danger', '--surface'],
+  // Burbuja del asistente (R4-28)
+  ['--brand-700', '--brand-100'],
+  ['--on-inverse-muted', '--brand-900'],
 ]
 
 function parseBlocks(css) {

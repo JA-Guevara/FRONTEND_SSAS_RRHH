@@ -43,7 +43,7 @@
 }
 
 .button-primary:hover:not(:disabled) {
-  background: var(--brand-dark);
+  background: var(--brand-hover);
 }
 
 .button-secondary {
@@ -89,7 +89,7 @@
 .button-quiet {
   justify-content: flex-start;
   padding-inline: 0;
-  color: var(--brand-100);
+  color: var(--brand);
   background: transparent;
 }
 

@@ -11,7 +11,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: clamp(2rem, 6vw, 6rem);
-  color: var(--paper);
+  color: var(--on-inverse);
   background:
     radial-gradient(circle at 80% 20%, var(--brand-500) 0, transparent 35%),
     var(--brand-dark);
@@ -25,7 +25,7 @@
 
 .auth-brand p:not(.eyebrow) {
   max-width: 610px;
-  color: var(--brand-100);
+  color: var(--on-inverse-muted);
   font-size: var(--text-md);
   line-height: 1.7;
 }

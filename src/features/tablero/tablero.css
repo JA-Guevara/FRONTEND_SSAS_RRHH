@@ -148,7 +148,7 @@
 }
 
 .score-value {
-  color: var(--brand-dark);
+  color: var(--brand);
   font-size: var(--text-2xl);
   font-weight: 800;
   line-height: 1;
