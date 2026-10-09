@@ -6,7 +6,6 @@ import { ImportacionPage } from '../../importacion/pages/ImportacionPage'
 import { AyudaPage } from '../../ayuda/pages/AyudaPage'
 import { EmpresaModulosPage } from './EmpresaModulosPage'
 import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
-import { Building2, Globe, Award, FileUp, BookOpen, LayoutGrid } from 'lucide-react'
 
 const TABS: TabItem[] = [
   { id: 'general', label: 'General' },
@@ -36,14 +35,12 @@ export function ConfiguracionPage() {
 
       <Tabs items={TABS} active={activeTab} onChange={handleTabChange} />
 
-      <div className="tab-content pt-2">
-        {activeTab === 'general' && <ConfiguracionEmpresaPage initialTab="general" />}
-        {activeTab === 'portal' && <ConfiguracionEmpresaPage initialTab="portal" />}
-        {activeTab === 'catalogos' && <HabilidadesPage />}
-        {activeTab === 'importaciones' && <ImportacionPage />}
-        {activeTab === 'conocimiento' && <AyudaPage />}
-        {activeTab === 'modulos' && <EmpresaModulosPage empresaIdOverride={company?.id} />}
-      </div>
+      {activeTab === 'general' && <ConfiguracionEmpresaPage initialTab="general" />}
+      {activeTab === 'portal' && <ConfiguracionEmpresaPage initialTab="portal" />}
+      {activeTab === 'catalogos' && <HabilidadesPage />}
+      {activeTab === 'importaciones' && <ImportacionPage />}
+      {activeTab === 'conocimiento' && <AyudaPage />}
+      {activeTab === 'modulos' && <EmpresaModulosPage empresaIdOverride={company?.id} />}
     </div>
   )
 }

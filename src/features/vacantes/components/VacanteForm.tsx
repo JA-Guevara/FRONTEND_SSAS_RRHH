@@ -241,13 +241,14 @@ export function VacanteForm({ cargos, vacante, empresaId }: Props) {
           peso: Number(h.peso) || 1.0,
         })),
       }
-      if (vacante) await actualizarVacante(vacante.id, payload, empresaId)
+      const esEdicion = Boolean(vacante && vacante.id)
+      if (esEdicion && vacante) await actualizarVacante(vacante.id, payload, empresaId)
       else {
         await crearVacante(payload, empresaId)
         setForm(empty)
         setHabilidadesRequeridas([])
       }
-      setOk(vacante ? 'Vacante actualizada con éxito' : 'Vacante guardada como borrador con éxito')
+      setOk(esEdicion ? 'Vacante actualizada con éxito' : 'Vacante guardada como borrador con éxito')
     } catch (cause) {
       if (cause instanceof ApiError) setErrors(cause.fieldErrors)
       setBad(cause instanceof Error ? cause.message : 'No se pudo guardar la vacante.')

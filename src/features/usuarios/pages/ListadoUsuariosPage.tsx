@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Can, useAccess } from '../../../app/access/AccessProvider'
 import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
-import { useAuth } from '../../auth/hooks/useAuth'
 import { ApiError } from '../../../shared/api/httpClient'
 import type { components } from '../../../shared/api/schema'
 import {
@@ -11,8 +10,6 @@ import {
   Button,
   ConfirmDialog,
   DataTable,
-  Field,
-  Modal,
   PageHeader,
   Pagination,
   Panel,
@@ -20,7 +17,12 @@ import {
 import type { Column } from '../../../shared/components'
 import { rolesAsignablesApi } from '../api/rolesAsignablesApi'
 import { usuariosApi } from '../api/usuariosApi'
-import { evaluarPassword, generarPassword, passwordEsValida } from '../utils/passwordPolicy'
+import { passwordEsValida } from '../utils/passwordPolicy'
+import { UsuarioFiltros } from '../components/UsuarioFiltros'
+import { UsuarioModalCrear } from '../components/UsuarioModalCrear'
+import { UsuarioModalEditar } from '../components/UsuarioModalEditar'
+import { UsuarioModalClave } from '../components/UsuarioModalClave'
+import type { UsuarioFormValores } from '../components/CamposUsuarioForm'
 
 type User = components['schemas']['UsuarioResponse']
 type Role = components['schemas']['RoleSchema']
@@ -48,14 +50,14 @@ const DETALLE_ACCION: Record<AccionPendiente['tipo'], string> = {
   desbloquear: 'Se borran los intentos fallidos y el bloqueo temporal por seguridad.',
 }
 
-const FORM_VACIO = {
+const FORM_VACIO: UsuarioFormValores = {
   nombre: '',
   apellido: '',
   email: '',
   username: '',
   password: '',
   telefono: '',
-  role_ids: [] as string[],
+  role_ids: [],
   exigir_verificacion: false,
 }
 
@@ -68,7 +70,6 @@ const PERM_PASSWORD = ['usuarios:cambiar_password', 'platform:usuarios:gestionar
 const PERM_DESBLOQUEAR = ['usuarios:desbloquear', 'platform:usuarios:gestionar']
 
 export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
-  const { user } = useAuth()
   const { company } = useCompanyScope()
   const { can } = useAccess()
   const esVistaGlobal = scope === 'platform'
@@ -97,96 +98,97 @@ export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
   const [errorFormulario, setErrorFormulario] = useState<string | null>(null)
   const [erroresCampo, setErroresCampo] = useState<Record<string, string>>({})
 
-  const [createForm, setCreateForm] = useState(FORM_VACIO)
-  const [editForm, setEditForm] = useState({ ...FORM_VACIO, password: '' })
+  const [createForm, setCreateForm] = useState<UsuarioFormValores>(FORM_VACIO)
+  const [editForm, setEditForm] = useState<UsuarioFormValores>(FORM_VACIO)
   const [nuevaClave, setNuevaClave] = useState('')
   const [exigirCambio, setExigirCambio] = useState(true)
 
-  const empresaLectura = esVistaGlobal ? undefined : (company?.id ?? user?.empresaId ?? undefined)
-  const empresaAlta = empresaLectura
+  const empresaConsulta = esVistaGlobal ? undefined : (company?.id ?? undefined)
+  const empresaAlta = esVistaGlobal ? undefined : (company?.id ?? undefined)
 
   const cargar = useCallback(async () => {
+    if (!esVistaGlobal && company?.id === undefined) {
+      setUsuarios([])
+      setTotal(0)
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {
-      const pagina = await usuariosApi.list({
-        empresa_id: empresaLectura,
-        search: busqueda.trim() || undefined,
-        is_active: estadoFiltro === '' ? undefined : estadoFiltro === 'true',
-        incluir_eliminados: incluirEliminados || undefined,
+      const respuesta = await usuariosApi.list({
         page,
         per_page: perPage,
+        empresa_id: empresaConsulta,
+        search: busqueda.trim() !== '' ? busqueda.trim() : undefined,
+        is_active: estadoFiltro === '' ? undefined : estadoFiltro === 'true',
+        incluir_eliminados: incluirEliminados ? true : undefined,
       })
-      setUsuarios(pagina.items)
-      setTotal(pagina.total)
+      setUsuarios(respuesta.items)
+      setTotal(respuesta.total)
     } catch (cause) {
-      // Un fallo no se muestra como «no hay usuarios»: son cosas distintas.
-      setUsuarios([])
-      setTotal(0)
-      setError(cause instanceof Error ? cause.message : 'No se pudieron cargar los usuarios.')
+      setError(cause instanceof Error ? cause.message : 'No se pudo cargar la lista de usuarios.')
     } finally {
       setLoading(false)
     }
-  }, [empresaLectura, busqueda, estadoFiltro, incluirEliminados, page, perPage])
+  }, [busqueda, company?.id, empresaConsulta, esVistaGlobal, estadoFiltro, incluirEliminados, page, perPage])
 
   useEffect(() => {
     void cargar()
   }, [cargar])
 
-  // Los roles asignables dependen del alcance de la pantalla.
-  // Enviar un rol de otro ámbito hace que el backend rechace el alta.
   useEffect(() => {
-    let activo = true
+    let cancelado = false
     setRolesError(null)
-    rolesAsignablesApi
-      .list(empresaAlta)
-      .then((lista) => {
-        if (activo) setRoles(lista)
-      })
-      .catch((cause: unknown) => {
-        if (!activo) return
-        setRoles([])
-        setRolesError(cause instanceof Error ? cause.message : 'No se pudieron cargar los roles.')
-      })
-    return () => {
-      activo = false
-    }
-  }, [empresaAlta])
 
-  const requisitos = useMemo(
-    () => evaluarPassword(createForm.password, createForm.username, createForm.email),
-    [createForm.password, createForm.username, createForm.email],
-  )
-  const requisitosClave = useMemo(
-    () => evaluarPassword(nuevaClave, cambiandoClave?.username, cambiandoClave?.email),
-    [nuevaClave, cambiandoClave],
-  )
+    rolesAsignablesApi
+      .list(empresaConsulta)
+      .then((data) => {
+        if (!cancelado) setRoles(data)
+      })
+      .catch((cause) => {
+        if (!cancelado) {
+          setRoles([])
+          setRolesError(
+            cause instanceof Error ? cause.message : 'No se pudieron cargar los roles asignables.',
+          )
+        }
+      })
+
+    return () => {
+      cancelado = true
+    }
+  }, [empresaConsulta])
 
   function limpiarErrores() {
     setErrorFormulario(null)
     setErroresCampo({})
   }
 
-  function registrarError(cause: unknown, porDefecto: string) {
+  function registrarError(cause: unknown, porOmision: string) {
     if (cause instanceof ApiError) {
-      setErroresCampo(cause.fieldErrors)
-      setErrorFormulario(cause.message)
+      if (Object.keys(cause.fieldErrors).length > 0) {
+        setErroresCampo(cause.fieldErrors)
+        setErrorFormulario('Revisa los campos marcados.')
+        return
+      }
+      setErrorFormulario(cause.message || porOmision)
       return
     }
-    setErrorFormulario(cause instanceof Error ? cause.message : porDefecto)
+    setErrorFormulario(cause instanceof Error ? cause.message : porOmision)
   }
 
   async function crear(evento: FormEvent) {
     evento.preventDefault()
     limpiarErrores()
 
-    // Validación previa: el backend exige al menos un rol y una contraseña fuerte.
     if (createForm.role_ids.length === 0) {
-      setErroresCampo({ role_ids: 'Selecciona al menos un rol.' })
-      setErrorFormulario('El usuario necesita al menos un rol para poder iniciar sesión.')
+      setErroresCampo({ role_ids: 'Selecciona al menos un rol para el usuario.' })
       return
     }
-    if (!passwordEsValida(createForm.password, createForm.username, createForm.email)) {
+
+    if (!passwordEsValida(createForm.password ?? '', createForm.username, createForm.email)) {
       setErroresCampo({ password: 'La contraseña no cumple todos los requisitos.' })
       setErrorFormulario('Revisa los requisitos de la contraseña antes de continuar.')
       return
@@ -199,13 +201,10 @@ export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
         apellido: createForm.apellido.trim(),
         email: createForm.email.trim(),
         username: createForm.username.trim(),
-        password: createForm.password,
-        telefono: createForm.telefono.trim() || null,
+        password: createForm.password ?? '',
+        telefono: createForm.telefono?.trim() || null,
         role_ids: createForm.role_ids,
-        // Por omisión la cuenta queda utilizable de inmediato: la crea un
-        // administrador y la contraseña provisional obliga a cambiarla al entrar.
         email_verificado: !createForm.exigir_verificacion,
-        // Ausente = administrador de plataforma. Presente = usuario de esa empresa.
         ...(empresaAlta !== undefined ? { empresa_id: empresaAlta } : {}),
       })
       setShowCreate(false)
@@ -225,7 +224,6 @@ export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
 
   function empezarEdicion(usuario: User) {
     limpiarErrores()
-    // El backend devuelve los roles por nombre; hay que traducirlos a identificadores.
     const idsRoles = roles
       .filter((rol) => usuario.roles?.includes(rol.name) || usuario.roles?.includes(rol.codigo))
       .map((rol) => rol.id)
@@ -238,7 +236,6 @@ export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
       telefono: usuario.telefono ?? '',
       password: '',
       role_ids: idsRoles,
-      // No aplica al editar: la verificación solo se decide en el alta.
       exigir_verificacion: false,
     })
   }
@@ -260,7 +257,7 @@ export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
           apellido: editForm.apellido.trim(),
           email: editForm.email.trim(),
           username: editForm.username.trim(),
-          telefono: editForm.telefono.trim() || null,
+          telefono: editForm.telefono?.trim() || null,
           role_ids: editForm.role_ids,
         },
         editando.empresa_id ?? undefined,
@@ -320,10 +317,6 @@ export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
     } finally {
       setGuardando(false)
     }
-  }
-
-  function alternarRol(lista: string[], id: string): string[] {
-    return lista.includes(id) ? lista.filter((valor) => valor !== id) : [...lista, id]
   }
 
   const columnas: Column<User>[] = [
@@ -442,107 +435,6 @@ export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
     },
   ]
 
-  const sinRolesEnAmbito = roles.length === 0 && rolesError === null
-
-  function camposComunes(
-    valores: typeof FORM_VACIO,
-    cambiar: (siguiente: typeof FORM_VACIO) => void,
-  ) {
-    return (
-      <>
-        <div className="form-grid">
-          <Field label="Nombres" error={erroresCampo.nombre}>
-            <input
-              value={valores.nombre}
-              onChange={(evento) => cambiar({ ...valores, nombre: evento.target.value })}
-              minLength={2}
-              maxLength={120}
-              required
-            />
-          </Field>
-          <Field label="Apellidos" error={erroresCampo.apellido}>
-            <input
-              value={valores.apellido}
-              onChange={(evento) => cambiar({ ...valores, apellido: evento.target.value })}
-              maxLength={120}
-              required
-            />
-          </Field>
-        </div>
-        <div className="form-grid">
-          <Field label="Correo electrónico" error={erroresCampo.email}>
-            <input
-              type="email"
-              value={valores.email}
-              onChange={(evento) => cambiar({ ...valores, email: evento.target.value })}
-              required
-            />
-          </Field>
-          <Field
-            label="Nombre de usuario"
-            hint="Mínimo 3 caracteres. Solo minúsculas, números, punto, guion y guion bajo."
-            error={erroresCampo.username}
-          >
-            <input
-              value={valores.username}
-              onChange={(evento) =>
-                cambiar({
-                  ...valores,
-                  username: evento.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ''),
-                })
-              }
-              minLength={3}
-              maxLength={80}
-              required
-            />
-          </Field>
-        </div>
-        <Field label="Teléfono" error={erroresCampo.telefono}>
-          <input
-            value={valores.telefono}
-            onChange={(evento) => cambiar({ ...valores, telefono: evento.target.value })}
-            maxLength={40}
-          />
-        </Field>
-        <Field
-          label="Roles"
-          group
-          hint={
-            esVistaGlobal
-              ? 'Roles globales de la plataforma. Obligatorio: sin rol el usuario no puede iniciar sesión.'
-              : 'Roles de esta empresa. Obligatorio: sin rol el usuario no puede iniciar sesión.'
-          }
-          error={erroresCampo.role_ids}
-        >
-          {rolesError !== null ? (
-            <Alert tone="error">{rolesError}</Alert>
-          ) : sinRolesEnAmbito ? (
-            <Alert tone="info">
-              {esVistaGlobal
-                ? 'No hay roles globales disponibles. Consulta la configuración de roles de la plataforma.'
-                : 'No hay roles disponibles en esta empresa. Crea primero un rol en «Roles y permisos».'}
-            </Alert>
-          ) : (
-            <div className="check-grid">
-              {roles.map((rol) => (
-                <label key={rol.id} className="check-label">
-                  <input
-                    type="checkbox"
-                    checked={valores.role_ids.includes(rol.id)}
-                    onChange={() =>
-                      cambiar({ ...valores, role_ids: alternarRol(valores.role_ids, rol.id) })
-                    }
-                  />
-                  {rol.name}
-                </label>
-              ))}
-            </div>
-          )}
-        </Field>
-      </>
-    )
-  }
-
   return (
     <section className="page-stack">
       <PageHeader
@@ -582,51 +474,25 @@ export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
           ? (total === 1 ? 'administrador' : 'administradores')
           : (total === 1 ? 'usuario' : 'usuarios')}`}
       >
-        <form
-          className="filters"
+        <UsuarioFiltros
+          search={search}
+          onSearchChange={setSearch}
+          estadoFiltro={estadoFiltro}
+          onEstadoFiltroChange={(valor) => {
+            setPage(1)
+            setEstadoFiltro(valor)
+          }}
+          incluirEliminados={incluirEliminados}
+          onIncluirEliminadosChange={(valor) => {
+            setPage(1)
+            setIncluirEliminados(valor)
+          }}
           onSubmit={(evento) => {
             evento.preventDefault()
             setPage(1)
             setBusqueda(search)
           }}
-        >
-          <Field label="Buscar">
-            <input
-              value={search}
-              onChange={(evento) => setSearch(evento.target.value)}
-              placeholder="Nombre, usuario o correo"
-            />
-          </Field>
-          <Field label="Estado">
-            <select
-              value={estadoFiltro}
-              onChange={(evento) => {
-                setPage(1)
-                setEstadoFiltro(evento.target.value)
-              }}
-            >
-              <option value="">Todos</option>
-              <option value="true">Solo activos</option>
-              <option value="false">Solo inactivos</option>
-            </select>
-          </Field>
-          <label className="check-label">
-            <input
-              type="checkbox"
-              checked={incluirEliminados}
-              onChange={(evento) => {
-                setPage(1)
-                setIncluirEliminados(evento.target.checked)
-              }}
-            />
-            Incluir eliminados
-          </label>
-          <div className="filters-actions">
-            <Button type="submit" variant="secondary">
-              Consultar
-            </Button>
-          </div>
-        </form>
+        />
 
         <DataTable
           columns={columnas}
@@ -658,150 +524,49 @@ export function ListadoUsuariosPage({ scope }: { scope: UserScope }) {
       </Panel>
 
       {showCreate && (
-        <Modal
-          title={esVistaGlobal ? 'Nuevo administrador global' : 'Nuevo usuario'}
-          size="lg"
+        <UsuarioModalCrear
+          esVistaGlobal={esVistaGlobal}
+          roles={roles}
+          rolesError={rolesError}
+          valores={createForm}
+          cambiar={setCreateForm}
+          guardando={guardando}
+          errorFormulario={errorFormulario}
+          erroresCampo={erroresCampo}
           onClose={() => setShowCreate(false)}
-        >
-          <form className="form-stack" onSubmit={(evento) => void crear(evento)}>
-            {camposComunes(createForm, setCreateForm)}
-
-            <Field
-              label="Contraseña provisional"
-              hint="El usuario deberá cambiarla en su primer inicio de sesión."
-              error={erroresCampo.password}
-            >
-              <input
-                type="text"
-                value={createForm.password}
-                onChange={(evento) => setCreateForm({ ...createForm, password: evento.target.value })}
-                minLength={12}
-                maxLength={72}
-                autoComplete="new-password"
-                required
-              />
-            </Field>
-            <div className="form-actions-start">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setCreateForm({ ...createForm, password: generarPassword() })}
-              >
-                Generar contraseña segura
-              </Button>
-            </div>
-            <ul className="checklist">
-              {requisitos.map((requisito) => (
-                <li key={requisito.id} className={requisito.cumple ? 'cumple' : 'pendiente'}>
-                  {requisito.texto}
-                </li>
-              ))}
-            </ul>
-
-            <label className="check-label">
-              <input
-                type="checkbox"
-                checked={createForm.exigir_verificacion}
-                onChange={(evento) =>
-                  setCreateForm({ ...createForm, exigir_verificacion: evento.target.checked })
-                }
-              />
-              Exigir que verifique su correo antes de poder entrar
-            </label>
-            {createForm.exigir_verificacion && (
-              <Alert tone="info">
-                La cuenta no podrá iniciar sesión hasta que el titular abra el enlace de
-                verificación que se le envía por correo. Si el envío de correo no está
-                configurado, la cuenta quedará inutilizable.
-              </Alert>
-            )}
-
-            {errorFormulario !== null && <Alert tone="error">{errorFormulario}</Alert>}
-
-            <div className="form-actions">
-              <Button variant="secondary" onClick={() => setShowCreate(false)} disabled={guardando}>
-                Cancelar
-              </Button>
-              <Button type="submit" loading={guardando} disabled={sinRolesEnAmbito}>
-                {esVistaGlobal ? 'Crear administrador' : 'Crear usuario'}
-              </Button>
-            </div>
-          </form>
-        </Modal>
+          onSubmit={(evento) => void crear(evento)}
+        />
       )}
 
       {editando !== null && (
-        <Modal
-          title={`Editar ${editando.nombre} ${editando.apellido}`}
-          size="lg"
+        <UsuarioModalEditar
+          usuario={editando}
+          roles={roles}
+          rolesError={rolesError}
+          valores={editForm}
+          cambiar={setEditForm}
+          guardando={guardando}
+          errorFormulario={errorFormulario}
+          erroresCampo={erroresCampo}
+          esVistaGlobal={esVistaGlobal}
           onClose={() => setEditando(null)}
-        >
-          <form className="form-stack" onSubmit={(evento) => void actualizar(evento)}>
-            {camposComunes(editForm, setEditForm)}
-            {errorFormulario !== null && <Alert tone="error">{errorFormulario}</Alert>}
-            <div className="form-actions">
-              <Button variant="secondary" onClick={() => setEditando(null)} disabled={guardando}>
-                Cancelar
-              </Button>
-              <Button type="submit" loading={guardando}>
-                Guardar cambios
-              </Button>
-            </div>
-          </form>
-        </Modal>
+          onSubmit={(evento) => void actualizar(evento)}
+        />
       )}
 
       {cambiandoClave !== null && (
-        <Modal
-          title={`Contraseña de ${cambiandoClave.nombre} ${cambiandoClave.apellido}`}
+        <UsuarioModalClave
+          usuario={cambiandoClave}
+          nuevaClave={nuevaClave}
+          onNuevaClaveChange={setNuevaClave}
+          exigirCambio={exigirCambio}
+          onExigirCambioChange={setExigirCambio}
+          guardando={guardando}
+          errorFormulario={errorFormulario}
+          erroresCampo={erroresCampo}
           onClose={() => setCambiandoClave(null)}
-        >
-          <form className="form-stack" onSubmit={(evento) => void asignarClave(evento)}>
-            <p className="text-muted">
-              Al guardar se revocan todas las sesiones activas de este usuario.
-            </p>
-            <Field label="Nueva contraseña" error={erroresCampo.new_password}>
-              <input
-                type="text"
-                value={nuevaClave}
-                onChange={(evento) => setNuevaClave(evento.target.value)}
-                minLength={12}
-                maxLength={72}
-                autoComplete="new-password"
-                required
-              />
-            </Field>
-            <div className="form-actions-start">
-              <Button variant="secondary" size="sm" onClick={() => setNuevaClave(generarPassword())}>
-                Generar contraseña segura
-              </Button>
-            </div>
-            <ul className="checklist">
-              {requisitosClave.map((requisito) => (
-                <li key={requisito.id} className={requisito.cumple ? 'cumple' : 'pendiente'}>
-                  {requisito.texto}
-                </li>
-              ))}
-            </ul>
-            <label className="check-label">
-              <input
-                type="checkbox"
-                checked={exigirCambio}
-                onChange={(evento) => setExigirCambio(evento.target.checked)}
-              />
-              Exigir cambio en el próximo inicio de sesión
-            </label>
-            {errorFormulario !== null && <Alert tone="error">{errorFormulario}</Alert>}
-            <div className="form-actions">
-              <Button variant="secondary" onClick={() => setCambiandoClave(null)} disabled={guardando}>
-                Cancelar
-              </Button>
-              <Button type="submit" loading={guardando}>
-                Asignar contraseña
-              </Button>
-            </div>
-          </form>
-        </Modal>
+          onSubmit={(evento) => void asignarClave(evento)}
+        />
       )}
 
       {accion !== null && (

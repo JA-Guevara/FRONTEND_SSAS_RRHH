@@ -30,12 +30,10 @@ export function PlataformaPage() {
 
       <Tabs items={TABS} active={activeTab} onChange={handleTabChange} />
 
-      <div className="tab-content pt-2">
-        {activeTab === 'empresas' && <AltaEmpresaPage />}
-        {activeTab === 'usuarios' && <ListadoUsuariosPage scope="platform" />}
-        {activeTab === 'planes' && <PlanesPage />}
-        {activeTab === 'respaldos' && <RespaldosPage />}
-      </div>
+      {activeTab === 'empresas' && <AltaEmpresaPage />}
+      {activeTab === 'usuarios' && <ListadoUsuariosPage scope="platform" />}
+      {activeTab === 'planes' && <PlanesPage />}
+      {activeTab === 'respaldos' && <RespaldosPage />}
     </div>
   )
 }

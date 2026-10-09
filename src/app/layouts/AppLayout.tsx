@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useAccess } from '../access/AccessProvider'
 import { NAV_ITEMS, type NavItem } from '../access/navigation'
 import { useCompanyScope } from '../context/CompanyScopeContext'
 import { Asistente } from '../../features/ayuda/components/Asistente'
+import { CommandPalette } from '../../shared/components'
 import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
 
@@ -46,6 +47,19 @@ export function AppLayout() {
 
   const expandedGroup = sectionState.pathname === pathname ? sectionState.group : activeGroup
 
+  const [commandOpen, setCommandOpen] = useState(false)
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setCommandOpen((o) => !o)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   function toggleGroup(grupo: string) {
     setSectionState({
       pathname,
@@ -68,12 +82,14 @@ export function AppLayout() {
         companies={companies}
         onSelectCompany={selectCompany}
         onClearCompany={clearCompany}
+        onOpenCommand={() => setCommandOpen(true)}
       />
       <main className="main-content">
         <Outlet />
       </main>
       <MobileNav />
       <Asistente />
+      <CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} />
     </div>
   )
 }

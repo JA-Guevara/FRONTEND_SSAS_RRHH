@@ -42,22 +42,27 @@ export function etiquetaNivelEducativo(nivel: string): string {
   return NIVELES_EDUCATIVOS[nivel.toUpperCase()] ?? enPalabras(nivel)
 }
 
-function aNumero(valor: string | null | undefined): number | null {
-  if (valor == null || valor.trim() === '') return null
-  const numero = Number(valor)
-  return Number.isFinite(numero) ? numero : null
+function aNumero(valor: string | number | null | undefined): number | null {
+  if (valor == null) return null
+  if (typeof valor === 'number') return Number.isFinite(valor) ? valor : null
+  if (typeof valor === 'string') {
+    if (valor.trim() === '') return null
+    const numero = Number(valor)
+    return Number.isFinite(numero) ? numero : null
+  }
+  return null
 }
 
-/** Importe con separador de miles y moneda. El backend manda cadenas decimales. */
-export function formatearMonto(valor: string | null | undefined): string | null {
+/** Importe con separador de miles y moneda. Acepta números o cadenas decimales. */
+export function formatearMonto(valor: string | number | null | undefined): string | null {
   const numero = aNumero(valor)
   return numero === null ? null : MONEDA.format(numero)
 }
 
 /** Rango salarial legible, o `null` si no hay nada publicado que mostrar. */
 export function formatearSalario(
-  min: string | null | undefined,
-  max: string | null | undefined,
+  min: string | number | null | undefined,
+  max: string | number | null | undefined,
 ): string | null {
   const desde = formatearMonto(min)
   const hasta = formatearMonto(max)

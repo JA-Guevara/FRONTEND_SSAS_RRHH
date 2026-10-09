@@ -45,4 +45,5 @@ export type { FormGridProps } from './FormGrid'
 export type { FieldProps, FieldRenderProps } from './Field'
 export { DescriptionList } from './DescriptionList'
 export type { DescriptionListProps, DescriptionItem } from './DescriptionList'
+export { CommandPalette } from './CommandPalette'
 

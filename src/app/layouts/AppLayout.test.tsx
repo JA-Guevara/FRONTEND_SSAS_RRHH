@@ -49,11 +49,11 @@ it('keeps the selected section open after navigating', async () => {
   const user = userEvent.setup()
 
   expect(screen.getByRole('link', { name: 'Inicio' })).toBeVisible()
-  await user.click(screen.getByRole('button', { name: 'Cuenta' }))
-  await user.click(screen.getByRole('link', { name: 'Ayuda' }))
+  await user.click(screen.getByRole('button', { name: 'Administración' }))
+  await user.click(screen.getByRole('link', { name: 'Configuración' }))
 
-  expect(screen.getByRole('button', { name: 'Cuenta' })).toHaveAttribute('aria-expanded', 'true')
-  expect(screen.getByRole('link', { name: 'Ayuda' })).toHaveClass('active')
+  expect(screen.getByRole('button', { name: 'Administración' })).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByRole('link', { name: 'Configuración' })).toHaveClass('active')
 })
 
 it('opens avatar menu and displays account links', async () => {

@@ -272,6 +272,17 @@ export function VacantesListPage() {
             </Can>
           )}
 
+          <Can permisos={PERM_CREAR}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/vacantes/nueva?duplicar=${vacante.id}`)}
+              title="Crear una nueva vacante usando los datos de esta"
+            >
+              Duplicar
+            </Button>
+          </Can>
+
           {vacante.estado === 'BORRADOR' && (
             <Can permisos={PERM_PUBLICAR}>
               <Button size="sm" onClick={() => abrirAccion(vacante, 'publicar')}>

@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   Palette,
+  Search,
   Shield,
   User as UserIcon,
   X,
@@ -34,6 +35,7 @@ export type SidebarProps = {
   companies: Empresa[]
   onSelectCompany: (empresa: Empresa) => void
   onClearCompany: () => void
+  onOpenCommand?: () => void
 }
 
 export function Sidebar({
@@ -49,6 +51,7 @@ export function Sidebar({
   companies,
   onSelectCompany,
   onClearCompany,
+  onOpenCommand,
 }: SidebarProps) {
   const esPlataforma = user?.realm === 'platform'
   const [menuUsuarioOpen, setMenuUsuarioOpen] = useState(false)
@@ -112,6 +115,23 @@ export function Sidebar({
               ))}
             </select>
           )}
+        </div>
+      )}
+
+      {onOpenCommand && (
+        <div className="sidebar-search-box">
+          <button
+            type="button"
+            className="command-trigger-btn"
+            onClick={onOpenCommand}
+            aria-label="Buscar o ejecutar comandos"
+          >
+            <span className="command-trigger-label">
+              <Search size={15} aria-hidden="true" />
+              <span>Buscar o ejecutar…</span>
+            </span>
+            <kbd className="command-kbd">⌘K</kbd>
+          </button>
         </div>
       )}
 

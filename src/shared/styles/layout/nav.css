@@ -12,6 +12,11 @@
   display: none;
 }
 
+.sidebar-search-box {
+  padding: 0 var(--space-3);
+  margin-top: var(--space-3);
+}
+
 .nav-group,
 .nav-group-links {
   display: grid;

@@ -1,12 +1,47 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { CalendarPlus, Check, Pencil, ClipboardCheck, X } from 'lucide-react'
+import { Calendar, CalendarPlus, Check, Pencil, ClipboardCheck, X } from 'lucide-react'
 import { useAccess } from '../../../app/access/AccessProvider'
 import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
 import { Alert, Button, ConfirmDialog, DataTable, EstadoBadge, Field, Modal, PageHeader, Pagination } from '../../../shared/components'
 import { EntrevistaForm } from '../components/EntrevistaForm'
 import { ResultadoForm } from '../components/ResultadoForm'
 import { cambiarEstadoEntrevista, getEntrevistas, getOpcionesEntrevistas, type Entrevista, type Entrevistador, type PostulacionOpcion } from '../api/entrevistasApi'
+
+function descargarIcsEntrevista(entrevista: Entrevista, candidato?: string, entrevistador?: string) {
+  const inicio = new Date(entrevista.fecha_hora)
+  const fin = new Date(inicio.getTime() + (entrevista.duracion_min || 45) * 60000)
+  const formatIcs = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+
+  const icsLines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//SSAS RRHH//Agenda Entrevistas//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:entrevista-${entrevista.id}@ssas-rrhh`,
+    `DTSTAMP:${formatIcs(new Date())}`,
+    `DTSTART:${formatIcs(inicio)}`,
+    `DTEND:${formatIcs(fin)}`,
+    `SUMMARY:Entrevista ${entrevista.tipo} - ${candidato || 'Candidato'}`,
+    `DESCRIPTION:Entrevista laboral ${entrevista.tipo} (${entrevista.modalidad}). Entrevistador: ${entrevistador || 'Asignado'}. ${entrevista.enlace_reunion ? `Enlace: ${entrevista.enlace_reunion}` : ''}`,
+    entrevista.enlace_reunion ? `LOCATION:${entrevista.enlace_reunion}` : '',
+    'STATUS:CONFIRMED',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].filter(Boolean)
+
+  const blob = new Blob([icsLines.join('\r\n')], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `entrevista-${inicio.toISOString().slice(0, 10)}.ics`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
 
 export function EntrevistasPage() {
   const { selectedCompanyId } = useCompanyScope()
@@ -73,6 +108,7 @@ function Agenda({ empresaId, postulacionId }: { empresaId?: string; postulacionI
       { key: 'puntaje', header: 'Resultado', render: e => e.puntaje == null ? 'Sin resultado' : `${e.puntaje}/100 · ${e.recomendacion ?? ''}` },
       { key: 'acciones', header: 'Acciones', render: e => <div className="filters-actions">
         {gestionar && ['PROGRAMADA', 'CONFIRMADA'].includes(e.estado) && <><Button variant="ghost" size="sm" title="Reprogramar" aria-label="Reprogramar" onClick={() => setEditing(e)}><Pencil size={16} /></Button>{e.estado === 'PROGRAMADA' && <Button variant="ghost" size="sm" title="Confirmar" aria-label="Confirmar" onClick={() => { setActionError(''); setTransition({ item: e, estado: 'CONFIRMADA' }) }}><Check size={16} /></Button>}<Button variant="danger-outline" size="sm" title="Cancelar entrevista" aria-label="Cancelar entrevista" onClick={() => { setActionError(''); setTransition({ item: e, estado: 'CANCELADA' }) }}><X size={16} /></Button></>}
+        {['PROGRAMADA', 'CONFIRMADA'].includes(e.estado) && <Button variant="ghost" size="sm" title="Descargar .ics para calendario" aria-label="Exportar a calendario .ics" onClick={() => descargarIcsEntrevista(e, e.nombre_postulante ?? posts.find(p => p.id === e.postulacion_id)?.nombre_postulante, e.entrevistador_nombre ?? users.find(u => u.id === e.entrevistador_id)?.nombre)}><Calendar size={16} /></Button>}
         {resultado && e.estado !== 'CANCELADA' && <Button variant="ghost" size="sm" title="Registrar resultado" aria-label="Registrar resultado" onClick={() => setResult(e)}><ClipboardCheck size={16} /></Button>}
       </div> },
     ]} />

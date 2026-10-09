@@ -22,6 +22,7 @@
 @import './components/empty.css';
 @import './components/skeleton.css';
 @import './components/toast.css';
+@import './components/command-palette.css';
 
 /* Estructura y navegación de la aplicación */
 @import './layout/shell.css';

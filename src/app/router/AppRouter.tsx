@@ -6,12 +6,11 @@ import { RegisterCompanyPage } from '../../features/auth/pages/RegisterCompanyPa
 import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { BitacoraPage } from '../../features/bitacora/pages/BitacoraPage'
-import { AltaEmpresaPage } from '../../features/empresas/pages/AltaEmpresaPage'
-import { ConfiguracionEmpresaPage } from '../../features/empresas/pages/ConfiguracionEmpresaPage'
+import { ConfiguracionPage } from '../../features/empresas/pages/ConfiguracionPage'
 import { EmpresaModulosPage } from '../../features/empresas/pages/EmpresaModulosPage'
+import { PlataformaPage } from '../../features/empresas/pages/PlataformaPage'
 import { OrganizacionPage } from '../../features/organizacion/pages/OrganizacionPage'
 import { EmpleadosPage } from '../../features/empleados/pages/EmpleadosPage'
-import { ImportacionPage } from '../../features/importacion/pages/ImportacionPage'
 import { PortalPublicoPage } from '../../features/portal/pages/PortalPublicoPage'
 import { RolesPage } from '../../features/roles/pages/RolesPage'
 import { ReportesPage } from '../../features/reportes/pages/ReportesPage'
@@ -21,14 +20,11 @@ import { TableroPage } from '../../features/tablero/pages/TableroPage'
 import { ListadoUsuariosPage } from '../../features/usuarios/pages/ListadoUsuariosPage'
 import { VacanteFormPage } from '../../features/vacantes/pages/VacanteFormPage'
 import { VacantesListPage } from '../../features/vacantes/pages/VacantesListPage'
-import { HabilidadesPage } from '../../features/habilidades/pages/HabilidadesPage'
 import { PostulantesPage } from '../../features/postulantes/pages/PostulantesPage'
 import { MiSuscripcionPage } from '../../features/suscripciones/pages/MiSuscripcionPage'
-import { PlanesPage } from '../../features/suscripciones/pages/PlanesPage'
 import { CuentaPage } from '../../features/cuenta/pages/CuentaPage'
 import { EntrevistasPage } from '../../features/entrevistas/pages/EntrevistasPage'
 import { SeleccionPage } from '../../features/seleccion/pages/SeleccionPage'
-import { AyudaPage } from '../../features/ayuda/pages/AyudaPage'
 import { SistemaVisualPage } from '../../features/dev/pages/SistemaVisualPage'
 import { FullPageStatus } from '../../shared/components'
 import { RequireAccess } from '../guards/RequireAccess'
@@ -98,16 +94,18 @@ export function AppRouter() {
         <Route path="cuenta" element={<CuentaPage />} />
         <Route path="cambiar-clave" element={<Navigate to="/cuenta?tab=seguridad" replace />} />
         <Route path="perfil" element={<Navigate to="/cuenta?tab=perfil" replace />} />
-        <Route path="ayuda" element={<AyudaPage />} />
+        <Route path="ayuda" element={<Navigate to="/configuracion?tab=conocimiento" replace />} />
 
-        <Route path="empresas" element={plataforma(<AltaEmpresaPage />, ['platform:empresas:ver'])} />
+        {/* Consola de plataforma (Superadministrador) */}
+        <Route path="plataforma" element={plataforma(<PlataformaPage />, ['platform:empresas:ver'])} />
+        <Route path="empresas" element={<Navigate to="/plataforma?tab=empresas" replace />} />
         <Route
           path="administradores-globales"
-          element={plataforma(<ListadoUsuariosPage scope="platform" />, ['platform:usuarios:gestionar'])}
+          element={<Navigate to="/plataforma?tab=usuarios" replace />}
         />
         <Route path="respaldos" element={plataforma(<RespaldosPage />, ['platform:backup:ver'])} />
         <Route path="respaldos-empresa" element={<RequireAccess permisos={['backup:ver', 'platform:backup:ver']}><RespaldosEmpresaPage /></RequireAccess>} />
-        <Route path="planes" element={plataforma(<PlanesPage />, ['platform:planes:ver'])} />
+        <Route path="planes" element={<Navigate to="/plataforma?tab=planes" replace />} />
         <Route
           path="suscripcion"
           element={
@@ -126,15 +124,17 @@ export function AppRouter() {
           path="empresas/:empresaId/modulos"
           element={plataforma(<EmpresaModulosPage />, ['platform:modulos:ver', 'platform:modulos:gestionar'])}
         />
+
+        {/* Configuración unificada de empresa */}
         <Route
-          path="empresa/configuracion"
-          element={empresa(<ConfiguracionEmpresaPage />, 'ORGANIZACION', [
+          path="configuracion"
+          element={empresa(<ConfiguracionPage />, 'ORGANIZACION', [
             'empresa:ver',
             'empresa:editar',
             'platform:empresas:ver',
           ])}
         />
-        <Route path="configuracion" element={<Navigate to="/empresa/configuracion" replace />} />
+        <Route path="empresa/configuracion" element={<Navigate to="/configuracion?tab=general" replace />} />
 
         <Route
           path="usuarios"
@@ -173,11 +173,11 @@ export function AppRouter() {
           path="empleados"
           element={empresa(<EmpleadosPage />, 'ORGANIZACION', ['empleados:ver', 'platform:empleados:ver'])}
         />
-        <Route path="importaciones" element={empresa(<ImportacionPage />, 'ORGANIZACION', ['importacion:gestionar', 'platform:importacion:gestionar'])} />
+        <Route path="importaciones" element={<Navigate to="/configuracion?tab=importaciones" replace />} />
 
         <Route path="vacantes" element={empresa(<VacantesListPage />, 'RECLUTAMIENTO', RECLUTAMIENTO)} />
         <Route path="postulantes" element={empresa(<PostulantesPage />, 'RECLUTAMIENTO', ['postulantes:ver', 'platform:postulantes:ver'])} />
-        <Route path="habilidades" element={empresa(<HabilidadesPage />, 'RECLUTAMIENTO', ['habilidades:ver', 'platform:habilidades:gestionar'])} />
+        <Route path="habilidades" element={<Navigate to="/configuracion?tab=catalogos" replace />} />
         <Route
           path="vacantes/nueva"
           element={empresa(<VacanteFormPage />, 'RECLUTAMIENTO', ['vacantes:crear', 'platform:vacantes:gestionar'])}
