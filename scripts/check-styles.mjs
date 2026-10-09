@@ -8,8 +8,6 @@ const STYLE_PROP_WHITELIST = [
   // AppLayout / Sidebar dynamic company color
   'src/app/layouts/AppLayout.tsx',
   'src/app/layouts/Sidebar.tsx',
-  // Dynamic color dot or avatar
-  'src/app/layouts/ThemeToggle.tsx',
   // Dynamic brand primary color preview swatch
   'src/features/empresas/pages/ConfiguracionEmpresaPage.tsx',
   // Dev design system showcase page

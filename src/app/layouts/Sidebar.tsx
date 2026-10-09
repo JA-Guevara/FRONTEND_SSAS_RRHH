@@ -19,7 +19,7 @@ import type { NavItem } from '../access/navigation'
 import type { User } from '../../features/auth/context/AuthContext'
 import type { components } from '../../shared/api/schema'
 import { NavGroup } from './NavGroup'
-import { ThemeToggle } from './ThemeToggle'
+import { SelectorTema } from './SelectorTema'
 
 type Empresa = components['schemas']['EmpresaResponse']
 
@@ -229,8 +229,8 @@ export function Sidebar({
             <div className="sidebar-dropdown-divider" />
 
             <div className="sidebar-dropdown-footer">
-              <span className="sidebar-dropdown-email">Tema:</span>
-              <ThemeToggle />
+              <span className="sidebar-dropdown-email">Tema</span>
+              <SelectorTema />
             </div>
 
             <div className="sidebar-dropdown-divider" />
