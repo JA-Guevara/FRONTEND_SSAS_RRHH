@@ -45,3 +45,70 @@
 .tab .badge {
   margin-left: var(--space-2);
 }
+
+/* R4-13 · Riel vertical: para pantallas de configuración con muchas secciones */
+.tabs-rail {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+}
+
+.tabs-rail .tabs-select {
+  display: none;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .tabs-rail .tabs {
+    display: none;
+  }
+
+  .tabs-rail .tabs-select {
+    display: block;
+  }
+
+  .tabs-rail-scroll .tabs {
+    display: flex;
+  }
+
+  .tabs-rail-scroll .tabs-select {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tabs-rail {
+    grid-template-columns: 208px minmax(0, 1fr);
+  }
+
+  .tabs-rail .tabs {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    gap: var(--space-1);
+    border-bottom: 0;
+    border-right: 1px solid var(--line);
+    padding-right: var(--space-4);
+    position: sticky;
+    top: var(--space-6);
+    align-self: start;
+  }
+
+  .tabs-rail .tab {
+    width: 100%;
+    text-align: left;
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 0;
+    border-radius: var(--radius-md);
+    white-space: normal;
+  }
+
+  .tabs-rail .tab[aria-selected='true'] {
+    background: var(--brand-100);
+    box-shadow: inset 3px 0 0 var(--brand-600);
+  }
+
+  .tabs-rail .tabs-select {
+    display: none;
+  }
+}
