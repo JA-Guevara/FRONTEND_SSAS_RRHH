@@ -21,6 +21,45 @@ type Message = {
 }
 
 const STORAGE_KEY = 'ssas_asistente_historial'
+const SUGERENCIA_KEY = 'ssas_asistente_sugerencia'
+const PULSO_KEY = 'ssas_asistente_pulso'
+const RETRASO_SUGERENCIA_MS = 3000
+const DURACION_PULSO_MS = 7200
+
+const SUGERENCIAS_PANTALLA = [
+  { prefijo: '/seleccion', texto: '¿Querés que analice los CV pendientes?' },
+  { prefijo: '/vacantes', texto: 'Puedo duplicar una vacante del mes pasado' },
+  {
+    prefijo: '/reportes',
+    texto: 'Pedime un reporte hablando: «postulaciones de septiembre»',
+  },
+]
+
+function sugerenciaDePantalla(pathname: string) {
+  const item = SUGERENCIAS_PANTALLA.find((sugerencia) =>
+    pathname.startsWith(sugerencia.prefijo)
+  )
+  if (!item) return null
+  return { clave: `${SUGERENCIA_KEY}:${item.prefijo}`, texto: item.texto }
+}
+
+function sinSugerenciaPrevia(clave: string) {
+  try {
+    return !sessionStorage.getItem(clave)
+  } catch {
+    return true
+  }
+}
+
+function primerPulsoDeLaSesion() {
+  try {
+    if (sessionStorage.getItem(PULSO_KEY)) return false
+    sessionStorage.setItem(PULSO_KEY, '1')
+    return true
+  } catch {
+    return true
+  }
+}
 
 function TarjetaConfirmacion({
   accion,
@@ -122,6 +161,10 @@ export function Asistente({ slug, contexto }: AsistenteProps) {
   const [listening, setListening] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(false)
   const [destello, setDestello] = useState(false)
+  const [sugerencia, setSugerencia] = useState<{ clave: string; texto: string } | null>(
+    null
+  )
+  const [llamando, setLlamando] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const endRef = useRef<HTMLDivElement>(null)
@@ -215,6 +258,44 @@ export function Asistente({ slug, contexto }: AsistenteProps) {
     return () => window.clearTimeout(timer)
   }, [messages])
 
+  // R4-12 · Globo de sugerencia: a los 3 s en pantallas concretas, solo si el
+  // usuario todavía no interactuó y no la cerró antes en esta sesión.
+  useEffect(() => {
+    setSugerencia(null)
+    setLlamando(false)
+    if (slug || open) return
+    const candidata = sugerenciaDePantalla(currentPath)
+    if (!candidata || !sinSugerenciaPrevia(candidata.clave)) return
+
+    let interactuo = false
+    const marcarInteraccion = () => {
+      interactuo = true
+    }
+    document.addEventListener('pointerdown', marcarInteraccion, true)
+    document.addEventListener('keydown', marcarInteraccion, true)
+
+    const timer = window.setTimeout(() => {
+      document.removeEventListener('pointerdown', marcarInteraccion, true)
+      document.removeEventListener('keydown', marcarInteraccion, true)
+      if (interactuo) return
+      setSugerencia(candidata)
+      if (primerPulsoDeLaSesion()) setLlamando(true)
+    }, RETRASO_SUGERENCIA_MS)
+
+    return () => {
+      window.clearTimeout(timer)
+      document.removeEventListener('pointerdown', marcarInteraccion, true)
+      document.removeEventListener('keydown', marcarInteraccion, true)
+    }
+  }, [currentPath, open, slug])
+
+  // El pulso del lanzador dura lo que el keyframes (3 vueltas de 2.4 s)
+  useEffect(() => {
+    if (!llamando) return
+    const timer = window.setTimeout(() => setLlamando(false), DURACION_PULSO_MS)
+    return () => window.clearTimeout(timer)
+  }, [llamando])
+
   async function send(value = question) {
     const text = value.trim()
     if (text.length < 3 || loading) return
@@ -295,6 +376,18 @@ export function Asistente({ slug, contexto }: AsistenteProps) {
           : m
       )
     )
+  }
+
+  function cerrarSugerencia() {
+    if (sugerencia) {
+      try {
+        sessionStorage.setItem(sugerencia.clave, '1')
+      } catch {
+        // Sin storage la sugerencia podrá ofrecerse de nuevo
+      }
+    }
+    setSugerencia(null)
+    setLlamando(false)
   }
 
   async function openSource(id: string) {
@@ -469,8 +562,22 @@ export function Asistente({ slug, contexto }: AsistenteProps) {
         </section>
       )}
 
+      {sugerencia && (
+        <div className="asistente-hint" role="status">
+          <p>{sugerencia.texto}</p>
+          <button
+            type="button"
+            aria-label="Cerrar sugerencia"
+            title="Cerrar sugerencia"
+            onClick={cerrarSugerencia}
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       <button
-        className="asistente-launcher"
+        className={`asistente-launcher${llamando ? ' llamando' : ''}`}
         type="button"
         onClick={() => setOpen(!open)}
         aria-label={open ? 'Ocultar asistente' : 'Abrir asistente'}

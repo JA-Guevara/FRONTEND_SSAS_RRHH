@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { beforeEach, expect, test, vi } from 'vitest'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { asistenteApi } from '../api/asistenteApi'
 import { Asistente } from './Asistente'
@@ -22,6 +22,11 @@ vi.mock('../api/chatbotApi', () => ({
 beforeEach(() => {
   vi.clearAllMocks()
   sessionStorage.clear()
+  window.history.pushState({}, '', '/')
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 test('Asistente opens and shows suggested questions and greetings', async () => {
@@ -118,4 +123,72 @@ test('El robot del lanzador refleja el estado del asistente', async () => {
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Servidor ocupado')
   expect(document.querySelector('.asistente-avatar--alerta')).not.toBeNull()
+})
+
+async function montarEn(ruta: string) {
+  window.history.pushState({}, '', ruta)
+  vi.useFakeTimers()
+  const vista = render(
+    <MemoryRouter>
+      <Asistente />
+    </MemoryRouter>
+  )
+  await act(async () => {})
+  return vista
+}
+
+function avanzar(ms: number) {
+  act(() => {
+    vi.advanceTimersByTime(ms)
+  })
+}
+
+test('Ofrece la sugerencia de la pantalla a los 3 segundos', async () => {
+  await montarEn('/vacantes')
+
+  expect(screen.queryByText('Puedo duplicar una vacante del mes pasado')).toBeNull()
+
+  avanzar(3000)
+
+  expect(screen.getByRole('status')).toHaveTextContent(
+    'Puedo duplicar una vacante del mes pasado'
+  )
+  expect(screen.getByRole('button', { name: 'Abrir asistente' })).toHaveClass('llamando')
+  expect(sessionStorage.getItem('ssas_asistente_pulso')).toBe('1')
+})
+
+test('La sugerencia cerrada no vuelve a aparecer en esa pantalla', async () => {
+  const { unmount } = await montarEn('/reportes')
+  avanzar(3000)
+
+  expect(screen.getByText('Pedime un reporte hablando: «postulaciones de septiembre»')).toBeInTheDocument()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Cerrar sugerencia' }))
+  expect(screen.queryByText(/Pedime un reporte hablando/)).toBeNull()
+  expect(screen.getByRole('button', { name: 'Abrir asistente' })).not.toHaveClass(
+    'llamando'
+  )
+
+  unmount()
+  await montarEn('/reportes')
+  avanzar(3000)
+
+  expect(screen.queryByText(/Pedime un reporte hablando/)).toBeNull()
+})
+
+test('No muestra la sugerencia si el usuario ya interactuó', async () => {
+  await montarEn('/seleccion')
+
+  fireEvent.pointerDown(document.body)
+  avanzar(3000)
+
+  expect(screen.queryByText('¿Querés que analice los CV pendientes?')).toBeNull()
+})
+
+test('No muestra globo en pantallas sin sugerencia', async () => {
+  await montarEn('/empleados')
+
+  avanzar(3000)
+
+  expect(document.querySelector('.asistente-hint')).toBeNull()
 })
