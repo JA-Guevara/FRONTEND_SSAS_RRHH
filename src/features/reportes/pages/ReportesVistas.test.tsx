@@ -66,32 +66,37 @@ const mockCatalog = [
 
 beforeEach(() => {
   vi.mocked(reportesApi.catalog).mockReset().mockResolvedValue(mockCatalog)
-  vi.mocked(reportesApi.getPanel).mockReset().mockResolvedValue([
-    {
-      id: 'default-kpi-postulaciones',
-      empresa_id: 'company-a',
-      usuario_id: 'user-1',
-      titulo: 'Postulaciones',
-      tipo: 'kpi',
-      consulta: { fuente: 'postulaciones', medidas: [{ agregacion: 'conteo' }] },
-      posicion: 0,
-      ancho: 1,
-      activo: true,
-      fecha_registro: '2026-10-08T12:00:00Z',
-    },
-    {
-      id: 'default-embudo',
-      empresa_id: 'company-a',
-      usuario_id: 'user-1',
-      titulo: 'Embudo de selección',
-      tipo: 'embudo',
-      consulta: { fuente: 'postulaciones', medidas: [{ agregacion: 'conteo' }], agrupar_por: ['etapa'] },
-      posicion: 1,
-      ancho: 2,
-      activo: true,
-      fecha_registro: '2026-10-08T12:00:00Z',
-    },
-  ])
+  vi.mocked(reportesApi.getPanel).mockReset().mockResolvedValue({
+    origen: 'predeterminadas',
+    omitidas_por_permiso: [],
+    fuentes_disponibles: ['postulaciones'],
+    widgets: [
+      {
+        id: 'default-kpi-postulaciones',
+        empresa_id: 'company-a',
+        usuario_id: 'user-1',
+        titulo: 'Postulaciones',
+        tipo: 'kpi',
+        consulta: { fuente: 'postulaciones', medidas: [{ agregacion: 'conteo' }] },
+        posicion: 0,
+        ancho: 1,
+        activo: true,
+        fecha_registro: '2026-10-08T12:00:00Z',
+      },
+      {
+        id: 'default-embudo',
+        empresa_id: 'company-a',
+        usuario_id: 'user-1',
+        titulo: 'Embudo de selección',
+        tipo: 'embudo',
+        consulta: { fuente: 'postulaciones', medidas: [{ agregacion: 'conteo' }], agrupar_por: ['etapa'] },
+        posicion: 1,
+        ancho: 2,
+        activo: true,
+        fecha_registro: '2026-10-08T12:00:00Z',
+      },
+    ],
+  })
   vi.mocked(reportesApi.agregado).mockReset().mockResolvedValue({
     series: [{ claves: { etapa: 'Entrevista' }, valores: { conteo: 42 } }],
     medidas: ['conteo'],
@@ -130,6 +135,23 @@ describe('VISTA 1 · Panel de indicadores', () => {
     await waitFor(() => {
       expect(reportesApi.agregado).toHaveBeenCalled()
     })
+  })
+
+  it('explica un panel vacío en vez de dejar la vista en blanco', async () => {
+    vi.mocked(reportesApi.getPanel).mockResolvedValue({
+      origen: 'predeterminadas',
+      omitidas_por_permiso: ['Postulaciones — requiere «postulaciones:ver»'],
+      fuentes_disponibles: ['reportes'],
+      widgets: [],
+    })
+
+    render(<ReportesPage initialTab="panel" />)
+
+    expect(await screen.findByText('Tu panel todavía no tiene indicadores')).toBeInTheDocument()
+    expect(screen.getByText(/postulaciones:ver/)).toBeInTheDocument()
+    expect(screen.getByText(/Podés reportar sobre: reportes/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Crear un indicador/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Pedir acceso al administrador/ })).toBeInTheDocument()
   })
 })
 

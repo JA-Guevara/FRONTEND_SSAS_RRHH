@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { AlertCircle, Calendar, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { AlertCircle, Calendar, Copy, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
-import { Button, Panel } from '../../../shared/components'
+import { Button, EmptyState, Panel } from '../../../shared/components'
 import {
   reportesApi,
   type ConsultaAgregada,
+  type PanelResponse,
   type RespuestaAgregada,
   type WidgetPanel,
 } from '../api/reportesApi'
@@ -33,13 +34,23 @@ export function PanelView({ onNavigateToBuilder }: PanelViewProps) {
   const [widgetStates, setWidgetStates] = useState<Record<string, WidgetExecution>>({})
   const [loadingPanel, setLoadingPanel] = useState(true)
   const [panelError, setPanelError] = useState<string | null>(null)
+  const [meta, setMeta] = useState<Pick<PanelResponse, 'omitidas_por_permiso' | 'fuentes_disponibles'>>({
+    omitidas_por_permiso: [],
+    fuentes_disponibles: [],
+  })
+  const [permisosCopiados, setPermisosCopiados] = useState(false)
 
   const loadWidgets = useCallback(async () => {
     setLoadingPanel(true)
     setPanelError(null)
     try {
-      const items = await reportesApi.getPanel(company?.id)
-      setWidgets(items)
+      const panel = await reportesApi.getPanel(company?.id)
+      setWidgets(panel.widgets)
+      setMeta({
+        omitidas_por_permiso: panel.omitidas_por_permiso,
+        fuentes_disponibles: panel.fuentes_disponibles,
+      })
+      setPermisosCopiados(false)
     } catch (err) {
       setPanelError(err instanceof Error ? err.message : 'No se pudo cargar el panel.')
     } finally {
@@ -96,8 +107,19 @@ export function PanelView({ onNavigateToBuilder }: PanelViewProps) {
     }
   }
 
+  async function handlePedirAcceso() {
+    const texto = `Para ver mi panel necesito estos permisos: ${meta.omitidas_por_permiso.join('; ')}`
+    try {
+      await navigator.clipboard.writeText(texto)
+      setPermisosCopiados(true)
+    } catch {
+      setPermisosCopiados(false)
+    }
+  }
+
   const kpis = widgets.filter((w) => w.tipo === 'kpi')
   const charts = widgets.filter((w) => w.tipo !== 'kpi')
+  const panelVacio = !loadingPanel && !panelError && widgets.length === 0
 
   return (
     <section className="page-stack">
@@ -134,8 +156,48 @@ export function PanelView({ onNavigateToBuilder }: PanelViewProps) {
         </div>
       )}
 
+      {panelVacio && (
+        <EmptyState
+          title="Tu panel todavía no tiene indicadores"
+          message={
+            meta.omitidas_por_permiso.length > 0
+              ? 'No tenés permiso sobre las fuentes de las tarjetas predeterminadas:'
+              : 'Todavía no fijaste ninguna tarjeta en tu panel.'
+          }
+          action={
+            <>
+              {meta.omitidas_por_permiso.length > 0 && (
+                <ul className="report-empty-list">
+                  {meta.omitidas_por_permiso.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+              {meta.fuentes_disponibles.length > 0 && (
+                <p className="report-empty-sources">
+                  Podés reportar sobre: {meta.fuentes_disponibles.join(', ')}
+                </p>
+              )}
+              <div className="report-empty-actions">
+                <Button size="sm" onClick={onNavigateToBuilder}>
+                  <Plus size={16} aria-hidden="true" />
+                  Crear un indicador
+                </Button>
+                {meta.omitidas_por_permiso.length > 0 && (
+                  <Button size="sm" variant="secondary" onClick={() => void handlePedirAcceso()}>
+                    <Copy size={16} aria-hidden="true" />
+                    {permisosCopiados ? 'Permisos copiados' : 'Pedir acceso al administrador'}
+                  </Button>
+                )}
+              </div>
+            </>
+          }
+        />
+      )}
+
       {/* 1. KPIs titulares */}
-      <div className="report-kpi-grid">
+      {(loadingPanel || kpis.length > 0) && (
+        <div className="report-kpi-grid">
         {loadingPanel && (
           <>
             <div className="report-kpi-card"><span>Cargando indicador…</span></div>
@@ -183,10 +245,12 @@ export function PanelView({ onNavigateToBuilder }: PanelViewProps) {
               />
             )
           })}
-      </div>
+        </div>
+      )}
 
       {/* 2. Gráficos interactivos */}
-      <div className="report-panel-grid">
+      {(loadingPanel || charts.length > 0) && (
+        <div className="report-panel-grid">
         {loadingPanel && (
           <>
             <Panel title="Cargando gráfico…" eyebrow="Panel">
@@ -312,7 +376,8 @@ export function PanelView({ onNavigateToBuilder }: PanelViewProps) {
               </div>
             )
           })}
-      </div>
+        </div>
+      )}
     </section>
   )
 }

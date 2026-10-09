@@ -110,6 +110,13 @@ export type CrearWidgetPanel = {
   ancho?: number
 }
 
+export type PanelResponse = {
+  widgets: WidgetPanel[]
+  origen: 'guardadas' | 'predeterminadas'
+  omitidas_por_permiso: string[]
+  fuentes_disponibles: string[]
+}
+
 export type ConteoResponse = {
   total: number
   excede_limite: boolean
@@ -161,7 +168,7 @@ export const reportesApi = {
       method: 'POST', body: consulta,
     }),
   getPanel: (empresaId?: string) =>
-    apiRequest<WidgetPanel[]>(`/api/v1/reportes/panel${scope(empresaId)}`),
+    apiRequest<PanelResponse>(`/api/v1/reportes/panel${scope(empresaId)}`),
   createWidget: (body: CrearWidgetPanel, empresaId?: string) =>
     apiRequest<WidgetPanel>(`/api/v1/reportes/panel${scope(empresaId)}`, {
       method: 'POST', body,
