@@ -61,6 +61,54 @@ describe('Visual Primitives', () => {
     expect(handleChange).toHaveBeenCalledWith('tab2')
   })
 
+  it('Tabs variante riel monta el riel y el selector de móvil', async () => {
+    const handleChange = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <Tabs
+        items={[
+          { id: 'resumen', label: 'Resumen' },
+          { id: 'empresas', label: 'Empresas', count: 12 },
+        ]}
+        active="resumen"
+        onChange={handleChange}
+        variant="riel"
+      />
+    )
+
+    expect(document.querySelector('.tabs-rail')).toBeInTheDocument()
+    expect(document.querySelector('.tabs-rail-scroll')).toBeNull()
+    expect(screen.getByRole('tab', { name: /Empresas/ })).toBeInTheDocument()
+
+    const select = screen.getByLabelText('Sección')
+    await user.selectOptions(select, 'empresas')
+    expect(handleChange).toHaveBeenCalledWith('empresas')
+  })
+
+  it('Tabs riel con mobileAs scroll no monta el selector', () => {
+    render(
+      <Tabs
+        items={[{ id: 'general', label: 'General' }]}
+        active="general"
+        onChange={vi.fn()}
+        variant="riel"
+        mobileAs="scroll"
+      />
+    )
+
+    expect(document.querySelector('.tabs-rail-scroll')).toBeInTheDocument()
+    expect(document.querySelector('.tabs-select')).toBeNull()
+    expect(screen.getByRole('tab', { name: 'General' })).toBeInTheDocument()
+  })
+
+  it('Tabs barra por defecto no usa el riel', () => {
+    render(
+      <Tabs items={[{ id: 'general', label: 'General' }]} active="general" onChange={vi.fn()} />
+    )
+
+    expect(document.querySelector('.tabs-rail')).toBeNull()
+  })
+
   it('Skeleton renders variants without crashing', () => {
     const { container } = render(<Skeleton rows={4} variant="text" />)
     expect(container.querySelectorAll('.skeleton-text').length).toBe(4)

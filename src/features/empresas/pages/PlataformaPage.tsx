@@ -28,7 +28,7 @@ export function PlataformaPage() {
         subtitle="Control centralizado de organizaciones clientes, usuarios globales, planes comerciales y respaldos del sistema."
       />
 
-      <Tabs items={TABS} active={activeTab} onChange={handleTabChange} />
+      <Tabs items={TABS} active={activeTab} onChange={handleTabChange} variant="riel" />
 
       {activeTab === 'empresas' && <AltaEmpresaPage />}
       {activeTab === 'usuarios' && <ListadoUsuariosPage scope="platform" />}
