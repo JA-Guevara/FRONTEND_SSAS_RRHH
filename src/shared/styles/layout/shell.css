@@ -32,6 +32,26 @@
   gap: var(--space-3);
 }
 
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--brand-700);
+  color: var(--on-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.brand-mark-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .sidebar-top {
   display: flex;
   align-items: center;
@@ -143,22 +163,22 @@
 }
 
 .scope-header-chip strong {
-  color: var(--ink);
+  color: var(--on-inverse);
   font-size: var(--text-base);
 }
 
 .scope-header-select {
   min-height: var(--control-h);
   margin-left: auto;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-md);
   padding: 0 var(--space-3);
-  color: var(--ink);
-  background: var(--paper);
+  color: var(--on-inverse);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .scope-header-hint {
-  color: var(--muted);
+  color: var(--on-inverse-muted);
   font-size: var(--text-xs);
 }
 

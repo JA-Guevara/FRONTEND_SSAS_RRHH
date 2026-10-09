@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { AlertCircle, Calendar, Copy, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { AlertCircle, Calendar, Copy, Download, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { useCompanyScope } from '../../../app/context/CompanyScopeContext'
 import { Button, EmptyState, Panel } from '../../../shared/components'
 import {
   reportesApi,
+  saveBlob,
   type ConsultaAgregada,
   type PanelResponse,
   type RespuestaAgregada,
@@ -14,6 +15,7 @@ import { BarrasHorizontales } from '../components/charts/BarrasHorizontales'
 import { Embudo } from '../components/charts/Embudo'
 import { KpiCard, type KpiDelta } from '../components/charts/KpiCard'
 import { Linea } from '../components/charts/Linea'
+import { LineaTiempo } from '../components/charts/LineaTiempo'
 
 type PeriodoOption = '30d' | 'mes' | '90d' | 'anio'
 
@@ -39,6 +41,7 @@ export function PanelView({ onNavigateToBuilder }: PanelViewProps) {
     fuentes_disponibles: [],
   })
   const [permisosCopiados, setPermisosCopiados] = useState(false)
+  const [exportingPdf, setExportingPdf] = useState(false)
 
   const loadWidgets = useCallback(async () => {
     setLoadingPanel(true)
@@ -117,6 +120,18 @@ export function PanelView({ onNavigateToBuilder }: PanelViewProps) {
     }
   }
 
+  async function handleExportarPanelPdf() {
+    setExportingPdf(true)
+    try {
+      const blob = await reportesApi.exportPanelPdf(company?.id)
+      saveBlob(blob, `panel_ejecutivo_${company?.slug || 'empresa'}.pdf`)
+    } catch {
+      // Ignorar o error capturado
+    } finally {
+      setExportingPdf(false)
+    }
+  }
+
   const kpis = widgets.filter((w) => w.tipo === 'kpi')
   const charts = widgets.filter((w) => w.tipo !== 'kpi')
   const panelVacio = !loadingPanel && !panelError && widgets.length === 0
@@ -141,10 +156,22 @@ export function PanelView({ onNavigateToBuilder }: PanelViewProps) {
             <option value="anio">Este año</option>
           </select>
         </div>
-        <Button size="sm" variant="secondary" onClick={onNavigateToBuilder}>
-          <Plus size={16} aria-hidden="true" />
-          Personalizar panel
-        </Button>
+        <div className="report-period-group">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => void handleExportarPanelPdf()}
+            disabled={exportingPdf || loadingPanel || widgets.length === 0}
+            title="Descargar informe ejecutivo en PDF con todas las métricas del panel"
+          >
+            <Download size={16} aria-hidden="true" />
+            {exportingPdf ? 'Exportando…' : 'Exportar PDF'}
+          </Button>
+          <Button size="sm" variant="secondary" onClick={onNavigateToBuilder}>
+            <Plus size={16} aria-hidden="true" />
+            Personalizar panel
+          </Button>
+        </div>
       </div>
 
       {panelError && (
@@ -343,6 +370,17 @@ export function PanelView({ onNavigateToBuilder }: PanelViewProps) {
                             valor: Math.round(Object.values(s.valores)[0] ?? 0),
                           }))}
                           etiquetaMedida={state.data.medidas[0]}
+                        />
+                      )}
+
+                      {widget.tipo === 'linea_tiempo' && (
+                        <LineaTiempo
+                          items={state.data.series.map((s, idx) => ({
+                            id: String(idx),
+                            fecha: String(s.claves.fecha || s.claves.fecha_postulacion || 'Hoy'),
+                            titulo: String(s.claves.evento || s.claves.accion || s.claves.etapa || 'Evento'),
+                            conteo: s.valores.conteo,
+                          }))}
                         />
                       )}
 

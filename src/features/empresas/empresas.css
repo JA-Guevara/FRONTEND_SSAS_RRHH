@@ -114,3 +114,161 @@
   color: var(--warning-ink);
   font-weight: 600;
 }
+
+/* Maqueta en vivo del portal (R4-24) */
+.portal-live-mockup {
+  margin-top: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.portal-mockup-header {
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.portal-mockup-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.portal-mockup-logo {
+  max-height: 28px;
+  max-width: 100px;
+  object-fit: contain;
+}
+
+.portal-mockup-body {
+  padding: var(--space-4);
+}
+
+.portal-mockup-hero {
+  margin-bottom: var(--space-4);
+}
+
+.portal-mockup-hero h4 {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+.portal-mockup-jobs {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.portal-mockup-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-2);
+}
+
+.portal-mockup-card-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.portal-mockup-card-meta {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.stat-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stat-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-card-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.stat-card-value {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.stat-card-sub {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.periodo-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.empresa-table-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.empresa-logo-table {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background-color: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.empresa-avatar-fallback {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-100);
+  color: var(--brand-700);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: var(--text-xs);
+  border: 1px solid var(--line);
+}
+
+

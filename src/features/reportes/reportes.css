@@ -496,3 +496,197 @@
   gap: var(--space-2);
   justify-content: center;
 }
+
+.report-row-projection {
+  font-style: italic;
+  color: var(--brand-700);
+}
+
+/* 7. Línea de tiempo de eventos (R4-07) */
+.report-widget-title {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.report-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: relative;
+  padding-left: var(--space-6);
+}
+
+.report-timeline::before {
+  content: '';
+  position: absolute;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  left: 9px;
+  width: 2px;
+  background-color: var(--line);
+}
+
+.report-timeline-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.report-timeline-date {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.report-timeline-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.report-timeline-item:hover {
+  border-color: var(--brand-600);
+}
+
+.report-timeline-marker {
+  position: absolute;
+  left: calc(-1 * var(--space-6) + 4px);
+  top: var(--space-3);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 2px solid var(--brand-600);
+}
+
+.report-timeline-marker-warn {
+  border-color: var(--warning);
+}
+
+.report-timeline-marker-error {
+  border-color: var(--danger);
+}
+
+.report-timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.report-timeline-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.report-timeline-sub {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.report-badge-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  min-height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--brand-100);
+  color: var(--brand-700);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+/* 8. Comparador de períodos en explorador (R4-08) */
+.report-comparison-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.report-comparison-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.report-comparison-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+
+.report-comparison-value {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.report-comparison-caption {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.report-comparison-divider {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--muted);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.report-comparison-delta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.report-delta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.report-delta-chip.report-delta-up {
+  background: var(--brand-100);
+  color: var(--brand-700);
+}
+
+.report-delta-chip.report-delta-down {
+  background: var(--warning-bg);
+  color: var(--warning-ink);
+}

@@ -36,6 +36,15 @@
   font-size: var(--text-lg);
 }
 
+.public-brand-logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  background-color: var(--paper);
+  border: 1px solid var(--line);
+}
+
 .brand-mark {
   display: inline-flex;
   align-items: center;

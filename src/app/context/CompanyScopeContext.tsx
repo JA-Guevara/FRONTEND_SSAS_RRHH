@@ -22,6 +22,26 @@ type CompanyScopeContextValue = {
 const STORAGE_KEY = 'ssas.selected-company-id'
 const CompanyScopeContext = createContext<CompanyScopeContextValue | null>(null)
 
+function calcularLuminancia(hex: string): number {
+  const c = hex.replace('#', '')
+  if (c.length !== 6) return 0.5
+  const r = parseInt(c.substring(0, 2), 16) / 255
+  const g = parseInt(c.substring(2, 4), 16) / 255
+  const b = parseInt(c.substring(4, 6), 16) / 255
+  const [lr, lg, lb] = [r, g, b].map((v) =>
+    v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4),
+  )
+  return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb
+}
+
+export function inkSobre(hex?: string | null): string {
+  if (!hex || !/^#[0-9A-Fa-f]{6}$/.test(hex)) return '#ffffff'
+  const lum = calcularLuminancia(hex)
+  const contrastBlanco = 1.05 / (lum + 0.05)
+  const contrastOscuro = (lum + 0.05) / 0.057
+  return contrastBlanco >= contrastOscuro ? '#ffffff' : '#0f1411'
+}
+
 /**
  * Única fuente de verdad de la empresa activa:
  * - Plataforma: catálogo de empresas y selección persistida del usuario.
@@ -37,6 +57,20 @@ export function CompanyScopeProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
+
+  // Inyectar tokens de marca corporativa en :root
+  useEffect(() => {
+    if (company?.color_primario) {
+      document.documentElement.style.setProperty('--empresa-brand', company.color_primario)
+      document.documentElement.style.setProperty(
+        '--empresa-brand-ink',
+        inkSobre(company.color_primario),
+      )
+    } else {
+      document.documentElement.style.removeProperty('--empresa-brand')
+      document.documentElement.style.removeProperty('--empresa-brand-ink')
+    }
+  }, [company?.color_primario])
 
   const realm = status === 'authenticated' ? (user?.realm ?? null) : null
   const esPlataforma = realm === 'platform'

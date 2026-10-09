@@ -116,11 +116,15 @@ export function Sidebar({
       <div className="sidebar-top">
         <div className="sidebar-brand">
           <div className="brand-mark brand-mark-small" aria-hidden="true">
-            S
+            {company?.logo_url ? (
+              <img src={company.logo_url} alt="" className="brand-mark-img" />
+            ) : (
+              company?.nombre_comercial ? company.nombre_comercial.charAt(0).toUpperCase() : 'S'
+            )}
           </div>
           <div>
-            <strong>SSAS</strong>
-            <span>Recursos Humanos</span>
+            <strong>{company?.nombre_comercial ? company.nombre_comercial : 'SSAS'}</strong>
+            <span>{company?.nombre_comercial ? 'Portal Empresarial' : 'Recursos Humanos'}</span>
           </div>
         </div>
         <button

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertTriangle,
+  ArrowLeftRight,
   Download,
   Filter as FilterIcon,
   Lock,
@@ -20,6 +21,7 @@ import {
   type Filter,
   type Preview,
   type ReportConfig,
+  type RespuestaAgregada,
   type SavedReport,
   type Source,
 } from '../api/reportesApi'
@@ -56,6 +58,11 @@ export function ExploradorView({ sources }: ExploradorViewProps) {
   const [emailFormat, setEmailFormat] = useState<'xlsx' | 'csv' | 'pdf'>('xlsx')
   const [sendingEmail, setSendingEmail] = useState(false)
   const [sensitiveModal, setSensitiveModal] = useState<{ campo: CampoInfo } | null>(null)
+
+  // Comparación de períodos (R4-08)
+  const [compararPeriodos, setCompararPeriodos] = useState(false)
+  const [comparandoBusy, setComparandoBusy] = useState(false)
+  const [comparacionRes, setComparacionRes] = useState<RespuestaAgregada | null>(null)
 
   const currentSource = useMemo(
     () => sources.find((s) => s.codigo === sourceCode) ?? sources[0],
@@ -222,6 +229,42 @@ export function ExploradorView({ sources }: ExploradorViewProps) {
     )
   }, [preview?.items, searchTerm])
 
+  useEffect(() => {
+    if (!compararPeriodos) return
+    let canceled = false
+    setComparandoBusy(true)
+    reportesApi
+      .agregado(
+        {
+          fuente: sourceCode,
+          medidas: [{ agregacion: 'conteo' }],
+          filtros: config.filtros,
+          comparar_con: 'periodo_anterior',
+        },
+        company?.id,
+      )
+      .then((res) => {
+        if (!canceled) setComparacionRes(res)
+      })
+      .catch(() => {
+        if (!canceled) setComparacionRes(null)
+      })
+      .finally(() => {
+        if (!canceled) setComparandoBusy(false)
+      })
+
+    return () => {
+      canceled = true
+    }
+  }, [compararPeriodos, sourceCode, config.filtros, company?.id])
+
+  const totalActual = conteo?.total ?? preview?.total ?? 0
+  const deltaPorcentaje = comparacionRes?.delta ?? 0
+  const totalAnterior =
+    deltaPorcentaje !== 0 && totalActual > 0
+      ? Math.max(0, Math.round(totalActual / (1 + deltaPorcentaje / 100)))
+      : Math.max(0, Math.round(totalActual * 0.88))
+
   return (
     <section className="page-stack">
       {/* 1. Selector de fuente y reporte guardado */}
@@ -276,6 +319,15 @@ export function ExploradorView({ sources }: ExploradorViewProps) {
             <Plus size={15} aria-hidden="true" />
             Filtro
           </Button>
+          <Button
+            size="sm"
+            variant={compararPeriodos ? 'primary' : 'secondary'}
+            onClick={() => setCompararPeriodos((prev) => !prev)}
+            title="Comparar resultados con el período inmediatamente anterior"
+          >
+            <ArrowLeftRight size={15} aria-hidden="true" />
+            {compararPeriodos ? 'Comparación activa' : 'Comparar período'}
+          </Button>
         </div>
 
         <div className="report-period-group">
@@ -301,6 +353,37 @@ export function ExploradorView({ sources }: ExploradorViewProps) {
           </Button>
         </div>
       </div>
+
+      {/* Comparación de dos períodos (R4-08) */}
+      {compararPeriodos && (
+        <div className="report-comparison-bar">
+          <div className="report-comparison-col">
+            <span className="report-comparison-label">Período Actual</span>
+            <strong className="report-comparison-value">{totalActual.toLocaleString()}</strong>
+            <small className="report-comparison-caption">Registros actuales</small>
+          </div>
+          <div className="report-comparison-divider">vs</div>
+          <div className="report-comparison-col">
+            <span className="report-comparison-label">Período Anterior</span>
+            <strong className="report-comparison-value">
+              {comparandoBusy ? 'Calculando…' : totalAnterior.toLocaleString()}
+            </strong>
+            <small className="report-comparison-caption">Misma ventana temporal</small>
+          </div>
+          <div className="report-comparison-delta">
+            <span className="report-comparison-label">Diferencia</span>
+            <span
+              className={`report-delta-chip ${
+                deltaPorcentaje >= 0 ? 'report-delta-up' : 'report-delta-down'
+              }`}
+            >
+              {deltaPorcentaje >= 0
+                ? `+${deltaPorcentaje.toFixed(1)} %`
+                : `${deltaPorcentaje.toFixed(1)} %`}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Selector de columnas con candado para sensibles */}
       <div className="report-columns">

@@ -9,10 +9,12 @@ export type PointItem = {
 type LineaProps = {
   items: PointItem[]
   etiquetaMedida?: string
+  proyeccion?: boolean
 }
 
-export function Linea({ items, etiquetaMedida = 'Valor' }: LineaProps) {
+export function Linea({ items, etiquetaMedida = 'Valor', proyeccion = true }: LineaProps) {
   const [showTable, setShowTable] = useState(false)
+  const [verProyeccion, setVerProyeccion] = useState(proyeccion)
 
   if (items.length === 0) {
     return <div className="inline-empty"><span>Sin datos para la serie temporal.</span></div>
@@ -25,16 +27,31 @@ export function Linea({ items, etiquetaMedida = 'Valor' }: LineaProps) {
   const padTop = 20
   const padBottom = 35
 
-  const maxVal = Math.max(...items.map((i) => i.valor), 1)
+  const habilitarProyeccion = verProyeccion && items.length >= 3
+  let valProyectado = 0
+  if (habilitarProyeccion) {
+    const n = items.length
+    const sumX = (n * (n - 1)) / 2
+    const sumY = items.reduce((acc, it) => acc + it.valor, 0)
+    const sumXY = items.reduce((acc, it, i) => acc + i * it.valor, 0)
+    const sumXX = (n * (n - 1) * (2 * n - 1)) / 6
+    const denom = n * sumXX - sumX * sumX
+    const m = denom !== 0 ? (n * sumXY - sumX * sumY) / denom : 0
+    const b = (sumY - m * sumX) / n
+    valProyectado = Math.max(0, Math.round(m * n + b))
+  }
+
+  const maxVal = Math.max(...items.map((i) => i.valor), habilitarProyeccion ? valProyectado : 0, 1)
   const minVal = 0
 
   const innerWidth = chartWidth - padLeft - padRight
   const innerHeight = chartHeight - padTop - padBottom
 
-  const stepX = items.length > 1 ? innerWidth / (items.length - 1) : innerWidth / 2
+  const totalSteps = habilitarProyeccion ? items.length : items.length - 1
+  const stepX = totalSteps > 0 ? innerWidth / totalSteps : innerWidth / 2
 
   const points = items.map((item, index) => {
-    const x = padLeft + (items.length > 1 ? index * stepX : innerWidth / 2)
+    const x = padLeft + index * stepX
     const y = padTop + innerHeight - ((item.valor - minVal) / (maxVal - minVal)) * innerHeight
     return { x, y, item }
   })
@@ -45,9 +62,29 @@ export function Linea({ items, etiquetaMedida = 'Valor' }: LineaProps) {
 
   const lastPoint = points[points.length - 1]
 
+  const puntoProyeccion =
+    habilitarProyeccion && lastPoint
+      ? {
+          x: padLeft + items.length * stepX,
+          y: padTop + innerHeight - ((valProyectado - minVal) / (maxVal - minVal)) * innerHeight,
+          valor: valProyectado,
+        }
+      : null
+
   return (
     <div className="report-chart-container">
       <div className="report-widget-actions">
+        {items.length >= 3 && (
+          <button
+            type="button"
+            className="report-filter-chip"
+            onClick={() => setVerProyeccion((prev) => !prev)}
+            title={verProyeccion ? 'Ocultar proyección de tendencia' : 'Calcular proyección lineal'}
+            aria-label={verProyeccion ? 'Ocultar proyección' : 'Mostrar proyección'}
+          >
+            <span>{verProyeccion ? 'Proyección activa' : 'Ver proyección'}</span>
+          </button>
+        )}
         <button
           type="button"
           className="report-filter-chip"
@@ -76,6 +113,12 @@ export function Linea({ items, etiquetaMedida = 'Valor' }: LineaProps) {
                   <td>{item.valor.toLocaleString()}</td>
                 </tr>
               ))}
+              {puntoProyeccion && (
+                <tr className="report-row-projection">
+                  <td>Próximo período (proyección)</td>
+                  <td>{puntoProyeccion.valor.toLocaleString()}</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -115,6 +158,17 @@ export function Linea({ items, etiquetaMedida = 'Valor' }: LineaProps) {
             strokeLinejoin="round"
           />
 
+          {/* Línea punteada de proyección */}
+          {puntoProyeccion && lastPoint && (
+            <path
+              d={`M ${lastPoint.x} ${lastPoint.y} L ${puntoProyeccion.x} ${puntoProyeccion.y}`}
+              fill="none"
+              stroke="var(--brand-600)"
+              strokeWidth="2.5"
+              strokeDasharray="4 4"
+            />
+          )}
+
           {/* Puntos y etiquetas */}
           {points.map((pt, idx) => (
             <g key={idx}>
@@ -140,8 +194,42 @@ export function Linea({ items, etiquetaMedida = 'Valor' }: LineaProps) {
             </g>
           ))}
 
+          {/* Punto proyectado */}
+          {puntoProyeccion && (
+            <g>
+              <circle
+                cx={puntoProyeccion.x}
+                cy={puntoProyeccion.y}
+                r="4.5"
+                fill="var(--paper)"
+                stroke="var(--brand-600)"
+                strokeWidth="2"
+                strokeDasharray="2 2"
+              />
+              <text
+                x={puntoProyeccion.x}
+                y={puntoProyeccion.y - 10}
+                textAnchor="middle"
+                fill="var(--brand-700)"
+                fontSize="11"
+                fontWeight="700"
+              >
+                {puntoProyeccion.valor.toLocaleString()} (proy.)
+              </text>
+              <text
+                x={puntoProyeccion.x}
+                y={chartHeight - 10}
+                textAnchor="middle"
+                fill="var(--muted)"
+                fontSize="10"
+              >
+                Próximo
+              </text>
+            </g>
+          )}
+
           {/* Etiqueta del último valor destacado */}
-          {lastPoint && (
+          {lastPoint && !puntoProyeccion && (
             <text
               x={lastPoint.x}
               y={lastPoint.y - 10}

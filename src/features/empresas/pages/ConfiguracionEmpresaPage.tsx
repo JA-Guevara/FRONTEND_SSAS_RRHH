@@ -217,6 +217,47 @@ export function ConfiguracionEmpresaPage({ initialTab = 'general' }: { initialTa
     })
   }
 
+  const [subiendoLogo, setSubiendoLogo] = useState(false)
+
+  async function handleSubirLogoArchivo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !activeEmpresaId) return
+    setSubiendoLogo(true)
+    setFeedback(null)
+    try {
+      const updated = await empresasApi.uploadLogo(activeEmpresaId, file)
+      setEmpresa(updated)
+      setForm(toForm(updated))
+      setFeedback({ kind: 'success', message: 'Logotipo subido y optimizado correctamente.' })
+    } catch (err: unknown) {
+      setFeedback({
+        kind: 'error',
+        message: err instanceof Error ? err.message : 'Error al subir el logotipo.',
+      })
+    } finally {
+      setSubiendoLogo(false)
+    }
+  }
+
+  async function handleEliminarLogo() {
+    if (!activeEmpresaId) return
+    setSubiendoLogo(true)
+    setFeedback(null)
+    try {
+      const updated = await empresasApi.deleteLogo(activeEmpresaId)
+      setEmpresa(updated)
+      setForm(toForm(updated))
+      setFeedback({ kind: 'success', message: 'Logotipo eliminado.' })
+    } catch (err: unknown) {
+      setFeedback({
+        kind: 'error',
+        message: err instanceof Error ? err.message : 'Error al eliminar el logotipo.',
+      })
+    } finally {
+      setSubiendoLogo(false)
+    }
+  }
+
   function handleSaveVisual(e: FormEvent) {
     e.preventDefault()
     void handleSaveSeccion('visual', {
@@ -437,8 +478,14 @@ export function ConfiguracionEmpresaPage({ initialTab = 'general' }: { initialTa
           <Panel title="Identidad visual y marca" eyebrow="Personalización corporativa">
             <div className="grid-2 items-start">
               <div>
-                <Field label="URL del logotipo (PNG, SVG, JPG)">
-                  <input type="url" className="input" placeholder="https://ejemplo.com/logo.png" value={form.logo_url} onChange={(e) => setField('logo_url', e.target.value)} />
+                <Field label="Archivo de logotipo (PNG, JPG, WebP o SVG, máx 1 MB)">
+                  <input
+                    type="file"
+                    className="input"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    onChange={handleSubirLogoArchivo}
+                    disabled={subiendoLogo}
+                  />
                 </Field>
                 <div className="logo-preview-wrap">
                   <div className="logo-preview-box">
@@ -454,7 +501,21 @@ export function ConfiguracionEmpresaPage({ initialTab = 'general' }: { initialTa
                       <span className="text-muted text-sm">Sin logo</span>
                     )}
                   </div>
-                  <span className="text-muted text-sm">Vista previa del logotipo.</span>
+                  <div className="stack">
+                    <span className="text-muted text-sm">
+                      {subiendoLogo ? 'Procesando y optimizando imagen…' : 'Logotipo actual de la empresa.'}
+                    </span>
+                    {form.logo_url && (
+                      <button
+                        type="button"
+                        className="button button-sm button-ghost"
+                        onClick={handleEliminarLogo}
+                        disabled={subiendoLogo}
+                      >
+                        Quitar logotipo
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -527,6 +588,65 @@ export function ConfiguracionEmpresaPage({ initialTab = 'general' }: { initialTa
                   </Link>
                 </div>
               )}
+
+              {/* Maqueta interactiva en vivo del portal (R4-24) */}
+              <div className="portal-live-mockup">
+                <div
+                  className="portal-mockup-header"
+                  style={{ borderTop: `4px solid ${form.color_primario || '#176b4b'}` }}
+                >
+                  <div className="portal-mockup-brand">
+                    {form.logo_url ? (
+                      <img src={form.logo_url} alt="" className="portal-mockup-logo" />
+                    ) : (
+                      <div
+                        className="brand-mark brand-mark-small"
+                        style={{ backgroundColor: form.color_primario || '#176b4b' }}
+                      >
+                        {form.nombre_comercial ? form.nombre_comercial.charAt(0).toUpperCase() : 'E'}
+                      </div>
+                    )}
+                    <strong>{form.nombre_comercial || 'Mi Empresa'}</strong>
+                  </div>
+                  <span className="badge badge-neutral">Vista previa en vivo</span>
+                </div>
+                <div className="portal-mockup-body">
+                  <div className="portal-mockup-hero">
+                    <h4>Trabaja con nosotros</h4>
+                    <p className="text-muted text-sm">
+                      Explora las posiciones vacantes en {form.ciudad || 'nuestra sede central'}.
+                    </p>
+                  </div>
+                  <div className="portal-mockup-jobs">
+                    <div className="portal-mockup-card">
+                      <div>
+                        <div className="portal-mockup-card-title">Desarrollador / Especialista Senior</div>
+                        <div className="portal-mockup-card-meta">Tiempo completo · Presencial</div>
+                      </div>
+                      <button
+                        type="button"
+                        className="button button-sm button-primary"
+                        style={{ backgroundColor: form.color_primario || '#176b4b' }}
+                      >
+                        Postular
+                      </button>
+                    </div>
+                    <div className="portal-mockup-card">
+                      <div>
+                        <div className="portal-mockup-card-title">Analista de Talento Humano</div>
+                        <div className="portal-mockup-card-meta">Tiempo completo · Híbrido</div>
+                      </div>
+                      <button
+                        type="button"
+                        className="button button-sm button-primary"
+                        style={{ backgroundColor: form.color_primario || '#176b4b' }}
+                      >
+                        Postular
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <SectionFooter
               dirty={dirtySections.portal}

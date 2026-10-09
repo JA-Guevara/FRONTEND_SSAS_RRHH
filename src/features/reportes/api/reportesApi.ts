@@ -71,6 +71,7 @@ export type ConsultaAgregada = {
   filtros?: Filter[]
   orden?: Order[]
   limite?: number
+  comparar_con?: 'periodo_anterior' | null
 }
 
 export type SerieAgregada = {
@@ -85,9 +86,11 @@ export type RespuestaAgregada = {
   truncado: boolean
   generado_en: string
   milisegundos: number
+  delta?: number | null
+  deltas?: Record<string, number | null> | null
 }
 
-export type WidgetTipo = 'kpi' | 'linea' | 'barra' | 'barra_apilada' | 'embudo' | 'tabla'
+export type WidgetTipo = 'kpi' | 'linea' | 'barra' | 'barra_apilada' | 'embudo' | 'tabla' | 'linea_tiempo'
 
 export type WidgetPanel = {
   id: string
@@ -191,6 +194,11 @@ export const reportesApi = {
     }),
   ejecuciones: (empresaId?: string, limite = 50) =>
     apiRequest<EjecucionResponse[]>(`/api/v1/reportes/ejecuciones${buildQuery({ empresa_id: empresaId, limite })}`),
+  exportPanelPdf: (empresaId?: string) =>
+    apiRequest<Blob>(`/api/v1/reportes/panel/exportar-pdf${scope(empresaId)}`, {
+      method: 'POST',
+      responseType: 'blob',
+    }),
 }
 
 export function saveBlob(blob: Blob, filename: string) {

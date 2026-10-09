@@ -96,10 +96,19 @@ export function AltaEmpresaPage() {
       key: 'empresa',
       header: 'Empresa',
       render: (empresa) => (
-        <>
-          <strong>{empresa.nombre_comercial}</strong>
-          <small>{empresa.razon_social}</small>
-        </>
+        <div className="empresa-table-cell">
+          {empresa.logo_url ? (
+            <img src={empresa.logo_url} alt="" className="empresa-logo-table" />
+          ) : (
+            <span className="empresa-avatar-fallback">
+              {(empresa.nombre_comercial || empresa.razon_social).charAt(0).toUpperCase()}
+            </span>
+          )}
+          <div>
+            <strong>{empresa.nombre_comercial}</strong>
+            <small>{empresa.razon_social}</small>
+          </div>
+        </div>
       ),
     },
     { key: 'slug', header: 'Slug', render: (empresa) => empresa.slug },

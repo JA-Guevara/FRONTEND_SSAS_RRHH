@@ -90,6 +90,19 @@ export function PortalPublicoPage() {
   }, [slug, intento])
 
   useEffect(() => {
+    if (!empresa) return
+    if (empresa.color_primario) {
+      document.documentElement.style.setProperty('--empresa-brand', empresa.color_primario)
+    }
+    if (empresa.logo_url) {
+      const link = document.querySelector<HTMLLinkElement>("link[rel~='icon']")
+      if (link) {
+        link.href = empresa.logo_url
+      }
+    }
+  }, [empresa])
+
+  useEffect(() => {
     if (slug === '') return
 
     let vigente = true
@@ -193,9 +206,13 @@ export function PortalPublicoPage() {
           <>
             <header className="public-header">
               <div className="public-brand">
-                <span className="brand-mark brand-mark-small" aria-hidden="true">
-                  {inicial}
-                </span>
+                {empresa.logo_url ? (
+                  <img src={empresa.logo_url} alt="" className="public-brand-logo" />
+                ) : (
+                  <span className="brand-mark brand-mark-small" aria-hidden="true">
+                    {inicial}
+                  </span>
+                )}
                 <div>
                   <strong>{nombreEmpresa}</strong>
                   <span className="text-muted">Trabaja con nosotros</span>
