@@ -230,6 +230,25 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  transform-origin: bottom left;
+  animation: menu-in 140ms var(--ease-out);
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-user-dropdown {
+    animation: none;
+  }
 }
 
 .sidebar-dropdown-header {
