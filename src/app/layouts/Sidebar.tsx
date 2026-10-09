@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Bell,
@@ -20,8 +20,19 @@ import type { User } from '../../features/auth/context/AuthContext'
 import type { components } from '../../shared/api/schema'
 import { NavGroup } from './NavGroup'
 import { SelectorTema } from './SelectorTema'
+import { perfilApi } from '../../features/perfil/api/perfilApi'
 
 type Empresa = components['schemas']['EmpresaResponse']
+
+function haceCuanto(desde: string): string {
+  const minutos = Math.floor((Date.now() - new Date(desde).getTime()) / 60_000)
+  if (!Number.isFinite(minutos) || minutos < 1) return 'hace un momento'
+  if (minutos < 60) return `hace ${minutos} min`
+  const horas = Math.floor(minutos / 60)
+  if (horas < 24) return `hace ${horas} h`
+  const dias = Math.floor(horas / 24)
+  return `hace ${dias} ${dias === 1 ? 'día' : 'días'}`
+}
 
 export type SidebarProps = {
   menuOpen: boolean
@@ -37,6 +48,7 @@ export type SidebarProps = {
   onSelectCompany: (empresa: Empresa) => void
   onClearCompany: () => void
   onOpenCommand?: () => void
+  accessToken?: string | null
 }
 
 export function Sidebar({
@@ -53,12 +65,42 @@ export function Sidebar({
   onSelectCompany,
   onClearCompany,
   onOpenCommand,
+  accessToken,
 }: SidebarProps) {
   const esPlataforma = user?.realm === 'platform'
   const [menuUsuarioOpen, setMenuUsuarioOpen] = useState(false)
   const menuCuenta = useCerrarAlClicFuera<HTMLDivElement>(menuUsuarioOpen, () =>
     setMenuUsuarioOpen(false),
   )
+  const rolActivo = esPlataforma ? 'Plataforma' : (user?.roles?.[0] ?? 'Usuario')
+
+  const [sesionInicio, setSesionInicio] = useState<string | null>(null)
+  const [sesionCargando, setSesionCargando] = useState(false)
+
+  useEffect(() => {
+    if (!menuUsuarioOpen || !accessToken) return
+    let vivo = true
+    setSesionCargando(true)
+    perfilApi.obtenerSesiones(accessToken)
+      .then((sesiones) => {
+        if (vivo) setSesionInicio(sesiones.find((s) => s.es_actual)?.inicio ?? null)
+      })
+      .catch(() => {
+        if (vivo) setSesionInicio(null)
+      })
+      .finally(() => {
+        if (vivo) setSesionCargando(false)
+      })
+    return () => {
+      vivo = false
+    }
+  }, [menuUsuarioOpen, accessToken])
+
+  const estadoSesion = sesionCargando
+    ? 'Consultando sesión…'
+    : sesionInicio !== null
+      ? `Conectado desde ${haceCuanto(sesionInicio)}`
+      : 'Sesión activa'
 
   function handleCompanyChange(id: string) {
     if (id === '') {
@@ -157,8 +199,20 @@ export function Sidebar({
         {menuUsuarioOpen && (
           <div className="sidebar-user-dropdown" ref={menuCuenta.ref} role="menu" aria-label="Menú de cuenta">
             <div className="sidebar-dropdown-header">
-              <div className="sidebar-dropdown-name truncate">{user?.name}</div>
-              <div className="sidebar-dropdown-email truncate">{user?.email}</div>
+              <div className="sidebar-user-summary">
+                <Avatar src={user?.foto_url} name={user?.name} id={user?.id} size="sm" />
+                <div className="sidebar-user-summary-text">
+                  <div className="sidebar-dropdown-name truncate">{user?.name}</div>
+                  <div className="sidebar-dropdown-email truncate">{user?.email}</div>
+                </div>
+              </div>
+              <div className="sidebar-dropdown-meta">
+                <span className="truncate">Rol: {rolActivo}</span>
+                {company !== null && (
+                  <span className="truncate">Empresa: {company.nombre_comercial}</span>
+                )}
+                <span className="truncate">{estadoSesion}</span>
+              </div>
             </div>
 
             <Link

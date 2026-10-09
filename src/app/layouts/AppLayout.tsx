@@ -11,7 +11,7 @@ import { MobileNav } from './MobileNav'
 
 export function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const { logout, user } = useAuth()
+  const { logout, user, accessToken } = useAuth()
   const { company, companies, selectCompany, clearCompany } = useCompanyScope()
   const { can, hasModulo } = useAccess()
   const { pathname } = useLocation()
@@ -83,6 +83,7 @@ export function AppLayout() {
         onSelectCompany={selectCompany}
         onClearCompany={clearCompany}
         onOpenCommand={() => setCommandOpen(true)}
+        accessToken={accessToken}
       />
       <main className="main-content">
         <Outlet />

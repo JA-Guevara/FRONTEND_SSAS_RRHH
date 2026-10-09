@@ -268,6 +268,27 @@
   color: var(--muted);
 }
 
+/* R4-20 · Cabecera con datos reales: avatar, rol activo, empresa y sesión */
+.sidebar-user-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.sidebar-user-summary-text {
+  min-width: 0;
+}
+
+.sidebar-dropdown-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
 .sidebar-dropdown-link {
   display: flex;
   align-items: center;
