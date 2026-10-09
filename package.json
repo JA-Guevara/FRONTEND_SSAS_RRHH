@@ -15,6 +15,7 @@
     "generate:api": "node scripts/generate-api.mjs",
     "check:api": "node scripts/check-api-contract.mjs",
     "check:styles": "node scripts/check-styles.mjs",
+    "check:contrast": "node scripts/check-contrast.mjs --theme light --theme dark",
     "test": "vitest run",
     "test:watch": "vitest"
   },
