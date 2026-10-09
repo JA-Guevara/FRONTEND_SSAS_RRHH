@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react'
 import { Avatar } from '../../shared/components/avatar/Avatar'
+import { useCerrarAlClicFuera } from '../../shared/hooks'
 import type { NavItem } from '../access/navigation'
 import type { User } from '../../features/auth/context/AuthContext'
 import type { components } from '../../shared/api/schema'
@@ -55,6 +56,9 @@ export function Sidebar({
 }: SidebarProps) {
   const esPlataforma = user?.realm === 'platform'
   const [menuUsuarioOpen, setMenuUsuarioOpen] = useState(false)
+  const menuCuenta = useCerrarAlClicFuera<HTMLDivElement>(menuUsuarioOpen, () =>
+    setMenuUsuarioOpen(false),
+  )
 
   function handleCompanyChange(id: string) {
     if (id === '') {
@@ -151,7 +155,7 @@ export function Sidebar({
 
       <div className="sidebar-user">
         {menuUsuarioOpen && (
-          <div className="sidebar-user-dropdown" role="menu" aria-label="Menú de cuenta">
+          <div className="sidebar-user-dropdown" ref={menuCuenta.ref} role="menu" aria-label="Menú de cuenta">
             <div className="sidebar-dropdown-header">
               <div className="sidebar-dropdown-name truncate">{user?.name}</div>
               <div className="sidebar-dropdown-email truncate">{user?.email}</div>
@@ -251,6 +255,7 @@ export function Sidebar({
           className="sidebar-avatar-trigger"
           aria-expanded={menuUsuarioOpen}
           aria-haspopup="menu"
+          ref={menuCuenta.refDisparador}
           onClick={() => setMenuUsuarioOpen(!menuUsuarioOpen)}
         >
           <Avatar src={user?.foto_url} name={user?.name} id={user?.id} size="sm" />
