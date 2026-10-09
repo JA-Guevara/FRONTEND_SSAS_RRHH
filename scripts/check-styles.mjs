@@ -209,6 +209,61 @@ for (const file of tsxFiles) {
   })
 }
 
+// 4. R4-26 · Los controles de formulario se estilizan por elemento, no solo
+//    por una clase contenedora. Si existe uso contenedor, el sistema de diseño
+//    debe cubrir el elemento suelto; si no, el control queda sin estilo en
+//    alguna vista y hereda texto claro sobre fondo claro.
+const CONTROLS = ['select', 'input', 'textarea']
+// La cobertura por elemento debe vivir en el sistema de diseño de controles;
+// base.css solo hace reset (font: inherit) y por eso mismo provoca el bug.
+const CONTROL_STYLES_DIR = normalizePath(join('src', 'shared', 'styles', 'components'))
+const elementCovered = Object.fromEntries(CONTROLS.map((c) => [c, false]))
+const containerOnly = Object.fromEntries(CONTROLS.map((c) => [c, new Set()]))
+
+for (const file of cssFiles) {
+  const relPath = normalizePath(relative(rootDir, file))
+  const isControlStyleSheet = relPath.startsWith(CONTROL_STYLES_DIR)
+  const content = readFileSync(file, 'utf8')
+  const blocks = []
+  const blockRe = /([^{}]+)\{([^{}]*)\}/g
+  let blockMatch
+  while ((blockMatch = blockRe.exec(content)) !== null) {
+    blocks.push([blockMatch[1], blockMatch[2]])
+  }
+
+  for (const [selectorList, body] of blocks) {
+    for (const rawSelector of selectorList.split(',')) {
+      const selector = rawSelector.replace(/\/\*.*?\*\//g, '').trim()
+      if (!selector || selector.startsWith('@')) continue
+      const tokens = selector.split(/[\s>+~]+/).filter(Boolean)
+      for (const control of CONTROLS) {
+        const isControl = new RegExp(`^${control}([:.\\[\\s]|$)`)
+        if (!tokens.some((t) => isControl.test(t))) continue
+        if (isControl.test(tokens[0])) {
+          // Solo cuenta si además declara color de texto: eso es lo que
+          // impide que el control herede texto ilegible.
+          const setsTextColor = /(^|[;{\s])color\s*:/.test(body)
+          if (isControlStyleSheet && setsTextColor) elementCovered[control] = true
+        } else {
+          containerOnly[control].add(relPath)
+        }
+      }
+    }
+  }
+}
+
+for (const control of CONTROLS) {
+  if (elementCovered[control]) continue
+  for (const file of containerOnly[control]) {
+    errors.push({
+      type: 'CONTAINER_ONLY_CONTROL',
+      file,
+      line: 1,
+      detail: `El control '${control}' se estiliza solo vía clase contenedora. Agregue reglas por elemento (p. ej. en shared/styles/components/field.css).`,
+    })
+  }
+}
+
 // Summary
 console.log('----------------------------------------------------')
 console.log('SSAS RRHH — Auditoría de Sistema Visual y Estilos')
