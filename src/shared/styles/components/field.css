@@ -31,11 +31,74 @@
   border-radius: var(--radius-md);
   padding: 0 var(--space-3);
   color: var(--ink);
-  background: var(--surface);
+  background-color: var(--surface);
   font-size: var(--text-base);
   font-weight: 400;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* R4-25 · Controles estilizados por elemento, estén dentro o fuera de un
+   contenedor. Así ningún <select> hereda texto claro sobre fondo claro. */
+select,
+input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='range']):not([type='color']),
+textarea {
+  min-height: var(--control-h);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  color: var(--ink);
+  background-color: var(--surface);
+  font-size: var(--text-base);
+  font-weight: 400;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+select {
+  appearance: none;
+  padding-right: var(--space-8);
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 14px;
+}
+
+/* El relleno de los contenedores no debe tapar el chevron */
+.field select,
+.form-stack select,
+.form-grid select,
+.filters select,
+.select {
+  padding-right: var(--space-8);
+}
+
+select:hover,
+input:not([type='checkbox']):not([type='radio']):hover,
+textarea:hover {
+  border-color: var(--brand-600);
+}
+
+select:focus-visible,
+input:not([type='checkbox']):not([type='radio']):focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-color: var(--brand-600);
+}
+
+select:disabled,
+input:disabled,
+textarea:disabled {
+  color: var(--muted);
+  background-color: var(--surface-2);
+  cursor: not-allowed;
+}
+
+/* Las opciones también: algunos navegadores no heredan el color */
+select option {
+  color: var(--ink);
+  background-color: var(--surface);
 }
 
 input[type='checkbox'],
@@ -72,7 +135,7 @@ input[type='radio'] {
 .input:disabled,
 .select:disabled {
   color: var(--muted);
-  background: var(--surface-2);
+  background-color: var(--surface-2);
   cursor: not-allowed;
 }
 
