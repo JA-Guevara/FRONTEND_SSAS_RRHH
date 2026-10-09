@@ -1,0 +1,227 @@
+/* R4-10 · Robot SVG del asistente: un solo dibujo, estados por clase.
+   Solo tokens: la cara usa --paper y los detalles --brand, así se lee sobre
+   el fondo del lanzador en los dos temas. */
+.asistente-avatar {
+  display: block;
+  overflow: visible;
+}
+
+.asistente-avatar .av-cabeza {
+  fill: var(--paper);
+}
+
+.asistente-avatar .av-ojo {
+  fill: var(--brand);
+}
+
+.asistente-avatar .av-antena {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.asistente-avatar .av-antena-punto {
+  fill: var(--accent);
+  stroke: var(--paper);
+  stroke-width: 1.2;
+}
+
+.asistente-avatar .av-punto {
+  fill: var(--paper);
+}
+
+.asistente-avatar .av-onda {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 1.4;
+  opacity: 0;
+}
+
+.asistente-avatar .av-destello {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 2;
+  stroke-dasharray: 16 34;
+  opacity: 0;
+}
+
+.asistente-avatar .av-alerta {
+  fill: var(--warning);
+  stroke: var(--paper);
+  stroke-width: 1.4;
+}
+
+/* Solo se pinta lo propio de cada estado. */
+.asistente-avatar .av-ondas,
+.asistente-avatar .av-puntos,
+.asistente-avatar .av-alerta {
+  display: none;
+}
+
+.asistente-avatar--escuchando .av-ondas {
+  display: block;
+}
+
+.asistente-avatar--pensando .av-puntos {
+  display: block;
+}
+
+.asistente-avatar--pensando .av-antena-punto {
+  opacity: 0;
+}
+
+.asistente-avatar--alerta .av-alerta {
+  display: block;
+}
+
+/* reposo: parpadeo (ojos120 ms) + respiración 1 → 1.02 en 3 s */
+.asistente-avatar--reposo {
+  animation: av-respirar 3s ease-in-out infinite;
+}
+
+.asistente-avatar--reposo .av-ojo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: av-parpadeo 5s ease-in-out infinite;
+}
+
+@keyframes av-respirar {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes av-parpadeo {
+  0%,
+  97% {
+    transform: scaleY(1);
+  }
+
+  97.6%,
+  99.4% {
+    transform: scaleY(0.15);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+/* escuchando: tres ondas salen del borde, 900 ms en bucle */
+.asistente-avatar--escuchando .av-onda {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: av-onda 900ms ease-out infinite;
+}
+
+.asistente-avatar--escuchando .av-onda-1 {
+  animation-delay: 0ms;
+}
+
+.asistente-avatar--escuchando .av-onda-2 {
+  animation-delay: 300ms;
+}
+
+.asistente-avatar--escuchando .av-onda-3 {
+  animation-delay: 600ms;
+}
+
+@keyframes av-onda {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.55);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* pensando: tres puntos suben y bajan con 150 ms de desfase */
+.asistente-avatar--pensando .av-punto {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: av-punto 900ms ease-in-out infinite;
+}
+
+.asistente-avatar--pensando .av-punto-1 {
+  animation-delay: 0ms;
+}
+
+.asistente-avatar--pensando .av-punto-2 {
+  animation-delay: 150ms;
+}
+
+.asistente-avatar--pensando .av-punto-3 {
+  animation-delay: 300ms;
+}
+
+@keyframes av-punto {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+/* listo: el destello recorre el borde una vez */
+.asistente-avatar--listo .av-destello {
+  display: block;
+  opacity: 1;
+  animation: av-destello 700ms ease-out 1 forwards;
+}
+
+@keyframes av-destello {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 50;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* alerta: punto de --warning con pulso */
+.asistente-avatar--alerta .av-alerta {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: av-alerta 1.2s ease-in-out infinite;
+}
+
+@keyframes av-alerta {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asistente-avatar,
+  .asistente-avatar * {
+    animation: none !important;
+  }
+}

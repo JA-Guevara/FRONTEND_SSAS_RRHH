@@ -21,6 +21,7 @@ vi.mock('../api/chatbotApi', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
+  sessionStorage.clear()
 })
 
 test('Asistente opens and shows suggested questions and greetings', async () => {
@@ -88,4 +89,30 @@ test('Asistente renders confirmation card for write tool and allows execution', 
   expect(
     await screen.findByText('Acción confirmada y registrada en auditoría')
   ).toBeInTheDocument()
+})
+
+test('El robot del lanzador refleja el estado del asistente', async () => {
+  vi.mocked(asistenteApi.enviarMensaje).mockRejectedValue(new Error('Servidor ocupado'))
+
+  render(
+    <MemoryRouter>
+      <Asistente />
+    </MemoryRouter>
+  )
+
+  expect(document.querySelector('.asistente-avatar--reposo')).not.toBeNull()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir asistente' }))
+  expect(
+    screen.getByRole('button', { name: 'Ocultar asistente' })
+  ).toHaveAttribute('aria-expanded', 'true')
+
+  const input = screen.getByRole('textbox', { name: 'Pregunta para el asistente' })
+  fireEvent.change(input, { target: { value: '¿Hay vacantes?' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar pregunta' }))
+
+  expect(document.querySelector('.asistente-avatar--pensando')).not.toBeNull()
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('Servidor ocupado')
+  expect(document.querySelector('.asistente-avatar--alerta')).not.toBeNull()
 })

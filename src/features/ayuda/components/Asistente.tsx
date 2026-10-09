@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Check, Mic, MicOff, MessageCircle, Send, X } from 'lucide-react'
+import { ArrowLeft, Check, Mic, MicOff, Send, X } from 'lucide-react'
 import { chatbotApi, type ChatAnswer, type KnowledgeArticle } from '../api/chatbotApi'
 import { asistenteApi, type AccionPropuesta, type ContextoAsistente } from '../api/asistenteApi'
+import { AsistenteAvatar, type AsistenteAvatarEstado } from './AsistenteAvatar'
 import './chat-widget.css'
 
 export type AsistenteProps = {
@@ -120,6 +121,7 @@ export function Asistente({ slug, contexto }: AsistenteProps) {
   const [sourceLoading, setSourceLoading] = useState(false)
   const [listening, setListening] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(false)
+  const [destello, setDestello] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const endRef = useRef<HTMLDivElement>(null)
@@ -201,6 +203,16 @@ export function Asistente({ slug, contexto }: AsistenteProps) {
 
   useEffect(() => {
     endRef.current?.scrollIntoView?.({ block: 'end' })
+  }, [messages])
+
+  // R4-10 · El robot parpadea "listo" cuando llega una respuesta
+  useEffect(() => {
+    if (messages.length === 0) return
+    const ultimo = messages[messages.length - 1]
+    if (ultimo.role !== 'assistant') return
+    setDestello(true)
+    const timer = window.setTimeout(() => setDestello(false), 1400)
+    return () => window.clearTimeout(timer)
   }, [messages])
 
   async function send(value = question) {
@@ -296,6 +308,16 @@ export function Asistente({ slug, contexto }: AsistenteProps) {
       setSourceLoading(false)
     }
   }
+
+  const estadoAvatar: AsistenteAvatarEstado = error
+    ? 'alerta'
+    : loading
+      ? 'pensando'
+      : listening
+        ? 'escuchando'
+        : destello
+          ? 'listo'
+          : 'reposo'
 
   return (
     <div className="chat-widget">
@@ -451,10 +473,11 @@ export function Asistente({ slug, contexto }: AsistenteProps) {
         className="chat-launcher"
         type="button"
         onClick={() => setOpen(!open)}
-        aria-label={open ? 'Cerrar asistente' : 'Abrir asistente'}
-        title={open ? 'Cerrar asistente' : 'Abrir asistente'}
+        aria-label={open ? 'Ocultar asistente' : 'Abrir asistente'}
+        aria-expanded={open}
+        title={open ? 'Ocultar asistente' : 'Abrir asistente'}
       >
-        {open ? <X size={22} /> : <MessageCircle size={22} />}
+        <AsistenteAvatar estado={estadoAvatar} />
       </button>
     </div>
   )
