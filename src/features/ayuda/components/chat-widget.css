@@ -1,7 +1,59 @@
 /* Estilos exclusivos del widget de chat de ayuda (CU-34).
    Prohibido: declarar :root, usar colores literales o estilar elementos de otra feature. */
 .chat-widget { position: fixed; right: 20px; bottom: 20px; z-index: var(--z-modal); font-size: var(--text-base); }
-.chat-launcher { width: 50px; height: 50px; border: 0; border-radius: 50%; background: var(--brand); color: var(--paper); display: grid; place-items: center; margin-left: auto; box-shadow: var(--shadow-md); cursor: pointer; }
+/* R4-11 · Lanzador del asistente: 56 px, degradado de marca y pulso de
+   atención reservado para cuando hay sugerencia (R4-12). */
+.asistente-launcher {
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-600), var(--brand-800));
+  color: var(--paper);
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+  box-shadow: var(--shadow-lg), 0 0 0 0 rgba(31, 130, 89, 0.45);
+  cursor: pointer;
+  transition: transform 0.18s var(--ease-out), box-shadow 0.3s;
+}
+
+.asistente-launcher:hover {
+  transform: scale(1.06);
+}
+
+.asistente-launcher:active {
+  transform: scale(0.97);
+}
+
+.asistente-launcher:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.asistente-launcher.llamando {
+  animation: pulso 2.4s ease-out 3;
+}
+
+@keyframes pulso {
+  0% {
+    box-shadow: var(--shadow-lg), 0 0 0 0 rgba(31, 130, 89, 0.45);
+  }
+
+  70% {
+    box-shadow: var(--shadow-lg), 0 0 0 14px rgba(31, 130, 89, 0);
+  }
+
+  100% {
+    box-shadow: var(--shadow-lg), 0 0 0 0 rgba(31, 130, 89, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asistente-launcher.llamando {
+    animation: none;
+  }
+}
 .chat-panel { width: min(360px, calc(100vw - 28px)); height: min(520px, calc(100dvh - 100px)); display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden; margin-bottom: var(--space-3); }
 .chat-header { background: var(--brand-900); color: var(--on-inverse); padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
 .chat-header div { display: grid; gap: 2px; }

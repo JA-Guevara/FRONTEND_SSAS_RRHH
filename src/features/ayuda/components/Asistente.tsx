@@ -470,7 +470,7 @@ export function Asistente({ slug, contexto }: AsistenteProps) {
       )}
 
       <button
-        className="chat-launcher"
+        className="asistente-launcher"
         type="button"
         onClick={() => setOpen(!open)}
         aria-label={open ? 'Ocultar asistente' : 'Abrir asistente'}

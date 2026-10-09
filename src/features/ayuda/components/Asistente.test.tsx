@@ -101,6 +101,9 @@ test('El robot del lanzador refleja el estado del asistente', async () => {
   )
 
   expect(document.querySelector('.asistente-avatar--reposo')).not.toBeNull()
+  expect(screen.getByRole('button', { name: 'Abrir asistente' })).toHaveClass(
+    'asistente-launcher'
+  )
 
   fireEvent.click(screen.getByRole('button', { name: 'Abrir asistente' }))
   expect(
